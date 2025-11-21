@@ -1,0 +1,15 @@
+# Python-generated files
+api/__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+api/.venv
+api/uv-x86_64-unknown-linux-gnu.tar.gz
+
+# dot env files
+.env
+api/.env

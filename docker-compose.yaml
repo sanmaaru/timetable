@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+  db:
+    image: mariadb:11   
+    container_name: timetable-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: '${ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${DATABASE}'             
+      MYSQL_USER:  '${USER}'
+      MYSQL_PASSWORD: '${PASSWORD}'
+    ports:
+      - "3316:3316"   
+    volumes:
+      - db_data:/var/lib/mysql       
+      - ./initdb:/docker-entrypoint-initdb.d     
+    command:
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build: ./api
+    container_name: timetable-api
+    restart: unless-stopped
+    environment:
+      CONNECTION: '${CONNECTION}'
+    ports:
+      - "5000:5000"
+
+  # web:
+    # build: ./web
+
+volumes:
+  db_data:
+
