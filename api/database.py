@@ -1,7 +1,9 @@
-from sqlalchemy import create_engine, Column, String, Float
-from sqlalchemy.orm import declarative_base, sessionmaker
+from sqlalchemy import (
+    Column, Float, ForeignKey, SmallInteger, String, create_engine
+)
+from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from dotenv import load_dotenv
-import os
+import os, uuid
 
 # load_dotenv('../.env')
 
@@ -9,9 +11,96 @@ url = os.getenv('CONNECTION')
 assert url != None
 engine = create_engine(url, pool_pre_ping=True)
 
+def gen_uuid() -> str:
+    return str(uuid.uuid4())
 
 ## Tables
 Base = declarative_base()
+
+# ===== Basic =====
+class Lecture(Base):
+
+    __tablename__ = 'lectures'
+
+    lecture_id = Column(String(36), primary_key=True, default=gen_uuid)
+    subject_id = Column(String(36), ForeignKey('subjects.subject_id'), nullable=False)
+    teacher_id = Column(String(36), ForeignKey('users.user_id'))
+    room = Column(String(255), nullable=True)
+
+    subject = relationship('Subject', back_populates='lectures')
+    teacher = relationship('User', back_populates='lectures')
+    classes = relationship(
+        'Class', back_populates='lecture', cascade='all, delete-orphan'
+    )
+
+
+class Class(Base):
+
+    __tablename__ = 'classes'
+
+    class_id = Column(String(36), primary_key=True, default=gen_uuid)
+    division = Column(SmallInteger, nullable=False)
+    lecture_id = Column(String(36), ForeignKey('lectures.lecture_id'))
+
+    lecture = relationship('Lecture', back_populates='classes')
+    
+    periods = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
+    enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
+    students = relationship('User', secondary='enrollments', back_populates='classes')
+
+    def dump(self) -> dict:
+        subject = self.lecture.subject.name
+        teacher = self.lecture.teacher.name
+        room = self.lecture.room
+        periods = []
+        for period in self.periods:
+            periods.append({
+                'day': Period.DAY[period.day],
+                'period': period.period
+            })
+
+        obj = {
+            'subject': subject,
+            'division': self.division,
+            'teacher': teacher,
+            'room': room,
+            'periods': periods 
+        }
+        return obj
+
+
+class Subject(Base):
+
+    __tablename__ = 'subjects'
+
+    subject_id = Column(String(36), primary_key=True, default=gen_uuid)
+    name = Column(String(255), nullable=False)
+
+    lectures = relationship(
+        'Lecture', back_populates='subject', cascade='all, delete-orphan'
+    )
+
+class Enrollment(Base):
+    
+    __tablename__ = 'enrollments'
+
+    class_id = Column(String(36), ForeignKey('classes.class_id'), primary_key=True)
+    user_id = Column(String(36), ForeignKey('users.user_id'), primary_key=True, nullable=False)
+
+    clazz = relationship('Class', back_populates='enrollments')
+    user = relationship('User', back_populates='enrollments')
+
+class Period(Base):
+
+    DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+    __tablename__ = 'periods'
+
+    class_id = Column(String(36), ForeignKey('classes.class_id'), primary_key=True)
+    period = Column(SmallInteger, primary_key=True)
+    day = Column(SmallInteger, primary_key=True)
+
+    clazz = relationship("Class", back_populates='periods')
 
 # ===== Auth =====
 class User(Base):
@@ -20,9 +109,14 @@ class User(Base):
 
     user_id = Column(String(36), primary_key=True)
     id = Column(String(20), nullable=False)
+    name = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
-    role = Column(String(4), nullable=False) # role: s -> student / t -> teacher / a -> administrator
+    role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
+
+    taught_lectures = relationship('Lecture', back_populates='teacher')
+    enrollments = relationship('Enrollment', back_populates='user', cascade='all, delete-orphan')
+    classes = relationship('Class', secondary='enrollments', back_populates='students')
 
     def __repr__(self):
         return 'user { user_id: {' + str(self.user_id) + '}, id: {' + str(self.id) + '}, password: {' + str(self.password) + '} }'
@@ -38,7 +132,8 @@ class RefreshToken(Base):
     jwt_signature = Column(String(255), nullable=False)
 
 
-Base.metadata.create_all(engine)
+def init_db():
+    Base.metadata.create_all(engine)
 
 LocalSession = sessionmaker(bind=engine)
 

@@ -60,9 +60,12 @@ def refresh(input: RefreshTokenInput, session = Depends(conn)):
 
     access, refresh = jwt.reissue(session, token, access, reload_refresh=True)
 
+    if access == None:
+        return TokenPair(access_token='', refresh_token=refresh)
+
     return TokenPair(
         access_token=access.encode(),
-        refresh_token=refresh.token_id
+        refresh_token=refresh
     )
 
 

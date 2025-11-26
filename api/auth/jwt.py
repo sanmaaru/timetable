@@ -72,7 +72,7 @@ class JWT:
             algorithm = algorithm if algorithm else ALGORITHM
             payload = jwt.decode(token, key, [algorithm])
         except JWTError:
-            raise ValueError('invalid jwt')            
+            return None           
 
         issued_at = datetime.fromtimestamp(payload['iat'], tz=UTC)
         expire_at = datetime.fromtimestamp(payload['exp'], tz=UTC)        
@@ -101,7 +101,9 @@ class RefreshToken:
         self.jwt_signature = jwt_signature
 
     def upload(self, session: Session):
-        refresh_token = self._db() 
+        refresh_token = RefreshDB(
+            token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at, 
+            expired_at=self.expired_at, jwt_signature=self.jwt_signature) 
         session.add(refresh_token)
         session.commit()
         
@@ -149,8 +151,8 @@ class RefreshToken:
         return cls(
             token_id=token_id,
             issuer=db_token.issuer,
-            issued_at=db_token.issued_at,
-            expired_at=db_token.expired_at,
+            issued_at=datetime.fromtimestamp(db_token.issued_at, tz=UTC),
+            expired_at=datetime.fromtimestamp(db_token.expired_at, tz=UTC),
             jwt_signature=db_token.jwt_signature
         )
 
@@ -173,22 +175,6 @@ class RefreshToken:
         refresh_token = RefreshToken(issuer=issuer, issued_at=issued_at, expired_at=expired_at, token_id=token_id, jwt_signature=jwt_signature)
         refresh_token.upload(session)
         return refresh_token
-
-
-    @classmethod
-    def get_token(cls, token_id: str, session: Session):
-        db_token = session.query(RefreshDB).filter(RefreshDB.token_id == token_id).one_or_none()
-        
-        if db_token == None:
-            return None
-        
-        return cls(
-            token_id=token_id,
-            issuer=db_token.issuer,
-            issued_at=db_token.issued_at,
-            expired_at=db_token.expired_at,
-            jwt_signature=db_token.jwt_signature
-        )
 
 
     @staticmethod
@@ -223,4 +209,4 @@ def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=Fa
     if reload_refresh:
         refresh_token = refresh_token.reissue(session, jwt)
 
-    return new_access_token, refresh_token
+    return new_access_token, refresh_token.token_id
