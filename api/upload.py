@@ -1,5 +1,10 @@
 from sqlalchemy.orm.session import Session
+from sqlalchemy.orm import joinedload
+from sqlalchemy.exc import SQLAlchemyError
 from database import User, Class, Subject, Lecture, Period, Enrollment
+from dataclasses import dataclass
+from util import is_empty
+from itertools import chain
 import numpy as np
 import pandas as pd
 import re
@@ -91,7 +96,7 @@ class ClassCell(Cell[tuple[str, int]]):
 class EmptyCell(Cell[None]):
 
     def match(self, content) -> bool:
-        return not content or content == 'nan'
+        return is_empty(content)
 
     def interpret(self, content) -> None:
         return None
@@ -104,7 +109,7 @@ class SubjectCell(Cell[str]):
     __type__ = 'subject'
 
     def match(self, content: str) -> bool:
-        return not content.isspace()
+        return not is_empty(content)
     
     def interpret(self, content: str) -> str:
         return content
@@ -117,7 +122,7 @@ class TeacherCell(Cell[str]):
     __type__ = 'teacher'
 
     def match(self, content: str) -> bool:
-        return not content.isspace()
+        return not is_empty(content)
     
     def interpret(self, content: str) -> str:
         return content
@@ -130,7 +135,7 @@ class RoomCell(Cell[str]):
     __type__ = 'room'
 
     def match(self, content: str) -> bool:
-        return not content.isspace()
+        return not is_empty(content)
     
     def interpret(self, content: str) -> str:
         return content
@@ -138,7 +143,7 @@ class RoomCell(Cell[str]):
     def name(self) -> str:
         return RoomCell.__type__
 
-class PeriodCell(Cell[list[tuple[int, list[int]]]]):
+class PeriodCell(Cell[list[tuple[int, int]]]):
 
     __type__ = 'period'
 
@@ -160,14 +165,15 @@ class PeriodCell(Cell[list[tuple[int, list[int]]]]):
         
         
 
-    def interpret(self, content: str) -> list[tuple[int, list[int]]]:
+    def interpret(self, content: str) -> list[tuple[int, int]]:
         contents = content.split("\n")
         result = []
         for content in contents:
             divided = content[:-1].split("(")
             division = int(divided[1].replace("분반", ""))
             periods = list(map(int, divided[0].split(",")))
-            result.append((division, periods))
+            for period in periods:
+                result.append((division, period))
         return result       
             
     
@@ -244,7 +250,6 @@ class Template:
 
     def convolute(self, board: np.ndarray) -> dict[tuple[int], list[list]]:
         h, w = board.shape
-        print(h, self.height,w, self.width, h < self.height, w < self.width)
         if h < self.height or w < self.width :
             return {}
 
@@ -284,134 +289,284 @@ template = Template([[NAME, CREDIT, NONE, NONE, NONE],
 
 template_room = Template([[SUBJECT, TEACHER, ROOM, TEACHER, ROOM, TEACHER, ROOM]])
 
-template_teacher = Template([[TEACHER, PERIOD, PERIOD, PERIOD, PERIOD, PERIOD]])
+template_period = Template([[DelegateCell(SUBJECT, EMPTY), TEACHER, PERIOD, PERIOD, PERIOD, PERIOD, PERIOD]])
 
-## ===== Upload Logic =====
+## ===== Parsing Logic =====
 def get_board(path):
     df = pd.read_excel(path)
     board = df.to_numpy()
 
     return board
 
-def organize(stampped: list[list], allow_none=False):
-    organized = {}
-    for line in stampped:
-        for type, content in line:
-            if type == 'empty':
-                continue
+class ParseError(Exception):
+    pass
 
-            if not allow_none and (not content or content == 'nan'):
-                continue
+@dataclass
+class StudentInfo:
+    grade: int
+    clazz: int
+    number: int
+    name: str
+    subjects: list[tuple[str, int]] # (subject, division)
 
-            temp = organized.get(type, [])
-            temp.append(content)
-            organized[type] = temp
+    def __repr__(self) -> str:
+        return f'[grade: {self.grade}, clazz: {self.clazz}, number: {self.number}, name: {self.name}, subjects: {self.subjects}]'
+    
+    def __str__(self) -> str:
+        return self.__repr__()
 
-    for k, v in organized.items():
-        if len(v) == 1:
-            organized[k] = v[0]
-
-    return organized
-
-
-def upload_students(board, session: Session):
+def parse_student(path: str) -> list[StudentInfo]:
+    board = get_board(path)
     data = template.convolute(board)
-    for table in data.values():
-        content = organize(table)
+    student_info_list = []
+    for _, contents in data.items():
+        organized = {}
+        contents = list(chain.from_iterable(contents))
+        for type, content in contents:
+            if not content:
+                continue
 
-        stdinfo = content['student']
-        grade, clazz, number, name = stdinfo[0], stdinfo[1], stdinfo[2], stdinfo[3]
-        classes = content['class']
+            if type in organized:
+                if not isinstance(organized[type], list):
+                    organized[type] = [organized[type]]
+                organized[type].append(content)
+                continue
 
-        student = session.query(User).filter(
-            User.grade == grade,
-            User.clazz == clazz, 
-            User.number == number, 
-            User.name == name).one_or_none()
-        if student == None:
-            raise ValueError('Cannot find student: ' + name)
+            organized[type] = content
+
+        student = organized['student']
+        classes = organized['class']
+        if not isinstance(classes, list):
+            classes = [classes]
+
+        student_info = StudentInfo(
+            student[0],
+            student[1],
+            student[2],
+            student[3],
+            classes
+        )
+        student_info_list.append(student_info)
+
+    return student_info_list
+
+@dataclass
+class LectureInfo:
+    subject: str
+    teacher: str
+    room: str
+
+    def __repr__(self) -> str:
+        return f'[subject={self.subject}, teacher={self.teacher}, room={self.room}]'
+    
+    def __str__(self) -> str:
+        return self.__repr__()
+
+def find(type: str, contents):
+    for cell_type, content in contents:
+        if cell_type == type:
+            return content
+
+    return None
+
+def parse_lecture(path: str) -> list[LectureInfo]:
+    board = get_board(path)
+    data = template_room.convolute(board)
+    lecture_info_list = []
+    for _, contents in data.items():
+        contents = list(chain.from_iterable(contents))
+        subject = str(find('subject', contents)).strip().replace("\n", "")
+        for idx, (type, content) in enumerate(contents):
+            if not content:
+                continue
+
+            if type == 'teacher':
+                room = contents[idx+1][1]
+                if not room:
+                    raise ParseError(f'[teacher={content}] room is none')
+                
+                lecture_info = LectureInfo(subject=subject, teacher=content, room=room)
+                if lecture_info not in lecture_info_list:
+                    lecture_info_list.append(lecture_info)
+
+    return lecture_info_list
+
+@dataclass
+class PeriodInfo:
+    subject: str
+    teacher: str
+    division: int
+    day: int
+    period: int
+
+    def __repr__(self) -> str:
+        return f'[subject={self.subject}, teacher={self.teacher}, division={self.division}, day={self.day}, period={self.period}]'
+    
+    def __str__(self) -> str:
+        return self.__repr__()
+
+PERIOD_START_COL = 2
+def parse_period(path: str) -> list[PeriodInfo]:
+    board = get_board(path)
+    data = template_period.convolute(board)
+    period_info_list = []
+    subject_cache = "None" # if subject is none, use latest subject
+    for _, contents in data.items():
+        contents = list(chain.from_iterable(contents))
+        subject, teacher, periods = "", "", []
+        for idx, type_content in enumerate(contents):
+            type = type_content[0]
+            content = type_content[1]
+            if type == 'subject':
+                if content == None:
+                    subject = subject_cache
+                    continue
+                
+                subject = content
+                subject_cache = subject
+            
+            if type == 'teacher':
+                if content == None:
+                    continue
+
+                teacher = content
+
+            if type == 'period':
+                if content == None:
+                    continue
+
+                day = idx - (PERIOD_START_COL - 1)
+                for division, p in content:
+                    periods.append((division, day, p))
+
+
+        for period in periods:
+            period_info = PeriodInfo(subject=subject, teacher=teacher, division=period[0], day=period[1], period=period[2]) 
+            period_info_list.append(period_info)
+
+    return period_info_list
+
+
+## ===== Upload Logic =====
+class UploadError(Exception):
+    pass
+
+def upload_students(students: list[StudentInfo], session: Session):
+    try:
+        cache = {} # cache of subject_name and division of student
+        for student in students:
+            db_student = session.query(User).filter(
+                User.grade == student.grade,
+                User.clazz == student.clazz, 
+                User.number == student.number, 
+                User.name == student.name).one_or_none()
+            if db_student == None:
+                raise UploadError(f'{student} cannot find student')
         
 
-        for lecture, division in classes:
-            clazz = session.query(Class).filter(Class.division == division).all()
-            clazz = next(filter(lambda x: x.lecture.subject.name == lecture, clazz))
-            enrollment = Enrollment(class_id=clazz.class_id, user_id=student.user_id)
-            session.add(enrollment)
-        
+            # refactor with join
+            for subject_name, division in student.subjects:
+                if (subject_name, division) not in cache:
+                    classes = (session.query(Class).join(Class.lecture).join(Lecture.subject)
+                            .filter(Class.division == division, Subject.name == subject_name)
+                            .options(joinedload(Class.lecture).joinedload(Lecture.subject))
+                            .all())
+                    
+                    if len(classes) > 1:
+                        raise UploadError(f'[subject={subject_name}, division={division}] multiple classes')
+
+                    if len(classes) == 0:
+                        raise UploadError(f'[subject={subject_name}, division={division}] cannot find class')
+                    
+                    cache[(subject_name, division)] = classes[0].class_id
+
+                class_id = cache[(subject_name, division)]
+                enrollment = Enrollment(class_id=class_id, user_id=db_student.user_id)
+                session.add(enrollment)
         session.commit()
+    except (UploadError, SQLAlchemyError):
+        session.rollback()
+        raise 
             
 
+def upload_lecture(lectures: list[LectureInfo], session: Session):
+    try:
+        for lecture in lectures:
         
-        
+            # create subject if not the subject exists
+            subject = session.query(Subject).filter(Subject.name == lecture.subject).one_or_none()
+            if subject == None:
+                subject = Subject(name=lecture.subject)
+                session.add(subject)
+                session.flush()
 
-def upload_lecture(board, session: Session):
-    data = template_room.convolute(board)
-    for table in data.values():
-        content = organize(table)
-        subject_name = content['subject']
-        
-        # create subject
-        subject = Subject(name=subject_name)
-        session.add(subject)
-        session.commit()
-        session.refresh(subject)
-
-        # create lecture
-        for teachers, room in zip(content['teacher'], content['room']):
-            teacher_name = teachers.split(",")[0].strip()
+            # create lecture
+            teacher_name = lecture.teacher.split(",")[0].strip()
             teacher = session.query(User).filter(User.name == teacher_name, User.role == 'tch').one_or_none()
             if teacher == None:
-                print('Cannot find teacher: ' + teacher_name)
+                raise UploadError(f'{lecture} cannot find teacher')
+
+            # confirm multiplicity
+            db_lecture = session.query(Lecture).filter(
+                Lecture.subject_id == subject.subject_id, 
+                Lecture.teacher_id == teacher.user_id,
+                Lecture.room == lecture.room
+            ).one_or_none()
+            if db_lecture != None:
                 continue
-            
-            lecture = Lecture(subject_id=subject.subject_id, teacher_id=teacher.user_id, room=room)
+
+            lecture = Lecture(subject_id=subject.subject_id, teacher_id=teacher.user_id, room=lecture.room)
             session.add(lecture)
-            session.commit()
+
+        session.commit()
+    except (UploadError, SQLAlchemyError):
+        session.rollback()
+        raise
             
 
-def upload_class(board, session: Session):
-    data = template_teacher.convolute(board)
-    for table in data.values():
-        content = organize(table, allow_none=True)
-        teacher_name = content['teacher'].split(',')[0].strip()
-        periods = content['period']
+def upload_periods(periods: list[PeriodInfo], session: Session):
+    try:
+        cache = {}
+        for period in periods:
+            teacher_name = period.teacher.split(',')[0].strip()
 
-        # Lecture 가져오기
-        teacher = session.query(User).filter(User.name == teacher_name, User.role == 'tch').one_or_none()
-        if teacher == None:
-            raise ValueError('Cannot find teacher: ' + teacher_name)
-        
-        lecture = session.query(Lecture).filter(Lecture.teacher_id == teacher.user_id).one_or_none()
-        if lecture == None:
-            raise ValueError('cannot find lecture taught by ' + teacher.name)
+            if (period.subject, teacher_name) not in cache:
+                # Lecture 가져오기
+                lecture = (session.query(Lecture).join(Lecture.subject).join(Lecture.teacher)
+                           .filter(Subject.name == period.subject, User.name == teacher_name)
+                           .options(joinedload(Lecture.subject), joinedload(Lecture.teacher))
+                           .all())
+            
+                if len(lecture) > 1:
+                    raise UploadError(f'{period} too many lectures')
+                elif len(lecture) == 0:
+                    raise UploadError(f'{period} cannot find lecture')
+                
+                cache[(period.subject, teacher_name)] = lecture[0].lecture_id
+            
+            lecture_id = cache[(period.subject, teacher_name)]
 
-
-        # Class & Period 생성하기
-        for day, period in enumerate(periods):
-            if period == None:
-                continue
-
-            for division, period in period:
-                for period in period:
-                    clazz = session.query(Class).where(Class.lecture_id == lecture.lecture_id,
-                                                       Class.division == division).one_or_none()
-                    if clazz == None:
-                        clazz = Class(lecture_id=lecture.lecture_id, division=division)
-                        session.add(clazz)
-                        session.commit()
-                        session.refresh(clazz)
+            clazz = session.query(Class).where(Class.lecture_id == lecture_id,
+                                                       Class.division == period.division).one_or_none()
+            if clazz == None:
+                clazz = Class(lecture_id=lecture_id, division=period.division)
+                session.add(clazz)
+                session.flush()
                     
-                    period = Period(class_id=clazz.class_id, period=period, day=day+1)
-                    session.add(period)
-                    session.commit()
-            
-
+            period = Period(class_id=clazz.class_id, period=period.period, day=period.day)
+            session.add(period)
+        session.commit()
+    except (UploadError, SQLAlchemyError):
+        session.rollback()
+        raise
 
 
 if __name__ == '__main__':
-    board = get_board('2025 강의실 2.xlsx')
+    board = get_board('2025 선생님.xlsx')
     # print(board)
     # print(template_teacher.stamp(board, 1, 1))
-    for idx, data in template_room.convolute(board).items():
-        content = organize(data, allow_none=False)
+    for idx, data in template_period.convolute(board).items():
+        content = data
         print(content)
+    
+    print("\n".join(map(str, parse_student('2025 2학기 2,3학년 시간표(시간표조회).xlsx'))))

@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated
 from database import conn, User
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from util import hash_with_base64
-import jwt  
+from jose import JWTError
+from auth_token import issue, LOGIN_ISSUER, reissue, RefreshTokenError
 import random, dotenv, os
 
 dotenv.load_dotenv()
@@ -34,12 +36,14 @@ def login(input: LoginInput, session = Depends(conn)):
 
     # verify password     
     hashed = user.password
-    if not hasher.verify(password, hashed): 
+    try: 
+        hasher.verify(hashed, password) 
+    except VerifyMismatchError:
         raise HTTPException(status_code=400, detail='invalid password')
 
     # issue JWT & refresh token
     id = user.user_id
-    access, refresh = jwt.issue(id, session, jwt.LOGIN_ISSUER) 
+    access, refresh = issue(id, session, LOGIN_ISSUER) 
 
     access = access.encode()
     refresh = refresh.token_id
@@ -58,27 +62,30 @@ def refresh(input: RefreshTokenInput, session = Depends(conn)):
     token = input.refresh_token
     access = input.access_token
 
-    access, refresh = jwt.reissue(session, token, access, reload_refresh=True)
+    try:
+        access, refresh = reissue(session, token, access, reload_refresh=True)
 
-    if access == None:
-        return TokenPair(access_token='', refresh_token=refresh)
-
-    return TokenPair(
-        access_token=access.encode(),
-        refresh_token=refresh
-    )
+        session.commit()
+        return TokenPair(
+            access_token=access,
+            refresh_token=refresh
+        )
+    except (JWTError, RefreshTokenError):
+        session.rollback()
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='invalid tokens')
 
 
 # ===== Sign Up =====
 class SignUpInput(BaseModel):
     email: EmailStr
+    name: Annotated[str, Field(min_length=1, max_length=10)]
     id: Annotated[str, Field(min_length=3, max_length=20)]
     password: Annotated[str, Field(min_length=3)]
-
+    role: str = 'stu'
 @router.post('/signup')
 def signup(input: SignUpInput, session = Depends(conn)):
     # db에서 중복되는 유저가 있는지 확인하기
-    email, id, password = input.email, input.id, input.password
+    email, id, password, name, role = input.email, input.id, input.password, input.name, input.role 
 
     if session.query(User).filter(User.id == id).all():
         raise HTTPException(status_code=400, detail='user already exists')
@@ -90,7 +97,7 @@ def signup(input: SignUpInput, session = Depends(conn)):
     hasehd = hasher.hash(password)
     user_id = _create_user_id(email, id)
     
-    user = User(user_id=user_id, id=id, password=hasehd, email=email)
+    user = User(user_id=user_id, id=id, password=hasehd, email=email, name=name, role=role)
     session.add(user)
     session.commit()        
 

@@ -1,7 +1,7 @@
 from fastapi import FastAPI, Header, HTTPException, status, Depends
 from sqlalchemy.orm.session import Session
 from auth.auth import router
-from auth.jwt import JWT
+from api.auth.auth_token import JWT
 from database import conn, User, Period, init_db
 import json
 

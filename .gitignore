@@ -10,6 +10,9 @@ wheels/
 api/.venv
 api/uv-x86_64-unknown-linux-gnu.tar.gz
 
-# dot env files
+# Environment files
 .env
 api/.env
+
+# Resources
+api/resources

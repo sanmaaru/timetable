@@ -7,9 +7,10 @@ import os, uuid
 
 load_dotenv('../.env')
 
-url = os.getenv('CONNECTION')
-assert url != None
-engine = create_engine(url, pool_pre_ping=True)
+if __name__ == '__main__':
+    url = os.getenv('CONNECTION')
+    assert url != None
+    engine = create_engine(url, pool_pre_ping=True)
 
 def gen_uuid() -> str:
     return str(uuid.uuid4())
@@ -28,7 +29,7 @@ class Lecture(Base):
     room = Column(String(255), nullable=True)
 
     subject = relationship('Subject', back_populates='lectures')
-    teacher = relationship('User', back_populates='lectures')
+    teacher = relationship('User', back_populates='taught_lectures')
     classes = relationship(
         'Class', back_populates='lecture', cascade='all, delete-orphan'
     )
@@ -55,7 +56,7 @@ class Subject(Base):
     __tablename__ = 'subjects'
 
     subject_id = Column(String(36), primary_key=True, default=gen_uuid)
-    name = Column(String(255), nullable=False)
+    name = Column(String(255), nullable=False, unique=True)
 
     lectures = relationship(
         'Lecture', back_populates='subject', cascade='all, delete-orphan'
@@ -94,9 +95,9 @@ class User(Base):
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
     role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
-    clazz = Column(SmallInteger, nullable=False)
-    number = Column(SmallInteger, nullable=False)
-    grade = Column(SmallInteger, nullable=False)
+    clazz = Column(SmallInteger, nullable=True)
+    number = Column(SmallInteger, nullable=True)
+    grade = Column(SmallInteger, nullable=True)
 
     taught_lectures = relationship('Lecture', back_populates='teacher')
     enrollments = relationship('Enrollment', back_populates='user', cascade='all, delete-orphan')
@@ -119,11 +120,11 @@ class RefreshToken(Base):
 def init_db():
     Base.metadata.create_all(engine)
 
-LocalSession = sessionmaker(bind=engine)
+LocalSession = None # sessionmaker(bind=engine)
 
 def conn():
     session = LocalSession()
     try:
         yield session
-    except:
+    finally:
         session.close()

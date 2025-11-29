@@ -72,7 +72,7 @@ class JWT:
             algorithm = algorithm if algorithm else ALGORITHM
             payload = jwt.decode(token, key, [algorithm])
         except JWTError:
-            return None           
+            raise  
 
         issued_at = datetime.fromtimestamp(payload['iat'], tz=UTC)
         expire_at = datetime.fromtimestamp(payload['exp'], tz=UTC)        
@@ -105,7 +105,6 @@ class RefreshToken:
             token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at, 
             expired_at=self.expired_at, jwt_signature=self.jwt_signature) 
         session.add(refresh_token)
-        session.commit()
         
 
     def drop(self, session: Session):
@@ -114,7 +113,6 @@ class RefreshToken:
             return
         
         session.delete(refresh_db)
-        session.commit()
     
     def verify(self, signature: str):
         # check expirate date
@@ -195,18 +193,21 @@ def issue(user_id: str, session: Session, issuer: str):
     
     return jwt, refresh
 
-def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=False):
+class RefreshTokenError(Exception):
+    pass
+
+def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=False) -> tuple[str, str]:
     refresh_token = RefreshToken.get_token(refresh, session)
     if refresh_token == None:
-        return None, refresh
+        raise RefreshTokenError('refresh token must not be none')
     
     signature = access.split('.')[-1]
     if not refresh_token.verify(signature):
-        return None, refresh
+        raise JWTError('unauthorizable jwt')
 
     jwt = JWT.decode(access)
     new_access_token = JWT.issue(jwt.user_id, jwt.issuer)
     if reload_refresh:
         refresh_token = refresh_token.reissue(session, jwt)
 
-    return new_access_token, refresh_token.token_id
+    return new_access_token.encode(), refresh_token.token_id

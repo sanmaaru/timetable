@@ -1,4 +1,6 @@
-import hashlib, base64
+import hashlib, base64, math
+import pandas as pd
+from typing import Any
 
 def hash_with_base64(data, length: int):
     if length % 4 != 0:
@@ -14,8 +16,30 @@ def hash_with_base64(data, length: int):
 
     return hashed_b64 
 
-def is_empty(value) -> bool:
-    if not value:
+def is_empty(value: Any) -> bool:
+    # None
+    if value is None:
         return True
+
+    # pandas/NumPy NaN
+    try:
+        if isinstance(value, float) and math.isnan(value):
+            return True
+    except TypeError:
+        pass
+
+    # pandas.isna (np.nan, pd.NA 등)
+    try:
+        if pd.isna(value):
+            return True
+    except TypeError:
+        pass
+
+    # 문자열 처리
+    if isinstance(value, str):
+        if value.strip() == "":
+            return True
+        if value.strip().lower() == "nan":
+            return True
 
     return False
