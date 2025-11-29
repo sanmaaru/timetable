@@ -32,6 +32,7 @@ class StudentCell(Cell[tuple[int, int, int, str]]):
 
     def match(self, content) -> bool:
         it, _, name = content.partition(" ")
+        it = it.strip()
         if len(it) != 5 or not it.isdigit():
             return False
         
@@ -54,6 +55,7 @@ class CreditCell(Cell[int]):
 
     def match(self, content: str) -> bool:
         it, _, suffix = content.partition(" ")
+        it = it.strip()
         if suffix != '학점' or not it.isdigit():
             return False
 
@@ -78,6 +80,7 @@ class ClassCell(Cell[tuple[str, int]]):
 
         div = content.split(" ")[-2]
         div, suffix = div[:-1], div[-1]
+        div = div.strip()
         if suffix != '반' or not div.isdigit():
             return False
         
@@ -150,15 +153,15 @@ class PeriodCell(Cell[list[tuple[int, int]]]):
     def match(self, content: str) -> bool: # TODO: 정규식 사용
         contents = content.split("\n")
         for content in contents:
-            divided = content[:-1].split("(")
+            divided = content.replace(")", "").split("(")
             if len(divided) < 2:
                 return False
 
-            if not divided[1].replace("분반", "").isdigit():
+            if not divided[1].replace("분반", "").strip().isdigit():
                 return False
             
             for period in divided[0].split(','):
-                if not period.isdigit():
+                if not period.strip().isdigit():
                     return False
 
         return True
@@ -169,7 +172,7 @@ class PeriodCell(Cell[list[tuple[int, int]]]):
         contents = content.split("\n")
         result = []
         for content in contents:
-            divided = content[:-1].split("(")
+            divided = content.replace(")", "").split("(")
             division = int(divided[1].replace("분반", ""))
             periods = list(map(int, divided[0].split(",")))
             for period in periods:
@@ -329,7 +332,10 @@ def parse_student(path: str) -> list[StudentInfo]:
             if type in organized:
                 if not isinstance(organized[type], list):
                     organized[type] = [organized[type]]
-                organized[type].append(content)
+
+                if content not in organized[type]:
+                    organized[type].append(content)
+
                 continue
 
             organized[type] = content
@@ -561,12 +567,5 @@ def upload_periods(periods: list[PeriodInfo], session: Session):
         raise
 
 
-if __name__ == '__main__':
-    board = get_board('2025 선생님.xlsx')
-    # print(board)
-    # print(template_teacher.stamp(board, 1, 1))
-    for idx, data in template_period.convolute(board).items():
-        content = data
-        print(content)
-    
-    print("\n".join(map(str, parse_student('2025 2학기 2,3학년 시간표(시간표조회).xlsx'))))
+if __name__ == '__main__':    
+    print("\n".join(map(str, parse_period('resources/2025 선생님.xlsx'))))

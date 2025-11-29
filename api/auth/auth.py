@@ -28,7 +28,7 @@ class TokenPair(BaseModel):
 @router.post('/login', response_model=TokenPair)
 def login(input: LoginInput, session = Depends(conn)):
     id, password = input.id, input.password
-    user = session.query(User).filter(User.id == id).first()
+    user = session.query(User).filter(User.id == id).one_or_none()
 
     # verify id
     if not user:

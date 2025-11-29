@@ -7,10 +7,9 @@ import os, uuid
 
 load_dotenv('../.env')
 
-if __name__ == '__main__':
-    url = os.getenv('CONNECTION')
-    assert url != None
-    engine = create_engine(url, pool_pre_ping=True)
+url = os.getenv('CONNECTION')
+assert url != None
+engine = create_engine(url, pool_pre_ping=True)
 
 def gen_uuid() -> str:
     return str(uuid.uuid4())
@@ -41,7 +40,7 @@ class Class(Base):
 
     class_id = Column(String(36), primary_key=True, default=gen_uuid)
     division = Column(SmallInteger, nullable=False)
-    lecture_id = Column(String(36), ForeignKey('lectures.lecture_id'))
+    lecture_id = Column(String(36), ForeignKey('lectures.lecture_id'), nullable=False)
 
     lecture = relationship('Lecture', back_populates='classes')
     
@@ -90,10 +89,10 @@ class User(Base):
     __tablename__ = 'users'
 
     user_id = Column(String(36), primary_key=True)
-    id = Column(String(20), nullable=False)
+    id = Column(String(20), nullable=False, unique=True)
     name = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False, unique=True)
     role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
     clazz = Column(SmallInteger, nullable=True)
     number = Column(SmallInteger, nullable=True)
@@ -120,7 +119,7 @@ class RefreshToken(Base):
 def init_db():
     Base.metadata.create_all(engine)
 
-LocalSession = None # sessionmaker(bind=engine)
+LocalSession = sessionmaker(bind=engine)
 
 def conn():
     session = LocalSession()

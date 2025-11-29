@@ -6,15 +6,15 @@ services:
     container_name: timetable-db
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: '${ROOT_PASSWORD}'
-      MYSQL_DATABASE: '${DATABASE}'             
-      MYSQL_USER:  '${USER}'
-      MYSQL_PASSWORD: '${PASSWORD}'
+      MYSQL_ROOT_PASSWORD: '${SQL_ROOT_PASSWORD}'
+      MYSQL_DATABASE: '${SQL_DATABASE}'             
+      MYSQL_USER:  '${SQL_USER}'
+      MYSQL_PASSWORD: '${SQL_PASSWORD}'
     ports:
-      - "3316:3316"   
-    volumes:
-      - db_data:/var/lib/mysql       
-      - ./initdb:/docker-entrypoint-initdb.d     
+      - "3316:3306"   
+    # volumes:
+      # - db_data:/var/lib/mysql       
+      # - ./initdb:/docker-entrypoint-initdb.d     
     command:
       - "--character-set-server=utf8mb4"
       - "--collation-server=utf8mb4_unicode_ci"
@@ -28,6 +28,7 @@ services:
     build: ./api
     container_name: timetable-api
     restart: unless-stopped
+    command: tail -f /dev/null
     environment:
       CONNECTION: '${CONNECTION}'
     ports:
@@ -36,6 +37,6 @@ services:
   # web:
     # build: ./web
 
-volumes:
-  db_data:
+# volumes:
+  # db_data:
 
