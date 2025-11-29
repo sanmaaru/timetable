@@ -2,7 +2,7 @@ from fastapi import FastAPI, Header, HTTPException, status, Depends
 from sqlalchemy.orm.session import Session
 from auth.auth import router
 from auth.jwt import JWT
-from database import conn, User, init_db
+from database import conn, User, Period, init_db
 import json
 
 
@@ -45,10 +45,28 @@ def timetable(
 
     dump = []
     for clazz in user.classes:
-        dump.append(clazz.dump())
+        subject = clazz.lecture.subject.name
+        teacher = clazz.lecture.teacher.name
+        room = clazz.lecture.room
+        periods = []
+        for period in clazz.periods:
+            periods.append({
+                'day': Period.DAY[period.day],
+                'period': period.period
+            })
+
+        obj = {
+            'subject': subject,
+            'division': clazz.division,
+            'teacher': teacher,
+            'room': room,
+            'periods': periods 
+        }
+        dump.append(obj)
+
     obj = {
         'id': user.id,
         'name': user.name,
         'timetable': dump
     }
-    return json.dumps(obj, ensure_ascii=False, intent=2)
+    return json.dumps(obj, ensure_ascii=False)

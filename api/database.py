@@ -5,7 +5,7 @@ from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from dotenv import load_dotenv
 import os, uuid
 
-# load_dotenv('../.env')
+load_dotenv('../.env')
 
 url = os.getenv('CONNECTION')
 assert url != None
@@ -48,25 +48,6 @@ class Class(Base):
     enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
     students = relationship('User', secondary='enrollments', back_populates='classes')
 
-    def dump(self) -> dict:
-        subject = self.lecture.subject.name
-        teacher = self.lecture.teacher.name
-        room = self.lecture.room
-        periods = []
-        for period in self.periods:
-            periods.append({
-                'day': Period.DAY[period.day],
-                'period': period.period
-            })
-
-        obj = {
-            'subject': subject,
-            'division': self.division,
-            'teacher': teacher,
-            'room': room,
-            'periods': periods 
-        }
-        return obj
 
 
 class Subject(Base):
@@ -113,6 +94,9 @@ class User(Base):
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
     role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
+    clazz = Column(SmallInteger, nullable=False)
+    number = Column(SmallInteger, nullable=False)
+    grade = Column(SmallInteger, nullable=False)
 
     taught_lectures = relationship('Lecture', back_populates='teacher')
     enrollments = relationship('Enrollment', back_populates='user', cascade='all, delete-orphan')

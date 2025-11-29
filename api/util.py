@@ -13,3 +13,9 @@ def hash_with_base64(data, length: int):
     hashed_b64 = base64.b64decode(hashed_byte).decode('ascii')
 
     return hashed_b64 
+
+def is_empty(value) -> bool:
+    if not value:
+        return True
+
+    return False
