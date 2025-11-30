@@ -1,5 +1,6 @@
 import hashlib, base64, math
 import pandas as pd
+from datetime import datetime
 from typing import Any
 
 def hash_with_base64(data, length: int):
@@ -43,3 +44,9 @@ def is_empty(value: Any) -> bool:
             return True
 
     return False
+
+def get_generation(grade: int):
+    return (datetime.now().year - 1983) - (grade-1)
+
+def get_grade(generation: int):
+    return datetime.now().year - 1983 - generation + 1

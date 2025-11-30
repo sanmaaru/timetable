@@ -1,8 +1,10 @@
 from sqlalchemy import (
-    Column, Float, ForeignKey, SmallInteger, String, create_engine
+    Column, Float, ForeignKey, SmallInteger, String, Integer, create_engine
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from dotenv import load_dotenv
+from datetime import datetime
+from util import get_grade
 import os, uuid
 
 load_dotenv('../.env')
@@ -24,11 +26,11 @@ class Lecture(Base):
 
     lecture_id = Column(String(36), primary_key=True, default=gen_uuid)
     subject_id = Column(String(36), ForeignKey('subjects.subject_id'), nullable=False)
-    teacher_id = Column(String(36), ForeignKey('users.user_id'))
+    teacher_info_id = Column(String(36), ForeignKey('users_info.user_info_id'))
     room = Column(String(255), nullable=True)
 
     subject = relationship('Subject', back_populates='lectures')
-    teacher = relationship('User', back_populates='taught_lectures')
+    teacher_info = relationship('UserInfo', back_populates='taught_lectures')
     classes = relationship(
         'Class', back_populates='lecture', cascade='all, delete-orphan'
     )
@@ -46,7 +48,7 @@ class Class(Base):
     
     periods = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
     enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
-    students = relationship('User', secondary='enrollments', back_populates='classes')
+    students_info = relationship('UserInfo', secondary='enrollments', back_populates='classes')
 
 
 
@@ -66,10 +68,10 @@ class Enrollment(Base):
     __tablename__ = 'enrollments'
 
     class_id = Column(String(36), ForeignKey('classes.class_id'), primary_key=True)
-    user_id = Column(String(36), ForeignKey('users.user_id'), primary_key=True, nullable=False)
+    user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), primary_key=True, nullable=False)
 
     clazz = relationship('Class', back_populates='enrollments')
-    user = relationship('User', back_populates='enrollments')
+    user_info = relationship('UserInfo', back_populates='enrollments')
 
 class Period(Base):
 
@@ -90,20 +92,36 @@ class User(Base):
 
     user_id = Column(String(36), primary_key=True)
     id = Column(String(20), nullable=False, unique=True)
-    name = Column(String(255), nullable=False)
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
-    role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
-    clazz = Column(SmallInteger, nullable=True)
-    number = Column(SmallInteger, nullable=True)
-    grade = Column(SmallInteger, nullable=True)
+    user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), nullable=False, unique=True)
 
-    taught_lectures = relationship('Lecture', back_populates='teacher')
-    enrollments = relationship('Enrollment', back_populates='user', cascade='all, delete-orphan')
-    classes = relationship('Class', secondary='enrollments', back_populates='students')
+    user_info = relationship('UserInfo', uselist=False, back_populates='user')
 
     def __repr__(self):
         return 'user { user_id: {' + str(self.user_id) + '}, id: {' + str(self.id) + '}, password: {' + str(self.password) + '} }'
+    
+class UserInfo(Base):
+
+    __tablename__ = 'users_info'
+
+    user_info_id = Column(String(36), primary_key=True)
+    name = Column(String(255), nullable=False)
+    role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
+    clazz = Column(SmallInteger, nullable=True)
+    number = Column(SmallInteger, nullable=True)
+    generation = Column(SmallInteger, nullable=True)
+    credit = Column(Integer, nullable=True)
+    
+    taught_lectures = relationship('Lecture', back_populates='teacher_info')
+    enrollments = relationship('Enrollment', back_populates='user_info', cascade='all, delete-orphan')
+    classes = relationship('Class', secondary='enrollments', back_populates='students_info')
+
+    user = relationship('User', uselist=False, back_populates='user_info')
+
+    @property
+    def grade(self):
+        return get_grade(self.generation)
     
 class RefreshToken(Base):
 
@@ -114,6 +132,15 @@ class RefreshToken(Base):
     issued_at = Column(Float(), nullable=False)
     expired_at = Column(Float(), nullable=False)
     jwt_signature = Column(String(255), nullable=False)
+
+class IdentifyToken(Base):
+
+    __tablename__ = 'identify_tokens'
+
+    token_id = Column(String(8), primary_key=True)
+    user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), nullable=False, unique=True)
+
+    user_info = relationship('UserInfo', uselist=False)
 
 
 def init_db():

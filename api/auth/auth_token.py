@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from sqlalchemy.orm.session import Session
 from util import hash_with_base64
 import database as db
-import os
+import os, secrets, string
 
 
 load_dotenv()
@@ -102,8 +102,13 @@ class RefreshToken:
 
     def upload(self, session: Session):
         refresh_token = RefreshDB(
-            token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at, 
-            expired_at=self.expired_at, jwt_signature=self.jwt_signature) 
+            token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at.timestamp(), 
+            expired_at=self.expired_at.timestamp(), jwt_signature=self.jwt_signature) 
+        
+        # check multiplicity
+        if session.query(RefreshDB).filter(RefreshDB.token_id == self.token_id).one_or_none() != None:
+            return
+
         session.add(refresh_token)
         
 
@@ -183,10 +188,60 @@ class RefreshToken:
 
         id = f"{sgn_hashed}-{iss_hashed}==-{dat_hashed}"
         return id        
+
+class IdentifyToken:
+
+    def __init__(self, token_id: str, user_info_id: str) -> None:
+        self.user_info_id = user_info_id
+        self.token_id = token_id
+
+    def drop(self, session: Session):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
+        if token == None:
+            return
+        
+        session.delete(token)
+
+    def upload(self, session: Session):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
+        if token != None:
+            return
+        
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == self.user_info_id).one_or_none()
+        if token != None:
+            return
+        
+        token = db.IdentifyToken(token_id=self.token_id, user_info_id=self.user_info_id)
+        session.add(token)
     
 
+    @classmethod
+    def get_token(cls, session: Session, token_id):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        if token == None:
+            return None
+        
+        return IdentifyToken(token_id, token.user_info_id)
+    
+    @classmethod
+    def issue(cls, session: Session, user_info_id: str):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == user_info_id).one_or_none()
+        if token != None:
+            return IdentifyToken(token.token_id, token.user_info_id)
 
-def issue(user_id: str, session: Session, issuer: str):
+        token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        # check multiplicity
+        while token != None:
+            token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
+            token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        
+        token = IdentifyToken(token_id, user_info_id)
+        token.upload(session)
+        return token
+
+
+def issue(user_id: str, session: Session, issuer: str) -> tuple[JWT, RefreshToken]:
     jwt = JWT.issue(user_id, issuer, )
 
     refresh = RefreshToken.issue(session, jwt, issuer)
