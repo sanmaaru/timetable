@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Header, HTTPException, status, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm.session import Session
 from auth.auth import router as auth_router
 from auth.auth_token import JWT
@@ -9,6 +10,18 @@ import json
 app = FastAPI()
 app.include_router(auth_router)
 init_db()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://10.122.2.122:8000"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get('/timetable')
 def timetable(

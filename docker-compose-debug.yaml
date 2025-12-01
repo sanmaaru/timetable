@@ -34,8 +34,12 @@ services:
     ports:
       - "5000:5000"
 
-  # web:
-    # build: ./web
+  web:
+    build: ./web
+    container_name: timetable-web
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
 
 # volumes:
   # db_data:

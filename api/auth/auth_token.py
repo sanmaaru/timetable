@@ -263,6 +263,6 @@ def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=Fa
     jwt = JWT.decode(access)
     new_access_token = JWT.issue(jwt.user_id, jwt.issuer)
     if reload_refresh:
-        refresh_token = refresh_token.reissue(session, jwt)
+        refresh_token = refresh_token.reissue(session, new_access_token)
 
     return new_access_token.encode(), refresh_token.token_id

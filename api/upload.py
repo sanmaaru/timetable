@@ -359,9 +359,10 @@ def parse_enrollments(path: str) -> tuple[list[EnrollmentInfo], list[PeriodInfo]
                 if not content:
                     continue
                 
-                period_info = PeriodInfo(subject=content[0], teacher="Unknown", division=content[1], day=i, period=j)
-                if period_info not in period_info_list:
-                    period_info_list.append(period_info)
+                if type == 'class':
+                    period_info = PeriodInfo(subject=content[0], teacher="Unknown", division=content[1], day=i+1, period=j)
+                    if period_info not in period_info_list:
+                        period_info_list.append(period_info)
 
                 if type in organized:
                     if not isinstance(organized[type], list):

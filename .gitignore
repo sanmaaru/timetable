@@ -16,3 +16,7 @@ api/.env
 
 # Resources
 api/resources
+
+# db
+db_data
+initdb
