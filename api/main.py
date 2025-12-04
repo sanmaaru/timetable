@@ -1,9 +1,11 @@
-from fastapi import FastAPI, Header, HTTPException, status, Depends
+from fastapi import FastAPI, Header, HTTPException, status, Depends, Query
 from fastapi.middleware.cors import CORSMiddleware
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
-from auth.auth import router as auth_router
-from auth.auth_token import JWT
-from database import conn, User, Period, init_db
+from auth.router import router as auth_router
+from auth.auth import JWT, role
+from database import conn, User, Period, init_db, UserInfo, IdentifyToken
+from typing import Optional
 import json
 
 
@@ -28,27 +30,8 @@ def timetable(
         auth: str = Header(default=None, alias="Authorization"), 
         session: Session = Depends(conn)
     ):
-    if auth == None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Authorization header missing"
-        )
 
-    scheme, _, token = auth.partition(" ")
-    if scheme.lower() != 'bearer' or scheme == None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Infelicitous token type"
-        )
-    
-    jwt = JWT.decode(token)
-    if jwt == None or not jwt.verify():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization token"
-        )
-    
-    user_id = jwt.user_id
+    user_id = authorize(auth)
     user = session.query(User).filter(User.user_id == user_id).one_or_none()
     if user == None:
         raise HTTPException(
@@ -83,3 +66,69 @@ def timetable(
         'timetable': dump
     }
     return json.dumps(obj, ensure_ascii=False)
+
+@app.get('identifiers')
+def identifiers(
+        name: Optional[str] = Query(None, description='name who wants to query identifying token'),
+        auth: str = Header(default=None, alias="Authorization"), 
+        session: Session = Depends(conn)
+    ):
+    user_id = authorize(auth)
+    user = session.query(User).filter(User.user_id == user_id).one_or_none()
+    if user == None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Unknown user'
+        )
+    
+    if user.user_info.role & role.MANAGER == 0:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='No permission'
+        )
+    
+    if name == None:
+        tokens = session.query(IdentifyToken).all()
+    else:
+        tokens = (session.query(IdentifyToken)
+                        .join(IdentifyToken.user_info)
+                        .filter(UserInfo.name == name)
+                        .options(joinedload(IdentifyToken.user_info))
+                        .all())
+    
+    dump = []
+    for token in tokens:
+        info = token.user_info
+        dump.append({
+            'name': info.name,
+            'token': token.token_id
+        })
+
+    obj = {
+        'identify_tokens': dump
+    }
+    return json.dumps(obj, ensure_ascii=False)
+    
+    
+def authorize(auth: str):
+    if auth == None:
+        raise HTTPException(
+            status_code = status.HTTP_401_UNAUTHORIZED,
+            detail = 'Authorization header missing'
+        )
+    
+    scheme, _, token = auth.partition(" ")
+    if scheme.lower() != 'bearer' or scheme == None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Infelicitous token type"
+        )
+    
+    jwt = JWT.decode(token)
+    if jwt == None or not jwt.verify():
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid authorization token"
+        )
+    
+    return jwt.user_id

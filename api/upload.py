@@ -5,7 +5,7 @@ from database import UserInfo, Class, Subject, Lecture, Period, Enrollment
 from dataclasses import dataclass
 from util import is_empty, get_generation
 from itertools import chain
-from auth.auth import create_user_info
+from auth.auth import create_user_info, role
 import numpy as np
 import pandas as pd
 import re, copy
@@ -493,7 +493,7 @@ class UploadError(Exception):
 def upload_students(students: list[EnrollmentInfo], session: Session):
     try:
         for student in students:
-            create_user_info(session, student.name, 'stu', student.generation, student.clazz, student.number)
+            create_user_info(session, student.name, role.STUDENT, student.generation, student.clazz, student.number)
         session.commit()
     except:
         session.rollback()
@@ -506,7 +506,7 @@ def upload_teachers(teachers: list[LectureInfo], session: Session):
             for teacher_name in teacher_names:
                 teacher = session.query(UserInfo).filter(UserInfo.name == teacher_name, UserInfo.role == 'tch').one_or_none()
                 if teacher == None:
-                    create_user_info(session, teacher_name, 'tch')
+                    create_user_info(session, teacher_name, role.TEACHER)
         session.commit()
     except:
         session.rollback()

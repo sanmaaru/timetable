@@ -1,4 +1,4 @@
-import hashlib, base64, math
+import hashlib, base64, math, random
 import pandas as pd
 from datetime import datetime
 from typing import Any
@@ -16,6 +16,14 @@ def hash_with_base64(data, length: int):
     hashed_b64 = base64.b64encode(hashed_byte).decode('ascii')
 
     return hashed_b64 
+
+def create_id(s1, s2, s3: object = random.randrange(0, 999)):
+    hashed1 = hash_with_base64(s1, 16)
+    hashed2 = hash_with_base64(s2, 12)
+    hashed3 = hash_with_base64(s3, 4)
+
+    id = f"{hashed1}-{hashed2}.{hashed3}=="
+    return id
 
 def is_empty(value: Any) -> bool:
     # None

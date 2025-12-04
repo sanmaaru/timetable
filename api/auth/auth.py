@@ -1,121 +1,30 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
-from pydantic import BaseModel, EmailStr, Field
-from typing import Annotated
-from database import conn, User, UserInfo
-from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from database import UserInfo, User
 from util import hash_with_base64
 from jose import JWTError
 from sqlalchemy.orm import Session
-from .auth_token import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
-import random, dotenv, os
-
-dotenv.load_dotenv()
-
-
-router = APIRouter(prefix='/auth', tags=['auth'])
-hasher = PasswordHasher()
-
-# ===== Login =====
-class LoginInput(BaseModel):
-    id: str
-    password: str
-
-class TokenPair(BaseModel):
-    access_token: str
-    refresh_token: str
-    token_type: str = 'bearer'
-
-@router.post('/login', response_model=TokenPair)
-def login(input: LoginInput, session = Depends(conn)):
-    id, password = input.id, input.password
-    user = session.query(User).filter(User.id == id).one_or_none()
-
-    # verify id
-    if not user:
-        raise HTTPException(status_code=400, detail='unknown id')
-
-    # verify password     
-    hashed = user.password
-    try: 
-        hasher.verify(hashed, password) 
-    except VerifyMismatchError:
-        raise HTTPException(status_code=400, detail='invalid password')
-
-    # issue JWT & refresh token
-    id = user.user_id
-    access, refresh = issue(id, session, LOGIN_ISSUER) 
-
-    access = access.encode()
-    refresh = refresh.token_id
-    
-    session.commit()
-    return TokenPair(access_token=access, refresh_token=refresh)
+from util import create_id
+from jose import jwt, JWTError
+from dotenv import load_dotenv
+from datetime import datetime, timezone, timedelta
+from sqlalchemy.orm.session import Session
+from util import hash_with_base64
+import database as db
+import os, secrets, string
 
 
-# ===== Refresh JWT =====
-class RefreshTokenInput(BaseModel):
-    
-    refresh_token: str
-    access_token: str
+load_dotenv()
 
-@router.post('/refresh', response_model=TokenPair)
-def refresh(input: RefreshTokenInput, session = Depends(conn)):
-    token = input.refresh_token
-    access = input.access_token
+class role:
 
-    try:
-        access, refresh = reissue(session, token, access, reload_refresh=True)
-
-        session.commit()
-        return TokenPair(
-            access_token=access,
-            refresh_token=refresh
-        )
-    except (JWTError, RefreshTokenError):
-        session.rollback()
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='invalid tokens')
+    STUDENT=1
+    TEACHER=2
+    MANAGER=4
+    ADMINISTRATOR=8    
 
 
-# ===== Sign Up =====
-class SignUpInput(BaseModel):
-    email: EmailStr
-    id: Annotated[str, Field(min_length=3, max_length=20)]
-    password: Annotated[str, Field(min_length=3)]
-    identifier: Annotated[str, Field(min_length=8, max_length=8)]
-
-@router.post('/signup')
-def signup(input: SignUpInput, session = Depends(conn)):
-    # indentifier token을 이용해서 신원확인
-    token = IdentifyToken.get_token(session, input.identifier)
-    if token == None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unknown identifier")
-
-    # db에서 중복되는 유저가 있는지 확인하기
-    email, id, password = input.email, input.id, input.password
-
-    if session.query(User).filter(User.id == id).all():
-        raise HTTPException(status_code=400, detail='user already exists')
-
-    if session.query(User).filter(User.email == email).all(): 
-        raise HTTPException(status_code=400, detail='user already exists')
-
-    # user 등록 로직
-    hasehd = hasher.hash(password)
-    user_id = _create_id(email, id)
-    user_info_id = token.user_info_id
-    
-    user = User(user_id=user_id, id=id, password=hasehd, email=email, user_info_id=user_info_id)
-    session.add(user)
-
-    # 회원가입 완료시 identifer 삭제
-    token.drop(session)
-    session.commit()        
-
-
-def create_user_info(session: Session, name: str, role: str, 
+def create_user_info(session: Session, name: str, role: int, 
                        generation: int | None = None, clazz: int | None = None, number: int | None = None, credit: int | None = None):
-    user_info_id = _create_id(name, role)
+    user_info_id = create_id(name, role)
     
     user_info = session.query(UserInfo).filter(UserInfo.name == name,
                                                UserInfo.role == role,
@@ -127,15 +36,276 @@ def create_user_info(session: Session, name: str, role: str,
         raise ValueError('multiple user exists')
                                                
 
-    user_info = UserInfo(user_info_id=user_info_id, name=name, role=role, generation=generation, clazz=clazz, number=number, credit=credit)
+    user_info = UserInfo(user_info_id=user_info_id, name=name, 
+                         role=role, generation=generation, clazz=clazz, number=number, credit=credit)
     session.add(user_info)
     id_token = IdentifyToken.issue(session, user_info_id)
 
 
-def _create_id(s1, s2):
-    hashed_email = hash_with_base64(s1, 16)
-    hashed_id = hash_with_base64(s2, 12)
-    hashed_random = hash_with_base64(random.randint(0, 999), 4)
 
-    id = f"{hashed_email}-{hashed_id}.{hashed_random}=="
-    return id
+# Tokens for authorizations
+SECRET_KEY = os.getenv("JWT_SECRET", "developer's tiny little key")
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+JWT_EXPIRE_MINUTES = 10
+
+UTC = timezone.utc
+
+LOGIN_ISSUER = os.getenv('LOGIN_ISSUER', 'debugger_login')
+REFRESH_ISSUER = os.getenv('REFRESH_ISSUER', 'debugger_refresh')
+
+class JWT:
+
+    def __init__(self, user_id: str, issuer: str, expire_at: datetime, 
+                        issued_at: datetime, key: str, algorithm: str) -> None:
+        self.key = key 
+        self.algorithm = algorithm
+        self.user_id = user_id
+        self.issuer = issuer      
+        self.issued_at = issued_at
+        self.expired_at = expire_at
+
+    def encode(self):
+        payload = {
+            'sub': self.user_id,
+            'iss': self.issuer,
+            'iat': self.issued_at.timestamp(),
+            'exp': self.expired_at.timestamp()
+        }
+        encoded = jwt.encode(payload, self.key, self.algorithm)
+        return encoded
+    
+    def verify(self) -> bool:
+        # check expire date
+        now = datetime.now(tz=UTC).timestamp()
+        if self.expired_at.timestamp() < now:
+            return False
+
+        return True   
+
+    @property
+    def signature(self):
+        return self.encode().split('.')[-1]
+
+    
+    @classmethod
+    def issue(cls, user_id: str, issuer: str, expire_after: timedelta | None=None, 
+                key: str | None=None, algorithm: str | None=None):
+        issued_at = datetime.now(tz=UTC)
+        if expire_after is None:
+            expire_after = timedelta(minutes=JWT_EXPIRE_MINUTES)
+        expire_at = issued_at + expire_after
+        key = key if key is not None else SECRET_KEY
+        algorithm = algorithm if algorithm is not None else ALGORITHM
+        return cls(user_id, issuer, expire_at, issued_at, key, algorithm)
+
+
+    @classmethod
+    def decode(cls, token: str, key: str | None=None, algorithm: str | None=None):
+        try:
+            key = key if key else SECRET_KEY
+            algorithm = algorithm if algorithm else ALGORITHM
+            payload = jwt.decode(token, key, [algorithm])
+        except JWTError:
+            raise  
+
+        issued_at = datetime.fromtimestamp(payload['iat'], tz=UTC)
+        expire_at = datetime.fromtimestamp(payload['exp'], tz=UTC)        
+
+        return cls(
+            user_id=payload['sub'],
+            issuer=payload['iss'],
+            issued_at=issued_at,
+            expire_at=expire_at,            
+            key=key,
+            algorithm=algorithm   
+        )
+
+
+REFRESH_TOKEN_EXPIRE_DAY = 30
+RefreshDB = db.RefreshToken
+
+class RefreshToken:
+
+    def __init__(self, issuer: str, issued_at: datetime, expired_at: datetime, 
+                    token_id: str, jwt_signature: str):
+        self.issuer = issuer
+        self.issued_at = issued_at
+        self.expired_at = expired_at
+        self.token_id = token_id
+        self.jwt_signature = jwt_signature
+
+    def upload(self, session: Session):
+        refresh_token = RefreshDB(
+            token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at.timestamp(), 
+            expired_at=self.expired_at.timestamp(), jwt_signature=self.jwt_signature) 
+        
+        # check multiplicity
+        if session.query(RefreshDB).filter(RefreshDB.token_id == self.token_id).one_or_none() != None:
+            return
+
+        session.add(refresh_token)
+        
+
+    def drop(self, session: Session):
+        refresh_db = session.query(RefreshDB).filter(RefreshDB.token_id == self.token_id).one_or_none()
+        if refresh_db == None:
+            return
+        
+        session.delete(refresh_db)
+    
+    def verify(self, signature: str):
+        # check expirate date
+        now = datetime.now(tz=UTC).timestamp()
+        if self.expired_at.timestamp() < now:
+            return False
+        
+        # check jwt signature
+        if self.jwt_signature != signature:
+            return False
+        
+        return True
+    
+    def reissue(self, session: Session, jwt: JWT):
+        self.drop(session)
+
+        issuer = REFRESH_ISSUER
+        jwt_signature = jwt.signature
+        issued_at = datetime.now(tz=UTC)
+        token_id = RefreshToken._create_token_id(jwt_signature, issuer, self.expired_at.timestamp(), issued_at.timestamp())
+
+        new_token = RefreshToken(issuer, issued_at, self.expired_at, token_id, jwt_signature)
+        new_token.upload(session)
+        return new_token
+
+
+    @classmethod
+    def get_token(cls, token_id: str, session: Session):
+        db_token = session.query(RefreshDB).filter(RefreshDB.token_id == token_id).one_or_none()
+        
+        if db_token == None:
+            return None
+        
+        return cls(
+            token_id=token_id,
+            issuer=db_token.issuer,
+            issued_at=datetime.fromtimestamp(db_token.issued_at, tz=UTC),
+            expired_at=datetime.fromtimestamp(db_token.expired_at, tz=UTC),
+            jwt_signature=db_token.jwt_signature
+        )
+
+
+    @classmethod
+    def issue(cls, session: Session, jwt: JWT, issuer: str, expired_after: timedelta | None=None):
+        """
+        This method generates new refresh token by given JWT.
+        This method also automatically upload refresh token to database. 
+        """
+        issued_at = datetime.now(UTC)
+        jwt_signature = jwt.signature
+        
+        if expired_after == None:
+            expired_after = timedelta(days=REFRESH_TOKEN_EXPIRE_DAY)
+        expired_at = issued_at + expired_after
+        
+        token_id = RefreshToken._create_token_id(jwt_signature, issuer, expired_at.timestamp(), issued_at.timestamp())        
+        
+        refresh_token = RefreshToken(issuer=issuer, issued_at=issued_at, expired_at=expired_at, token_id=token_id, jwt_signature=jwt_signature)
+        refresh_token.upload(session)
+        return refresh_token
+
+
+    @staticmethod
+    def _create_token_id(jwt_signature: str, issuer: str, expired_at: float, issued_at: float) -> str:
+        sgn_hashed = hash_with_base64(jwt_signature, 16)
+        iss_hashed = hash_with_base64(issuer, 4)
+        dat_hashed = hash_with_base64(expired_at * issued_at, 8)
+
+        id = f"{sgn_hashed}-{iss_hashed}==-{dat_hashed}"
+        return id        
+
+class IdentifyToken:
+
+    def __init__(self, token_id: str, user_info_id: str) -> None:
+        self.user_info_id = user_info_id
+        self.token_id = token_id
+
+    def drop(self, session: Session):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
+        if token == None:
+            return
+        
+        session.delete(token)
+
+    def upload(self, session: Session):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
+        if token != None:
+            return
+        
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == self.user_info_id).one_or_none()
+        if token != None:
+            return
+        
+        token = db.IdentifyToken(token_id=self.token_id, user_info_id=self.user_info_id)
+        session.add(token)
+    
+
+    @classmethod
+    def get_token(cls, session: Session, token_id):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        if token == None:
+            return None
+        
+        return IdentifyToken(token_id, token.user_info_id)
+    
+    @classmethod
+    def issue(cls, session: Session, user_info_id: str):
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == user_info_id).one_or_none()
+        if token != None:
+            return IdentifyToken(token.token_id, token.user_info_id)
+
+        token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
+        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        # check multiplicity
+        while token != None:
+            token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
+            token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        
+        token = IdentifyToken(token_id, user_info_id)
+        token.upload(session)
+        return token
+
+
+def issue(user_id: str, session: Session, issuer: str) -> tuple[JWT, RefreshToken]:
+    jwt = JWT.issue(user_id, issuer, )
+
+    refresh = RefreshToken.issue(session, jwt, issuer)
+    
+    return jwt, refresh
+
+class RefreshTokenError(Exception):
+    pass
+
+def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=False) -> tuple[str, str]:
+    refresh_token = RefreshToken.get_token(refresh, session)
+    if refresh_token == None:
+        raise RefreshTokenError('refresh token must not be none')
+    
+    signature = access.split('.')[-1]
+    if not refresh_token.verify(signature):
+        raise JWTError('unauthorizable jwt')
+
+    jwt = JWT.decode(access)
+    new_access_token = JWT.issue(jwt.user_id, jwt.issuer)
+    if reload_refresh:
+        refresh_token = refresh_token.reissue(session, new_access_token)
+
+    return new_access_token.encode(), refresh_token.token_id
+
+def grant_authority(user_id: str, role: int, session: Session):
+    user = session.query(User).filter(User.user_id == user_id).one_or_none()
+    if user == None:
+        raise ValueError('No user found: ' + user_id)
+    
+    user_info = user.user_info
+    user_info.role = user_info.role | role
+    session.flush()

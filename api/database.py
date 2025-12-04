@@ -107,7 +107,7 @@ class UserInfo(Base):
 
     user_info_id = Column(String(36), primary_key=True)
     name = Column(String(255), nullable=False)
-    role = Column(String(3), nullable=False) # role: stu -> student / tch -> teacher / adm -> administrator
+    role = Column(Integer, nullable=False)
     clazz = Column(SmallInteger, nullable=True)
     number = Column(SmallInteger, nullable=True)
     generation = Column(SmallInteger, nullable=True)
