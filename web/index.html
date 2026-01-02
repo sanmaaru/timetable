@@ -1,48 +1,12 @@
 <!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8" />
-  <title>광주과학고 시간표</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="dark light" />
-  <link rel="stylesheet" href="style.css" />
-</head>
-<body>
-  <div class="page">
-    <header>
-      <div class="title-block">
-        <div class="avatar" id="avatar-initial"></div>
-        <div class="title-text">
-          <h1>
-            <span id="student-name"></span>
-            <span></span>
-          </h1>
-          <div class="sub">
-            ID: <span id="student-id"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- 오른쪽 영역: 설명 + 테마 스위치 -->
-      <div class="right-controls">
-        <button class="theme-toggle" type="button" aria-label="테마 전환">
-          <span class="theme-toggle-icon sun">🔆</span>
-          <span class="theme-toggle-icon moon">🌙</span>
-          <span class="theme-toggle-knob"></span>
-        </button>
-      </div>
-
-      <button id="logout-btn" class="btn-logout">
-        <span class="btn-logout-icon">🚫</span>
-        <span class="btn-logout-text">로그아웃</span>
-      </button>
-    </header>
-
-    <div class="timetable-wrapper">
-      <div class="timetable" id="timetable"></div>
-    </div>
-  </div>
-
-  <script type="module" src="script.js"></script>
-</body>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Timetable for Gwangju Science Academy</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>

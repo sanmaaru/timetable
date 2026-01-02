@@ -1,0 +1,32 @@
+.sidebar {
+    width: 80px;
+    height: 1fr;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 15px;
+    background: #ffffff;
+    border-radius: 15px;
+    box-shadow: 3px 3px 4px #ededed;
+}
+
+.logo-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #0F1830;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-bottom: 60px;
+}
+
+.logo {
+    filter: invert(1);
+
+    width: 50%;
+    height: 50%;
+
+}

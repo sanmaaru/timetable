@@ -20,3 +20,7 @@ api/resources
 # db
 db_data
 initdb
+
+# # web
+# web/.idea
+# web/node_modules

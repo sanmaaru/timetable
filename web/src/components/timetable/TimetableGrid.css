@@ -1,0 +1,56 @@
+.timetable-grid-column {
+    display: grid;
+    grid-template-columns: 0.34fr repeat(5, 1fr);
+
+    background-color: #eeeeee;
+    column-gap: 2px;
+    overflow: hidden;
+
+    border-radius: 8px;
+}
+
+.timetable-grid-row {
+    display: grid;
+    grid-template-rows: repeat(9, 1fr);
+    background-color: #eeeeee;
+    row-gap: 2px;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.timetable-grid-cell {
+    background-color: #ffffff;
+    font-size: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.timetable-class {
+    z-index: 10;
+    margin: 6px ;
+    border-radius: 6px;
+    padding: 12px 15px 12px 12px;
+    display: flex;
+    flex-direction: column;
+}
+
+
+.timetable-class:hover {
+    transform: translateY(-3px);
+}
+
+.timetable-class .subject {
+    font-size: 16px;
+}
+
+.timetable-class .teacher {
+    font-size: 14px;
+    margin-top: 30px;
+}
+
+.timetable-class .division {
+    font-size: 14px;
+    margin-top: -19px;
+    align-self: flex-end;
+}

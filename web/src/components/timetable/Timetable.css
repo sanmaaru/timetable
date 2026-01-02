@@ -1,0 +1,42 @@
+.timetable-header {
+    border-radius: 8px;
+    margin-top: 40px;
+    width: 100%;
+    height: 50px;
+    box-shadow: 3px 3px 4px #ededed;
+}
+
+.timetable-grid {
+    margin-top: 12px;
+    box-shadow: 3px 3px 4px #ededed;
+    flex: 1;
+}
+
+.timetable {
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.timetable-title {
+    margin-top: 30px;
+    display: flex;
+    height: 48px;
+}
+
+.timetable-title .title {
+    font-size: 36px;
+    font-family: "Pretendard", serif;
+    font-weight: 900;
+    color: #000000;
+}
+
+.timetable-title .name {
+    font-size: 30px;
+    font-family: NixgonFont, serif;
+    font-weight: 500;
+    color: #595959;
+    margin-left: 20px;
+    margin-top: 6px;
+}
