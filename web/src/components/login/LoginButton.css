@@ -1,0 +1,16 @@
+.login-button {
+    width: 100%;
+    height: 40px;
+    border: none;
+    border-radius: 1.5em;
+    background: #000000;
+    color: #ffffff;
+    font-family: "NixgonFont", serif;
+    font-size: 14px;
+}
+
+
+
+.login-button:hover {
+    background: #373737;
+}

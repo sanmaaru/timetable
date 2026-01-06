@@ -3,7 +3,7 @@
     grid-template-columns: 0.34fr repeat(5, 1fr);
 
     background-color: #eeeeee;
-    column-gap: 2px;
+    column-gap: 1px;
     overflow: hidden;
 
     border-radius: 8px;
@@ -13,14 +13,16 @@
     display: grid;
     grid-template-rows: repeat(9, 1fr);
     background-color: #eeeeee;
-    row-gap: 2px;
+    row-gap: 1px;
     overflow: hidden;
     border-radius: 8px;
 }
 
 .timetable-grid-cell {
     background-color: #ffffff;
-    font-size: 16px;
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 600;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -28,11 +30,18 @@
 
 .timetable-class {
     z-index: 10;
-    margin: 6px ;
+    margin: 4px ;
     border-radius: 6px;
-    padding: 12px 15px 12px 12px;
-    display: flex;
-    flex-direction: column;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-gap: 10%;
+}
+
+.timetable-info {
+    grid-column: 1;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
 }
 
 
@@ -40,17 +49,35 @@
     transform: translateY(-3px);
 }
 
-.timetable-class .subject {
-    font-size: 16px;
+.timetable-info .subject {
+    margin-top: 5%;
+    margin-left: 12px;
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 900;
+    grid-row: 1;
+    grid-column: 1 / span 2;
 }
 
-.timetable-class .teacher {
-    font-size: 14px;
-    margin-top: 30px;
+.timetable-info .teacher {
+    margin-left: 12px;
+    margin-bottom: 10%;
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 1;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
 }
 
-.timetable-class .division {
-    font-size: 14px;
-    margin-top: -19px;
-    align-self: flex-end;
+.timetable-info .division {
+    margin-right: 14px;
+    margin-bottom: 10%;
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: end;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
 }

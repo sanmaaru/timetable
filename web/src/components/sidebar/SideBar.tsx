@@ -1,7 +1,7 @@
 import React from 'react';
 import './SideBar.css';
-import logo from '../../../public/assets/logo.svg'
 import SideBarButton from './SideBarButton';
+import logo from '../../resources/logo.svg';
 
 interface SideBarButton {
     id: string;

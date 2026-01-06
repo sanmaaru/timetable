@@ -27,9 +27,14 @@ const drawSchedule = (schedules: Schedule[]) => (
                 color: schedule.class.textColor,
             }}
         >
-            <span className='subject'>{schedule.class.subject}</span>
-            <span className='teacher'>{schedule.class.teacher}T</span>
-            <span className='division'>{schedule.class.division}분반</span>
+            <div
+                key={`timetable-class-info-${schedule.class.subject}-${schedule.class.teacher}`}
+                className="timetable-info"
+            >
+                <span className='subject'>{schedule.class.subject}</span>
+                <span className='teacher'>{schedule.class.teacher}T</span>
+                <span className='division'>{schedule.class.division}분반</span>
+            </div>
         </div>]
     })
 );

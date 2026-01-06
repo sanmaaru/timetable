@@ -1,5 +1,5 @@
 .sidebar {
-    width: 80px;
+    width: 60px;
     height: 1fr;
     display: flex;
     flex-direction: column;
@@ -11,8 +11,8 @@
 }
 
 .logo-circle {
-    width: 48px;
-    height: 48px;
+    width: 36px;
+    height: 36px;
     border-radius: 50%;
     background: #0F1830;
 
@@ -20,10 +20,10 @@
     align-items: center;
     justify-content: center;
 
-    margin-bottom: 60px;
+    margin-bottom: 80px;
 }
 
-.logo {
+.logo-circle .logo {
     filter: invert(1);
 
     width: 50%;
