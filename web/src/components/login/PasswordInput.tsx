@@ -6,7 +6,7 @@ interface PasswordInputProps {
     invalid: boolean;
 }
 
-const PasswordInput = ({placeHolder, invalid=false}: PasswordInputProps) => {
+const PasswordInput = ({placeHolder, invalid}: PasswordInputProps) => {
     const [visible, setVisible] = React.useState(false);
     const toggleVisible = () => {
         setVisible((prev) => !prev);

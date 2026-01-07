@@ -1,4 +1,4 @@
-.login {
+#login {
     position: relative;
     width: 100%;
     height: 100%;
@@ -8,23 +8,27 @@
     flex: 1;
 }
 
-.login .container {
+#login .panel {
+    display: flex;
     height: 100%;
     width: 100%;
-    display: flex;
-    flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-.login .background {
+#login .container {
+    display: flex;
+    flex-direction: column;
+}
+
+#login .background {
     display: flex;
     height: 100%;
     width: 40%;
     flex: 1;
 }
 
-.login .input-area {
+#login .input-area {
     display:flex;
     margin-top: 30px;
     flex-direction: column;
@@ -32,76 +36,76 @@
     gap: 15px;
 }
 
-.login .container .title {
+#login .container .title {
     display: flex;
     flex-direction: column;
     gap: 8px;
 }
 
-.login .welcome {
+#login .welcome {
     font-family: "Pretendard", serif;
     font-size: 36px;
     font-weight: 900;
 }
 
-.login .login-alert {
+#login #login-alert {
     font-family: "NixgonFont", serif;
     font-size: 14px;
     font-weight: 500;
 }
 
-.login .title-logo {
+#login .title-logo {
     position: absolute;
     top: 50px;
     left: 50px;
     width: 300px;
 }
 
-.login  .app-name {
+#login  .app-name {
     font-size: 21px;
 }
 
-.login .logo {
+#login .logo {
     width: 16px;
     height: 16px;
     margin-left: 4px;
 }
 
-.login .subtitle {
+#login .subtitle {
     font-size: 13px;
 }
 
-.login .divider {
+#login .divider {
     width: 200px;
     height: 1px;
     border-radius: 1px;
-    margin-top: 28px;
+    margin-top: 20px;
     background: #ededed;
 }
 
-.login .text-link {
+#login .text-link {
     color: #5b5b5b;
     text-decoration: none;
 }
 
-.login .additional a, span {
+#login .additional a, span {
     grid-column: 1 / span 2;
     font-family: "Pretendard", serif;
     font-size: 12px;
     font-weight: 500;
 }
 
-.login .additional .sign-up {
+#login .additional .sign-up {
     grid-row: 2;
     grid-column: span 1;
 }
 
-.login .additional{
+#login .additional{
     display: grid;
     grid-template-columns: max-content 1fr;
     grid-template-rows: 1fr 1fr;
     width: 300px;
-    margin-top: 24px;
+    margin-top: 18px;
     column-gap: 6px;
     row-gap: 4px;
 }
