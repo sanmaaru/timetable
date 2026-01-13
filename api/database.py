@@ -91,7 +91,7 @@ class User(Base):
     __tablename__ = 'users'
 
     user_id = Column(String(36), primary_key=True)
-    id = Column(String(20), nullable=False, unique=True)
+    username = Column(String(20), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False, unique=True)
     user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), nullable=False, unique=True)

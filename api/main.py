@@ -83,7 +83,7 @@ def identifiers(
     
     if user.user_info.role & role.MANAGER == 0:
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=status.HTTP_403_FORBIDDEN,
             detail='No permission'
         )
     

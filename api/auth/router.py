@@ -14,7 +14,7 @@ hasher = PasswordHasher()
 
 # ===== Login =====
 class LoginInput(BaseModel):
-    id: str
+    username: str
     password: str
 
 class TokenPair(BaseModel):
@@ -24,19 +24,31 @@ class TokenPair(BaseModel):
 
 @router.post('/login', response_model=TokenPair)
 def login(input: LoginInput, session = Depends(conn)):
-    id, password = input.id, input.password
-    user = session.query(User).filter(User.id == id).one_or_none()
+    username, password = input.username, input.password
+    user = session.query(User).filter(User.username == username).one_or_none()
 
     # verify id
     if not user:
-        raise HTTPException(status_code=400, detail='unknown id')
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail={
+                'invalid': 'username',
+                'message': 'unknown username'
+            }
+        )
 
     # verify password     
     hashed = user.password
     try: 
         hasher.verify(hashed, password) 
     except VerifyMismatchError:
-        raise HTTPException(status_code=400, detail='invalid password')
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail={
+                'invalid': 'password',
+                'message': 'wrong password'
+            }
+        )
 
     # issue JWT & refresh token
     id = user.user_id
@@ -70,14 +82,20 @@ def refresh(input: RefreshTokenInput, session = Depends(conn)):
         )
     except (JWTError, RefreshTokenError):
         session.rollback()
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='invalid tokens')
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail={
+                'invalid': 'token',
+                'message': 'invalid token'
+            }
+        )
 
 
 # ===== Sign Up =====
 class SignUpInput(BaseModel):
     email: EmailStr
-    id: Annotated[str, Field(min_length=3, max_length=20)]
-    password: Annotated[str, Field(min_length=3)]
+    username: Annotated[str, Field(min_length=3, max_length=20)]
+    password: Annotated[str, Field(min_length=8)]
     identifier: Annotated[str, Field(min_length=8, max_length=8)]
 
 @router.post('/signup')
@@ -88,9 +106,9 @@ def signup(input: SignUpInput, session = Depends(conn)):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unknown identifier")
 
     # db에서 중복되는 유저가 있는지 확인하기
-    email, id, password = input.email, input.id, input.password
+    email, username, password = input.email, input.username, input.password
 
-    if session.query(User).filter(User.id == id).all():
+    if session.query(User).filter(User.username == username).all():
         raise HTTPException(status_code=400, detail='user already exists')
 
     if session.query(User).filter(User.email == email).all(): 
@@ -98,10 +116,10 @@ def signup(input: SignUpInput, session = Depends(conn)):
 
     # user 등록 로직
     hasehd = hasher.hash(password)
-    user_id = create_id(email, password, id)
+    user_id = create_id(email, password, username)
     user_info_id = token.user_info_id
     
-    user = User(user_id=user_id, id=id, password=hasehd, email=email, user_info_id=user_info_id)
+    user = User(user_id=user_id, id=username, password=hasehd, email=email, user_info_id=user_info_id)
     session.add(user)
 
     # 회원가입 완료시 identifer 삭제
