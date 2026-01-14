@@ -96,30 +96,40 @@ class SignUpInput(BaseModel):
     email: EmailStr
     username: Annotated[str, Field(min_length=3, max_length=20)]
     password: Annotated[str, Field(min_length=8)]
-    identifier: Annotated[str, Field(min_length=8, max_length=8)]
+    identify_token: Annotated[str, Field(min_length=8, max_length=8)]
 
 @router.post('/signup')
 def signup(input: SignUpInput, session = Depends(conn)):
     # indentifier token을 이용해서 신원확인
-    token = IdentifyToken.get_token(session, input.identifier)
+    token = IdentifyToken.get_token(session, input.identify_token)
     if token == None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unknown identifier")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, 
+            detail= {
+                'invalid': 'identify_token',
+                'message': 'unknown or expired identiy token'
+            }
+        )
 
     # db에서 중복되는 유저가 있는지 확인하기
     email, username, password = input.email, input.username, input.password
 
     if session.query(User).filter(User.username == username).all():
-        raise HTTPException(status_code=400, detail='user already exists')
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, 
+            detail={
+                'invalid': 'username',
+                'message': 'user already exists' 
+            }
+        )
 
-    if session.query(User).filter(User.email == email).all(): 
-        raise HTTPException(status_code=400, detail='user already exists')
 
     # user 등록 로직
     hasehd = hasher.hash(password)
     user_id = create_id(email, password, username)
     user_info_id = token.user_info_id
     
-    user = User(user_id=user_id, id=username, password=hasehd, email=email, user_info_id=user_info_id)
+    user = User(user_id=user_id, username=username, password=hasehd, email=email, user_info_id=user_info_id)
     session.add(user)
 
     # 회원가입 완료시 identifer 삭제

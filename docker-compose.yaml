@@ -39,12 +39,12 @@ services:
         condition: service_healthy
 
 
-  web:
-    build: ./web
-    container_name: timetable-web
-    restart: unless-stopped
-    ports:
-      - "8000:8000"
+  # web:
+  #   build: ./web
+  #   container_name: timetable-web
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8000:8000"
 
 volumes:
   db_data: {}

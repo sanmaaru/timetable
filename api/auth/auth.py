@@ -104,7 +104,8 @@ class JWT:
         try:
             key = key if key else SECRET_KEY
             algorithm = algorithm if algorithm else ALGORITHM
-            payload = jwt.decode(token, key, [algorithm])
+            payload = jwt.decode(token, key, [algorithm], 
+                                 options={"verify_exp": False, "verify_nbf": False, "verify_aud": False, "verify_iss": False})
         except JWTError:
             raise  
 
@@ -126,18 +127,24 @@ RefreshDB = db.RefreshToken
 
 class RefreshToken:
 
-    def __init__(self, issuer: str, issued_at: datetime, expired_at: datetime, 
+    def __init__(self, issuer: str, owner: str, issued_at: datetime, expired_at: datetime, 
                     token_id: str, jwt_signature: str):
         self.issuer = issuer
         self.issued_at = issued_at
         self.expired_at = expired_at
         self.token_id = token_id
         self.jwt_signature = jwt_signature
+        self.owner = owner
 
     def upload(self, session: Session):
         refresh_token = RefreshDB(
-            token_id=self.token_id, issuer=self.issuer, issued_at=self.issued_at.timestamp(), 
-            expired_at=self.expired_at.timestamp(), jwt_signature=self.jwt_signature) 
+            token_id=self.token_id, 
+            issuer=self.issuer, 
+            issued_at=self.issued_at.timestamp(), 
+            expired_at=self.expired_at.timestamp(), 
+            jwt_signature=self.jwt_signature, 
+            owner_id=self.owner
+        ) 
         
         # check multiplicity
         if session.query(RefreshDB).filter(RefreshDB.token_id == self.token_id).one_or_none() != None:
@@ -153,7 +160,7 @@ class RefreshToken:
         
         session.delete(refresh_db)
     
-    def verify(self, signature: str):
+    def verify(self, signature: str, owner: str):
         # check expirate date
         now = datetime.now(tz=UTC).timestamp()
         if self.expired_at.timestamp() < now:
@@ -161,6 +168,9 @@ class RefreshToken:
         
         # check jwt signature
         if self.jwt_signature != signature:
+            return False
+        
+        if self.owner  != owner:
             return False
         
         return True
@@ -173,7 +183,7 @@ class RefreshToken:
         issued_at = datetime.now(tz=UTC)
         token_id = RefreshToken._create_token_id(jwt_signature, issuer, self.expired_at.timestamp(), issued_at.timestamp())
 
-        new_token = RefreshToken(issuer, issued_at, self.expired_at, token_id, jwt_signature)
+        new_token = RefreshToken(issuer, jwt.user_id, issued_at, self.expired_at, token_id, jwt_signature)
         new_token.upload(session)
         return new_token
 
@@ -187,6 +197,7 @@ class RefreshToken:
         
         return cls(
             token_id=token_id,
+            owner=db_token.owner_id,
             issuer=db_token.issuer,
             issued_at=datetime.fromtimestamp(db_token.issued_at, tz=UTC),
             expired_at=datetime.fromtimestamp(db_token.expired_at, tz=UTC),
@@ -202,14 +213,22 @@ class RefreshToken:
         """
         issued_at = datetime.now(UTC)
         jwt_signature = jwt.signature
-        
+        owner = jwt.user_id
+
         if expired_after == None:
             expired_after = timedelta(days=REFRESH_TOKEN_EXPIRE_DAY)
         expired_at = issued_at + expired_after
         
         token_id = RefreshToken._create_token_id(jwt_signature, issuer, expired_at.timestamp(), issued_at.timestamp())        
         
-        refresh_token = RefreshToken(issuer=issuer, issued_at=issued_at, expired_at=expired_at, token_id=token_id, jwt_signature=jwt_signature)
+        refresh_token = RefreshToken(
+            issuer=issuer, 
+            owner=owner,
+            issued_at=issued_at, 
+            expired_at=expired_at, 
+            token_id=token_id, 
+            jwt_signature=jwt_signature
+        )
         refresh_token.upload(session)
         return refresh_token
 
@@ -290,12 +309,13 @@ def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=Fa
     if refresh_token == None:
         raise RefreshTokenError('refresh token must not be none')
     
-    signature = access.split('.')[-1]
-    if not refresh_token.verify(signature):
+    jwt = JWT.decode(access)
+    signature = jwt.signature
+    owner = jwt.user_id
+    if not refresh_token.verify(signature, owner):
         raise JWTError('unauthorizable jwt')
 
-    jwt = JWT.decode(access)
-    new_access_token = JWT.issue(jwt.user_id, jwt.issuer)
+    new_access_token = JWT.issue(owner, jwt.issuer)
     if reload_refresh:
         refresh_token = refresh_token.reissue(session, new_access_token)
 

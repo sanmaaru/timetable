@@ -1,5 +1,5 @@
-from .auth import router
-from .auth_token import (
+from .router import router
+from .auth import (
     JWT, RefreshToken, issue, reissue
 )
 

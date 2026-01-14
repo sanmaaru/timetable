@@ -61,13 +61,14 @@ def timetable(
         dump.append(obj)
 
     obj = {
-        'id': user.id,
+        'username': user.username,
         'name': user.user_info.name,
         'timetable': dump
     }
+
     return json.dumps(obj, ensure_ascii=False)
 
-@app.get('identifiers')
+@app.get('/identifiers')
 def identifiers(
         name: Optional[str] = Query(None, description='name who wants to query identifying token'),
         auth: str = Header(default=None, alias="Authorization"), 
@@ -78,10 +79,10 @@ def identifiers(
     if user == None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Unknown user'
+            detail='Unknown user'   
         )
     
-    if user.user_info.role & role.MANAGER == 0:
+    if user.user_info.role < role.MANAGER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='No permission'

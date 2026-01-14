@@ -17,7 +17,9 @@ def hash_with_base64(data, length: int):
 
     return hashed_b64 
 
-def create_id(s1, s2, s3: object = random.randrange(0, 999)):
+def create_id(s1, s2, s3 = None):
+    if s3 == None:
+        s3 = random.randrange(0, 999)
     hashed1 = hash_with_base64(s1, 16)
     hashed2 = hash_with_base64(s2, 12)
     hashed3 = hash_with_base64(s3, 4)

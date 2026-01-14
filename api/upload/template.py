@@ -504,7 +504,10 @@ def upload_teachers(teachers: list[LectureInfo], session: Session):
         for lecture in teachers:
             teacher_names = map(str.strip, lecture.teacher.split(","))
             for teacher_name in teacher_names:
-                teacher = session.query(UserInfo).filter(UserInfo.name == teacher_name, UserInfo.role == 'tch').one_or_none()
+                teacher = session.query(UserInfo).filter(
+                    UserInfo.name == teacher_name, 
+                    UserInfo.role.op('&')(role.TEACHER) != 0
+                ).one_or_none()
                 if teacher == None:
                     create_user_info(session, teacher_name, role.TEACHER)
         session.commit()
@@ -561,7 +564,10 @@ def upload_lectures(lectures: list[LectureInfo], session: Session):
 
             # create lecture
             teacher_name = lecture.teacher.split(",")[0].strip()
-            teacher = session.query(UserInfo).filter(UserInfo.name == teacher_name, UserInfo.role == 'tch').one_or_none()
+            teacher = session.query(UserInfo).filter(
+                UserInfo.name == teacher_name, 
+                UserInfo.role.op('&')(role.TEACHER) != 0
+            ).one_or_none()
             if teacher == None:
                 raise UploadError(f'{lecture} cannot find teacher')
 

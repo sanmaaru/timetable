@@ -48,7 +48,7 @@ class Class(Base):
     
     periods = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
     enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
-    students_info = relationship('UserInfo', secondary='enrollments', back_populates='classes')
+    students_info = relationship('UserInfo', secondary='enrollments', back_populates='classes', overlaps='enrollments, clazz')
 
 
 
@@ -93,13 +93,14 @@ class User(Base):
     user_id = Column(String(36), primary_key=True)
     username = Column(String(20), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
-    email = Column(String(255), nullable=False, unique=True)
+    email = Column(String(255), nullable=False)
     user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), nullable=False, unique=True)
 
     user_info = relationship('UserInfo', uselist=False, back_populates='user')
+    refresh_tokens = relationship('RefreshToken', back_populates='owner', cascade='all, delete-orphan')
 
     def __repr__(self):
-        return 'user { user_id: {' + str(self.user_id) + '}, id: {' + str(self.id) + '}, password: {' + str(self.password) + '} }'
+        return 'user { user_id: {' + str(self.user_id) + '}, id: {' + str(self.username) + '}, password: {' + str(self.password) + '} }'
     
 class UserInfo(Base):
 
@@ -132,6 +133,9 @@ class RefreshToken(Base):
     issued_at = Column(Float(), nullable=False)
     expired_at = Column(Float(), nullable=False)
     jwt_signature = Column(String(255), nullable=False)
+    owner_id = Column(String(36), ForeignKey('users.user_id'), nullable=False)
+
+    owner = relationship('User', back_populates='refresh_tokens')
 
 class IdentifyToken(Base):
 
