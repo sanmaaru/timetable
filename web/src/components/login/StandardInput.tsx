@@ -1,16 +1,29 @@
 import React from 'react';
 import './StandardInput.css';
+import {UseFormRegisterReturn} from "react-hook-form";
 
 interface StandardInputProps {
     placeHolder: string;
-    invalid: boolean;
+    errorMessage?: string | undefined;
+    registration: UseFormRegisterReturn;
 }
 
-const StandardInput = ({placeHolder, invalid}: StandardInputProps) => {
+const StandardInput = ({placeHolder, errorMessage, registration}: StandardInputProps) => {
+    const errorMessageBox = () => {
+        if (errorMessage)
+            return <span className='error-message'>{errorMessage}</span>
+    }
+
     return (
-        <div className='standard-input'>
-            <input className='input' type='text' autoComplete='off' class='input' required/>
-            <span className='label'>{placeHolder}</span>
+        <div className={`standard-input ${errorMessage? 'invalid' : ''}`}>
+            <input
+                type='text'
+                autoComplete='off'
+                {...registration}
+                required
+            />
+            <span className='placeholder'>{placeHolder}</span>
+            {errorMessageBox()}
         </div>
     )
 }

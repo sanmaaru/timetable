@@ -11,7 +11,7 @@ const TimetableHeader = () => {
           <div className="timetable-grid-cell"></div>
           {days.map(day => (
               <div key={day} className="timetable-grid-cell">
-                  <span className="header-cell-day">{day}</span>
+                  <span>{day}</span>
               </div>
           ))}
       </div>

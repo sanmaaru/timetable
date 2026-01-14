@@ -81,3 +81,9 @@
     font-family: "NixgonFont", serif;
     font-weight: 500;
 }
+
+.timetable-grid-cell span {
+    font-family: "Pretendard", serif;
+    font-weight: 500;
+    font-size: 14px;
+}

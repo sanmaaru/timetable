@@ -4,22 +4,44 @@ import SideBar from "../components/sidebar/SideBar";
 import Timetable from "../components/timetable/Timetable";
 import DetailBar from "../components/detailBar/DetailBar";
 import './Home.css';
+import {fetchTimetable} from "../api/fetchTimetable";
+import {useEffect, useState} from "react";
+import timetable from "../components/timetable/Timetable";
+
+interface TimetableData {
+    name: string;
+    schedules: Schedule[];
+    classes: Class[];
+}
 
 function Home() {
-    const name = '조시우';
-    const classes: Class[] = [
-        {color: "#F5F2F2", textColor: "#111111", subject: "일반물리학", teacher: "김광식", division: 2},
-        {color: "#2B2A2A", textColor: "#EEEEEE", subject: "선형대수학", teacher: "최병길", division: 2},
-        {color: "#2B2A2A", textColor: "#EEEEEE", subject: "선형대수학", teacher: "전강민", division: 2},
-        {color: "#5A7ACD", textColor: "#EEEEEE", subject: "인공지능과 프로그래밍", teacher: "이동윤", division: 2}
-    ];
-    const schedules: Schedule[] = [
-        {day: "Mon", period_from: 1, period_to: 1, class: classes[0]},
-        {day: "Tue", period_from: 3, period_to: 4, class: classes[1]},
-        {day: "Thu", period_from: 3, period_to: 4, class: classes[2]},
-        {day: "Wed", period_from: 7, period_to: 7, class: classes[3]},
-    ];
+    const [timetableData, setTimetableData] = useState<TimetableData | null>();
+    const [loading, setLoading] = useState(true);
 
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const data = await fetchTimetable();
+                setTimetableData(data)
+            } catch (error: any) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData()
+    }, [])
+
+    if (loading) {
+        return <div className='loading'>로딩중...</div>
+    }
+
+    if (!timetableData) {
+        return <div className='error-message'>알 수 없는 오류가 발생하였습니다. 관리자에게 문의해 주세요</div>
+    }
+
+    const { name, schedules, classes } = timetableData;
     return (
         <div id="home">
             <SideBar/>

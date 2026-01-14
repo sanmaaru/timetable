@@ -52,7 +52,7 @@ const TimetableGrid = ({schedules}: TimetableGridProps) => {
                         gridColumn: 1,
                     }}
                 >
-                    <span className={`timetable-grid-period`}>{period}</span>
+                    <span>{period}</span>
                 </div>
             ))}
 

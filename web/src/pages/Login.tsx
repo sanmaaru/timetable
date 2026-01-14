@@ -4,8 +4,34 @@ import './Login.css'
 import StandardButton from "../components/login/StandardButton";
 import TitleLogo from "../components/TitleLogo";
 import PasswordInput from "../components/login/PasswordInput";
+import {Link, useNavigate} from "react-router-dom";
+import {useLogin} from "../hooks/useLogin";
+import {isAuthenticated} from "../auth/auth";
+
+interface ApiErrorResponse {
+
+}
 
 function Login() {
+    const navigate= useNavigate();
+    if (isAuthenticated())
+        navigate("/", { replace: true });
+
+    const {
+        register,
+        errors,
+        loading,
+        globalErrorMessage,
+        onSubmit
+    } = useLogin()
+
+    const createGlobalErrorMessage = () => {
+        if(!globalErrorMessage)
+            return
+
+        return <span className='global-error-message'>{globalErrorMessage}</span>
+    }
+
     return (
         <div id="login">
             <TitleLogo/>
@@ -15,16 +41,33 @@ function Login() {
                         <span className='welcome'>반갑습니다!</span>
                         <span className='login-alert'>로그인을 위해서 아이디와 패스워드를 입력해 주세요</span>
                     </div>
-                    <div className='input-area'>
-                        <StandardInput placeHolder={'username'} invalid={false}/>
-                        <PasswordInput placeHolder={'password'} invalid={false}/>
-                        <StandardButton label={'로그인'} onClick={() => {}}/>
-                    </div>
+                    <form className='input-area' onSubmit={onSubmit} noValidate={true}>
+                        <StandardInput
+                            placeHolder={'username'}
+                            registration={ register('username', {
+                                required: '사용자 이름을 입력해 주세요',
+                            })}
+                            errorMessage={errors.username?.message}
+                        />
+                        <PasswordInput
+                            placeHolder={'password'}
+                            registration={ register('password', {
+                                required: '비밀번호를 입력해 주세요',
+                            })}
+                            errorMessage={errors.password?.message}
+                        />
+                        <StandardButton
+                            label={loading ? '로그인 중...' : '로그인'}
+                            type='submit'
+                            loading={loading}
+                        />
+                    </form>
+                    {createGlobalErrorMessage()}
                     <div className='divider'/>
                     <div className='additional'>
-                        <a href='' className='text-link'>아이디 혹은 비밀번호를 잊어버렸습니다</a>
+                        <Link to='' className='text-link'>아이디 혹은 비밀번호를 잊어버렸습니다</Link>
                         <span className='sign-up'>계정이 아직 없으신가요?</span>
-                        <a href='/signup' className='text-link sign-up'>회원가입</a>
+                        <Link to='/signup' className={`text-link sign-up`}>회원가입</Link>
                     </div>
                 </div>
             </div>

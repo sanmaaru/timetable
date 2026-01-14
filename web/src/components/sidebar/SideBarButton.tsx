@@ -15,6 +15,7 @@ const SideBarButton = ({id, icon, label, isActive, onClick}: SideBarButtonProps)
 
     return (
         <button
+            key={`sidebar-button-${id}`}
             type="button"
             className={`sidebar-button ${id} ${active}`}
             onClick={onClick} // TODO: we need to add common action on the button

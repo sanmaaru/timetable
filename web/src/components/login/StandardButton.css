@@ -14,3 +14,7 @@
 .standard-button:hover {
     background: #373737;
 }
+
+.standard-button.loading {
+    background: #373737;
+}
