@@ -35,6 +35,7 @@
     display: grid;
     grid-template-rows: subgrid;
     grid-gap: 10%;
+    animation: fadeInUp 0.5s ease-out forwards;
 }
 
 .timetable-info {
@@ -86,4 +87,13 @@
     font-family: "Pretendard", serif;
     font-weight: 500;
     font-size: 14px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }

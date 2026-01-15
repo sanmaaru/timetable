@@ -32,6 +32,20 @@ privateAxiosClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+let isRefreshing = false
+let failedQueue: any[] = []
+
+const processQueue = (error: any, token: string | null = null) => {
+    failedQueue.forEach((prom) => {
+        if (error)
+            prom.reject(error)
+        else
+            prom.resolve(token)
+    })
+
+    failedQueue = []
+}
+
 // when jwt fail, request to refresh in order to reload jwt
 privateAxiosClient.interceptors.response.use(
     (response) => response, // 정상 응답 통과
@@ -40,26 +54,41 @@ privateAxiosClient.interceptors.response.use(
         if (error.response?.status !== 401 || originalRequest._retry)
             return Promise.reject(error);
 
+        if (isRefreshing) {
+            return new Promise(function (resolve, reject) {
+                failedQueue.push({resolve, reject});
+            }).then((token) => {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+                return privateAxiosClient(originalRequest);
+            }).catch((error) => {
+                return Promise.reject(error);
+            })
+        }
+
         // 무한 루프 방지
         originalRequest._retry = true;
+        isRefreshing = true;
 
         try {
-            const refreshResponse = await publicAxiosClient.post('/auth/refresh', {
+            const { data } = await publicAxiosClient.post('/auth/refresh', {
                 refresh_token: getRefresh(),
                 access_token: getToken()
             });
 
-            const newAccessToken = refreshResponse.data.access_token;
-            const newRefreshToken = refreshResponse.data.refresh_token;
+            const newAccessToken = data.access_token;
+            const newRefreshToken = data.refresh_token;
 
             setTokens(newAccessToken, newRefreshToken);
+
+            processQueue(null, newRefreshToken);
 
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return privateAxiosClient(originalRequest);
         } catch (error) {
+            processQueue(error, null);
+
             removeTokens()
             return Promise.reject(error);
         }
-
     }
 );

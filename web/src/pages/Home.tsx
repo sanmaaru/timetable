@@ -34,7 +34,12 @@ function Home() {
     }, [])
 
     if (loading) {
-        return <div className='loading'>로딩중...</div>
+        return (
+            <div id={'home'}>
+                <SideBar/>
+                <Timetable name={''} schedules={[]}/>
+                <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운" image="/assets/image/detail_image.png"/>
+            </div>)
     }
 
     if (!timetableData) {

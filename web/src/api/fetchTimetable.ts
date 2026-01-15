@@ -1,14 +1,10 @@
 import {privateAxiosClient} from "./axiosClient";
 import {Class} from "../types/class";
 import {Schedule} from "../types/schedule";
-import {formToJSON} from "axios";
 
 const parseTimetableData = (timetable: any) => {
     const classes: Class[] = [];
     const schedules: Schedule[] = [];
-
-    console.log(timetable);
-
     timetable.forEach((entry: any, index: number) => {
         const newClass: Class = {
             color: "#2B2A2A",
@@ -61,8 +57,6 @@ const parseTimetableData = (timetable: any) => {
             })
         })
     })
-
-    console.log(classes, schedules)
 
     return {classes, schedules};
 }

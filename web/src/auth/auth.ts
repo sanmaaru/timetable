@@ -14,8 +14,15 @@ export const removeTokens = () => {
 }
 
 export const setTokens = (access: string, refresh: string) => {
-    Cookies.set("access-token", access);
-    Cookies.set("refresh-token", refresh);
+    if (!access)
+        throw new Error('Access token must not be null');
+
+    if (!refresh)
+        throw new Error('Refresh token must not be null');
+
+
+    Cookies.set("access-token", access, { path: '/', expires: 14 });
+    Cookies.set("refresh-token", refresh, { path: '/', expires: 14 });
 }
 
 export const isAuthenticated = () => (
