@@ -1,20 +1,78 @@
+import binascii
+import os
+import uuid
+from typing import Any
+
+import ulid
+from dotenv import load_dotenv
 from sqlalchemy import (
-    Column, Float, ForeignKey, SmallInteger, String, Integer, create_engine
+    Column, Float, ForeignKey, SmallInteger, String, Integer, create_engine, TypeDecorator, BINARY, LargeBinary
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-from dotenv import load_dotenv
-from datetime import datetime
+
 from util import get_grade
-import os, uuid
 
 load_dotenv('../.env')
 
 url = os.getenv('CONNECTION')
-assert url != None
+assert url is not None
 engine = create_engine(url, pool_pre_ping=True)
 
 def gen_uuid() -> str:
     return str(uuid.uuid4())
+
+class ULID(TypeDecorator):
+
+    impl = BINARY(16)
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+
+        if isinstance(value, ulid.ULID):
+            value = ulid.from_str(value)
+
+        return value.bytes
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+
+        return ulid.from_bytes(value)
+
+
+def generate_ulid():
+    return ulid.new()
+
+class Hex(TypeDecorator):
+
+    impl = LargeBinary
+    cache_ok = True
+
+    def __init__(self, length = None, **kwargs):
+        if length is not None:
+            length = (length + 1) // 2
+            super().__init__(length=length, **kwargs)
+        else:
+            super().__init__(**kwargs)
+
+    def process_bind_param(self, value: str, dialect) -> Any:
+        if value is None:
+            return None
+
+        value = value.replace("#", "").replace('0x', '').strip()
+        if len(value) % 2 != 0:
+            value = '0' + value
+
+        return binascii.unhexlify(value)
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+
+        return binascii.hexlify(value).decode('utf-8')
+
 
 ## Tables
 Base = declarative_base()
@@ -95,12 +153,15 @@ class User(Base):
     password = Column(String(255), nullable=False)
     email = Column(String(255), nullable=False)
     user_info_id = Column(String(36), ForeignKey('users_info.user_info_id'), nullable=False, unique=True)
+    selected_theme_id = Column(ULID(), ForeignKey('themes.theme_id', ondelete='RESTRICT'), nullable=False)
 
     user_info = relationship('UserInfo', uselist=False, back_populates='user')
     refresh_tokens = relationship('RefreshToken', back_populates='owner', cascade='all, delete-orphan')
+    owning_themes = relationship('Theme', back_populates='owner', cascade='all, delete-orphan')
+    selected_theme = relationship('Theme', back_populates='selectors')
 
     def __repr__(self):
-        return 'user { user_id: {' + str(self.user_id) + '}, id: {' + str(self.username) + '}, password: {' + str(self.password) + '} }'
+        return 'user { user_id: {' + str(self.user_id) + '}, username: {' + str(self.username) + '}, email: {' + str(self.email) + '} }'
     
 class UserInfo(Base):
 

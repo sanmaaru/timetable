@@ -20,3 +20,5 @@ api/resources
 # db
 db_data
 initdb
+
+.idea

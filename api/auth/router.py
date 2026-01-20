@@ -1,13 +1,15 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, EmailStr, Field
 from typing import Annotated
-from database import conn, User
+
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
-from sqlalchemy.orm import Session
+from pydantic import BaseModel, EmailStr, Field
+
 from .auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
-from util import create_id
+from ..database import conn, User
+from ..theme.crud import create_default_theme
+from ..util import create_id
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 hasher = PasswordHasher()
@@ -125,12 +127,13 @@ def signup(input: SignUpInput, session = Depends(conn)):
 
 
     # user 등록 로직
-    hasehd = hasher.hash(password)
+    hashed = hasher.hash(password)
     user_id = create_id(email, password, username)
     user_info_id = token.user_info_id
     
-    user = User(user_id=user_id, username=username, password=hasehd, email=email, user_info_id=user_info_id)
+    user = User(user_id=user_id, username=username, password=hashed, email=str(email), user_info_id=user_info_id)
     session.add(user)
+    create_default_theme(user, session)
 
     # 회원가입 완료시 identifer 삭제
     token.drop(session)

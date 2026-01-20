@@ -1,16 +1,22 @@
-from fastapi import FastAPI, Header, HTTPException, status, Depends, Query
+import json
+from typing import Optional
+
+from fastapi import FastAPI, HTTPException, status, Depends, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
-from auth.router import router as auth_router
-from auth.auth import JWT, role
-from database import conn, User, Period, init_db, UserInfo, IdentifyToken
-from typing import Optional
-import json
+from starlette.responses import JSONResponse
 
+from api.core.dependencies import get_current_user
+from api.core.exceptions import NullValueException
+from auth.auth import role
+from auth.router import router as auth_router
+from database import conn, User, Period, init_db, UserInfo, IdentifyToken
+from theme.router import router as theme_router
 
 app = FastAPI()
 app.include_router(auth_router)
+app.include_router(theme_router)
 init_db()
 
 app.add_middleware(
@@ -27,18 +33,8 @@ app.add_middleware(
 
 @app.get('/timetable')
 def timetable(
-        auth: str = Header(default=None, alias="Authorization"), 
-        session: Session = Depends(conn)
-    ):
-
-    user_id = authorize(auth)
-    user = session.query(User).filter(User.user_id == user_id).one_or_none()
-    if user == None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Unknown user'
-        )
-
+        user: User = Depends(get_current_user),
+):
     dump = []
     for clazz in user.user_info.classes:
         subject = clazz.lecture.subject.name
@@ -71,24 +67,17 @@ def timetable(
 @app.get('/identifiers')
 def identifiers(
         name: Optional[str] = Query(None, description='name who wants to query identifying token'),
-        auth: str = Header(default=None, alias="Authorization"), 
+        user = Depends(get_current_user),
         session: Session = Depends(conn)
     ):
-    user_id = authorize(auth)
-    user = session.query(User).filter(User.user_id == user_id).one_or_none()
-    if user == None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Unknown user'   
-        )
-    
     if user.user_info.role < role.MANAGER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail='No permission'
         )
-    
-    if name == None:
+
+    # TODO: 이런 패턴 제거
+    if name is None:
         tokens = session.query(IdentifyToken).all()
     else:
         tokens = (session.query(IdentifyToken)
@@ -110,26 +99,12 @@ def identifiers(
     }
     return json.dumps(obj, ensure_ascii=False)
     
-    
-def authorize(auth: str):
-    if auth == None:
-        raise HTTPException(
-            status_code = status.HTTP_401_UNAUTHORIZED,
-            detail = 'Authorization header missing'
-        )
-    
-    scheme, _, token = auth.partition(" ")
-    if scheme.lower() != 'bearer' or scheme == None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Infelicitous token type"
-        )
-    
-    jwt = JWT.decode(token)
-    if jwt == None or not jwt.verify():
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid authorization token"
-        )
-    
-    return jwt.user_id
+@app.exception_handlers(NullValueException)
+def null_value_exception_handler(request: Request, exception: NullValueException):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            'detail': exception.message,
+            'invalid': exception.invalid
+        }
+    )
