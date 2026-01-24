@@ -22,3 +22,7 @@ db_data
 initdb
 
 .idea
+
+# web
+web/node_modules
+web/.idea

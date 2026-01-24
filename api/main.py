@@ -1,7 +1,11 @@
 import json
+import time
 from typing import Optional
 
+import structlog
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException, status, Depends, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
@@ -9,6 +13,8 @@ from starlette.responses import JSONResponse
 
 from api.core.dependencies import get_current_user
 from api.core.exceptions import NullValueException
+from api.core.middleware import RequestLogMiddleware
+from api.log.logger import configure_logger, log_exception_detail, log_request_detail
 from auth.auth import role
 from auth.router import router as auth_router
 from database import conn, User, Period, init_db, UserInfo, IdentifyToken
@@ -30,6 +36,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(CorrelationIdMiddleware)
+app.add_middleware(RequestLogMiddleware)
+
+# TODO: for dev
+DEBUG = True
+
+configure_logger(json=not DEBUG)
+logger = structlog.get_logger()
 
 @app.get('/timetable')
 def timetable(
@@ -98,13 +113,55 @@ def identifiers(
         'identify_tokens': dump
     }
     return json.dumps(obj, ensure_ascii=False)
-    
-@app.exception_handlers(NullValueException)
-def null_value_exception_handler(request: Request, exception: NullValueException):
+
+
+@app.exception_handler(NullValueException)
+async def null_value_exception_handler(request: Request, exception: NullValueException):
+    await log_request_detail(
+        request=request,
+        message=exception.message,
+        debug=DEBUG,
+        level='info',
+        invalid=exception.invalid
+    )
+
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={
             'detail': exception.message,
+            'message': 'Null value could not be accepted',
             'invalid': exception.invalid
+        }
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Handling pydantic validation errors
+    """
+
+    error_details = exc.errors()
+    await logger.warning(
+        "Invalid payload",
+        errors=error_details
+    )
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+        content={
+            'detail': error_details,
+            'message': 'Invalid payload'
+        }
+    )
+
+@app.exception_handler(Exception)
+async def global_error_handler(request: Request, exc: Exception):
+    await log_exception_detail(request=request, exc=exc)
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            'message': "Internal Server Error",
+            'request_id': request.headers.get('X-Request-Id')
         }
     )
