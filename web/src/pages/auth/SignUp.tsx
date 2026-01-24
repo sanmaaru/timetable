@@ -1,11 +1,11 @@
 import React from 'react';
-import StandardInput from "../components/login/StandardInput";
+import StandardInput from "../../components/login/StandardInput";
 import './Signup.css'
-import StandardButton from "../components/login/StandardButton";
-import TitleLogo from "../components/TitleLogo";
-import PasswordInput from "../components/login/PasswordInput";
+import StandardButton from "../../components/login/StandardButton";
+import TitleLogo from "../../components/TitleLogo";
+import PasswordInput from "../../components/login/PasswordInput";
 import {Link} from "react-router-dom";
-import {useSignUp} from "../hooks/useSignUp";
+import {useSignUp} from "../../hooks/useSignUp";
 
 function SignUp() {
     const { register, errors, password, loading, globalErrorMessage, onSubmit } = useSignUp()

@@ -1,12 +1,12 @@
 import React from 'react';
-import StandardInput from "../components/login/StandardInput";
+import StandardInput from "../../components/login/StandardInput";
 import './Login.css'
-import StandardButton from "../components/login/StandardButton";
-import TitleLogo from "../components/TitleLogo";
-import PasswordInput from "../components/login/PasswordInput";
+import StandardButton from "../../components/login/StandardButton";
+import TitleLogo from "../../components/TitleLogo";
+import PasswordInput from "../../components/login/PasswordInput";
 import {Link, useNavigate} from "react-router-dom";
-import {useLogin} from "../hooks/useLogin";
-import {isAuthenticated} from "../auth/auth";
+import {useLogin} from "../../hooks/useLogin";
+import {isAuthenticated} from "../../auth/auth";
 
 interface ApiErrorResponse {
 

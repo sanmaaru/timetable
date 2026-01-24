@@ -8,6 +8,7 @@
     background: #ffffff;
     border-radius: 15px;
     box-shadow: 3px 3px 4px #ededed;
+    overflow: hidden;
 }
 
 .logo-circle {

@@ -36,7 +36,6 @@ function Home() {
     if (loading) {
         return (
             <div id={'home'}>
-                <SideBar/>
                 <Timetable name={''} schedules={[]}/>
                 <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운" image="/assets/image/detail_image.png"/>
             </div>)
@@ -49,7 +48,6 @@ function Home() {
     const { name, schedules, classes } = timetableData;
     return (
         <div id="home">
-            <SideBar/>
             <Timetable name={name} schedules={schedules}/>
             <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운" image="/assets/image/detail_image.png"/>
         </div>

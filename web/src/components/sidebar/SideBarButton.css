@@ -1,18 +1,15 @@
 .sidebar-button {
-    width: 60px;
-    height: 40px;
+    width: 44px;
+    height: 60px;
     border: none;
     background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 48px;
+    margin-bottom: 24px;
     font-size: 12px;
-}
-
-/* add color effect to the icon */
-.sidebar-button:hover .sidebar-button-icon {
-    transform: scale(1.05) translateY(-5px);
+    border-radius: 8px;
+    padding-top: 6px;
 }
 
 .sidebar-button-icon {
@@ -21,4 +18,10 @@
     margin-bottom: 6px;
     display: inline-block;
     transition: transform 0.08s ease-in-out;
+}
+
+.sidebar-button.active {
+    opacity: 1;
+    box-shadow: inset 1px 1px 5px 2px #e6e6e6;
+    transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
 }
