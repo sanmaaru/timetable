@@ -14,11 +14,14 @@ from starlette.responses import JSONResponse
 from api.core.dependencies import get_current_user
 from api.core.exceptions import NullValueException
 from api.core.middleware import RequestLogMiddleware
-from api.log.logger import configure_logger, log_exception_detail, log_request_detail
+from api.log.logger import configure_logger
 from auth.auth import role
 from auth.router import router as auth_router
 from database import conn, User, Period, init_db, UserInfo, IdentifyToken
 from theme.router import router as theme_router
+
+# TODO: for dev
+DEBUG = True
 
 app = FastAPI()
 app.include_router(auth_router)
@@ -38,10 +41,8 @@ app.add_middleware(
 )
 
 app.add_middleware(CorrelationIdMiddleware)
-app.add_middleware(RequestLogMiddleware)
+app.add_middleware(RequestLogMiddleware, debug= DEBUG)
 
-# TODO: for dev
-DEBUG = True
 
 configure_logger(json=not DEBUG)
 logger = structlog.get_logger()
@@ -117,14 +118,7 @@ def identifiers(
 
 @app.exception_handler(NullValueException)
 async def null_value_exception_handler(request: Request, exception: NullValueException):
-    await log_request_detail(
-        request=request,
-        message=exception.message,
-        debug=DEBUG,
-        level='info',
-        invalid=exception.invalid
-    )
-
+    request.state.error = exception
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,
         content={
@@ -142,11 +136,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     """
 
     error_details = exc.errors()
-    await logger.warning(
-        "Invalid payload",
-        errors=error_details
-    )
 
+    request.state.error = error_details
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={
@@ -157,7 +148,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 @app.exception_handler(Exception)
 async def global_error_handler(request: Request, exc: Exception):
-    await log_exception_detail(request=request, exc=exc)
+    request.state.error = exc
     return JSONResponse(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         content={

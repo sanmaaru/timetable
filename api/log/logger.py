@@ -3,6 +3,7 @@ import logging
 import logging.handlers
 import queue
 import sys
+from logging.handlers import QueueHandler
 from typing import Any
 
 import structlog
@@ -18,15 +19,61 @@ SENSITIVE_KEYS = {
     'secret'
 }
 
-def mask_sensitive_data(data: Any):
+def mask_sensitive_data(data: Any, max_depth: int = 15, max_items=1000):
+    if not isinstance(data, (dict, list)):
+        return data
+
     if isinstance(data, dict):
-        return {k: '*' if k.lower() in SENSITIVE_KEYS else mask_sensitive_data(v)
-                for k, v in data.items()}
+        result = {}
+    else:
+        result = [None] * len(data)
 
-    elif isinstance(data, list):
-        return [mask_sensitive_data(v) for v in data]
+    stack = [(data, result, 0)] # original, new, depth
+    processed = 0
 
-    return data
+    while stack:
+        src, dest, depth = stack.pop()
+
+        if depth > max_depth:
+            dest['...'] = "<Max Depth Exceeded>"
+            continue
+
+        processed += 1
+        if processed > max_items:
+            if isinstance(dest, dict):
+                dest['...'] = "<Too Many Items>"
+            return result
+
+        if isinstance(src, dict):
+            for k, v in src.items():
+                if k.lower() in SENSITIVE_KEYS:
+                    dest[k] = '*'
+                elif isinstance(v, (dict, list)):
+                    new_dest = {} if isinstance(v, dict) else [None] * len(v)
+                    dest[k] = new_dest
+                    stack.append((v, new_dest, depth + 1))
+                else:
+                    dest[k] = v
+
+        elif isinstance(src, list):
+            for i, v in enumerate(src):
+                if isinstance(v, (dict, list)):
+                    new_dest = {} if isinstance(v, dict) else [None] * len(v)
+                    dest[i] = new_dest
+                    stack.append((v, new_dest, depth + 1))
+                else:
+                    dest[i] = v
+
+    return result
+
+class NonBlockingQueueHandler(QueueHandler):
+    def emit(self,record):
+        try:
+            record = self.prepare(record)
+            self.queue.put_nowait(record)
+        except queue.Full:
+            sys.stderr.write("LOG DROPPED: Queue is full \n")
+
 
 
 def configure_logger(json: bool = True, level: str = 'INFO'):
@@ -69,8 +116,8 @@ def configure_logger(json: bool = True, level: str = 'INFO'):
     handler.setFormatter(formatter)
 
     # use queue listener
-    log_queue = queue.Queue(-1)
-    queue_handler = logging.handlers.QueueHandler(log_queue)
+    log_queue = queue.Queue(maxsize=10000)
+    queue_handler = NonBlockingQueueHandler(log_queue)
 
     listener = logging.handlers.QueueListener(log_queue, handler)
     listener.start()
@@ -85,46 +132,3 @@ def configure_logger(json: bool = True, level: str = 'INFO'):
         logger = logging.getLogger(_log)
         logger.handlers = []
         logger.propagate = True
-
-
-def _query_request_detail(request: Request, debug: bool = False):
-    body = getattr(request.state, 'body', None)
-    headers = dict(request.headers)
-    if not debug:
-        headers = mask_sensitive_data(headers)
-    query = request.query_params
-
-    return query, headers, body
-
-
-async def log_request_detail(request: Request, message: str, debug: bool = False, level: str = 'info', **kwargs):
-    logger = structlog.get_logger()
-
-    query, headers, body = _query_request_detail(request, debug)
-
-    log_method = getattr(logger, level)
-    await log_method(
-        message,
-        request_detail={
-            'query_params': query,
-            'headers': headers,
-            'body': body,
-        },
-        **kwargs
-    )
-
-
-async def log_exception_detail(request: Request, exc: Exception, debug: bool = False):
-    logger = structlog.get_logger()
-
-    query, headers, body = _query_request_detail(request, debug)
-
-    await logger.exception(
-        "Exception occurs when handling request!",
-        error_message=str(exc),
-        request_detail={
-            'query_params': query,
-            'headers': headers,
-            'body': body,
-        },
-    )
