@@ -4,7 +4,7 @@ from typing import Generic, TypeVar
 from fastapi import status
 from pydantic import BaseModel
 
-from ..database import User
+from database import User
 
 T = TypeVar("T")
 

@@ -6,10 +6,10 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
 from pydantic import BaseModel, EmailStr, Field
 
-from .auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
-from ..database import conn, User
-from ..theme.crud import create_default_theme
-from ..util import create_id
+from auth.auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
+from database import conn, User
+from theme.crud import create_default_theme
+from util import create_id
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 hasher = PasswordHasher()

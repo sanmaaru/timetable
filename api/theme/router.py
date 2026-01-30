@@ -3,11 +3,11 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from .crud import get_selected_theme, get_theme
-from .schemas import ThemeSchema, ThemeChangeInput
-from ..core.dependencies import get_current_user
-from ..core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
-from ..database import User, conn
+from theme.crud import get_selected_theme, get_theme
+from theme.schemas import ThemeSchema, ThemeChangeInput
+from core.dependencies import get_current_user
+from core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
+from database import User, conn
 
 router = APIRouter(prefix='/theme', tags=['theme'])
 

@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, String, Boolean, DateTime
 from sqlalchemy.dialects.mysql import VARCHAR
 from sqlalchemy.orm import relationship
 
-from ..database import Base, ULID, generate_ulid, Hex
+from database import Base, ULID, generate_ulid, Hex
 
 
 class Theme(Base):
@@ -10,7 +10,7 @@ class Theme(Base):
     __tablename__ = "themes"
 
     theme_id = Column(ULID(), primary_key=True, default=generate_ulid)
-    owner_id = Column(String(36), ForeignKey("users.id"), nullable=False)
+    owner_id = Column(String(36), ForeignKey("users.user_id"), nullable=False)
     parent_theme_id = Column(ULID(), ForeignKey("themes.theme_id"))
     title = Column(VARCHAR(255), nullable=False)
     published = Column(Boolean(), default=False)

@@ -3,11 +3,11 @@ from datetime import datetime
 import ulid.ulid
 from sqlalchemy.orm import Session
 
-from model import Theme, ColorScheme
-from .exceptions import ThemeNotFoundException, ThemeNotOwnedByException
-from .schemas import ColorSchemeSchema, ThemeSchema
-from ..core.exceptions import NullValueException
-from ..database import User
+from theme.model import Theme, ColorScheme
+from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException
+from theme.schemas import ColorSchemeSchema, ThemeSchema
+from core.exceptions import NullValueException
+from database import User
 
 DEFAULT_COLOR = '#2B2A2A'
 DEFAULT_TEXT_COLOR = '#EEEEEE'

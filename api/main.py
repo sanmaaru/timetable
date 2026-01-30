@@ -11,10 +11,10 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 from starlette.responses import JSONResponse
 
-from api.core.dependencies import get_current_user
-from api.core.exceptions import NullValueException
-from api.core.middleware import RequestLogMiddleware
-from api.log.logger import configure_logger
+from core.dependencies import get_current_user
+from core.exceptions import NullValueException
+from core.middleware import RequestLogMiddleware
+from log.logger import configure_logger
 from auth.auth import role
 from auth.router import router as auth_router
 from database import conn, User, Period, init_db, UserInfo, IdentifyToken

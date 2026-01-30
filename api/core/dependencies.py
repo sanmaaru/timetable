@@ -1,7 +1,7 @@
 from fastapi import Header, Depends, HTTPException, status
 
-from ..auth import JWT
-from ..database import conn, User
+from auth.auth import JWT
+from database import conn, User
 
 
 def get_current_user(

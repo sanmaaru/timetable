@@ -1,10 +1,11 @@
-import hashlib, base64, math, random
-from fastapi import HTTPException, status
-import pandas as pd
+import base64
+import hashlib
+import math
+import random
 from datetime import datetime
 from typing import Any
 
-from api.auth import JWT
+import pandas as pd
 
 
 def hash_with_base64(data, length: int):

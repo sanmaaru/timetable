@@ -10,7 +10,7 @@ from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from api.log.logger import mask_sensitive_data
+from log.logger import mask_sensitive_data
 
 logger = structlog.get_logger()
 
@@ -192,7 +192,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             except Exception:
                 masked_body = 'Cannot parse body'
         else:
-            masked_body = 'Body skipped'
+            masked_body = 'Body skipped' if not is_cached else 'Body is not cached'
 
 
         masked_header = mask_sensitive_data(header) if not self.debug else header
