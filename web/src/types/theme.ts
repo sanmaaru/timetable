@@ -1,10 +1,10 @@
 export interface Theme {
     title: string;
     theme_id: string;
-    colorSchemas: ColorSchema[]
+    colorSchemes: ColorScheme[]
 }
 
-export interface ColorSchema {
+export interface ColorScheme {
     subject: string;
     color: string;
     textColor: string;

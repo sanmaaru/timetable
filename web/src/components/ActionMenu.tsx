@@ -6,7 +6,7 @@ export interface ActionMenuButton {
     icon: FC<SVGProps<SVGSVGElement>>;
     text: string;
     onClick: () => void;
-    color: string | undefined;
+    color?: string | undefined;
 }
 
 interface ActionMenuProps {

@@ -1,6 +1,8 @@
 import React from 'react';
 import './TimetableGrid.css'
 import {DAY_LIST, PERIOD_LIST, Schedule} from "../../types/schedule";
+import {ColorScheme, Theme} from "../../types/theme";
+import timetable from "./Timetable";
 
 const periods = PERIOD_LIST
 const days = DAY_LIST
@@ -8,23 +10,30 @@ const days = DAY_LIST
 interface TimetableGridProps {
 
     schedules: Schedule[];
+    colorSchemes: ColorScheme[];
 
 }
 
-const drawSchedule = (schedules: Schedule[]) => (
-    schedules.map(schedule => {
+const drawSchedule = (schedules: Schedule[], colorSchemes: ColorScheme[]) => {
+    const subjectColorMap = colorSchemes.reduce((acc, { subject, color, textColor}) => {
+        acc[subject] = { color, textColor };
+        return acc
+    }, {} as Record<string, { color: string, textColor: string }>);
+
+    return schedules.map(schedule => {
         const columnIdx = days.indexOf(schedule.day) + 2
+        const color = subjectColorMap[schedule.class.subject] ?? { color: '#ff0000', textColor: '#eeeeee' }
 
         return [<div
             key={`timetable-class-${schedule.class.subject}-${schedule.class.teacher}`}
             className="timetable-class"
             style={{
-                backgroundColor: schedule.class.color,
+                backgroundColor: color.color,
                 gridRowStart: schedule.period_from,
                 gridRowEnd: schedule.period_to + 1,
                 gridColumn: columnIdx,
-                boxShadow: `1px 1px 2px ${schedule.class.color}`,
-                color: schedule.class.textColor,
+                boxShadow: `1px 1px 2px ${color.color}`,
+                color: color.textColor,
             }}
         >
             <div
@@ -36,13 +45,13 @@ const drawSchedule = (schedules: Schedule[]) => (
                 <span className='division'>{schedule.class.division}분반</span>
             </div>
         </div>]
-    })
-);
+    });
+};
 
-const TimetableGrid = ({schedules}: TimetableGridProps) => {
+const TimetableGrid = ({schedules, colorSchemes}: TimetableGridProps) => {
     return (
         <div className="timetable-grid-column timetable-grid-row timetable-grid">
-            {drawSchedule(schedules)}
+            {drawSchedule(schedules, colorSchemes)}
             {periods.map(period => ( // create cell of period
                 <div
                     key={`timetable-grid-${period}`}

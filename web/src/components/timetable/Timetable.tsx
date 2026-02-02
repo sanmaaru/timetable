@@ -20,21 +20,21 @@ const TimetableHeader = () => {
 }
 
 interface TimetableProps {
-
+    title: string;
     name: string
     schedules: Schedule[];
     theme: Theme;
 
 }
 
-const Timetable = ({name, schedules}: TimetableProps) => {
+const Timetable = ({title, name, schedules, theme}: TimetableProps) => {
     return (<div className="timetable">
         <div className='timetable-title'>
-            <span className='title'>시간표</span>
+            <span className='title'>{title}</span>
             <span className='name'> - {name}</span>
         </div>
         <TimetableHeader/>
-        <TimetableGrid schedules={schedules}/>
+        <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes}/>
     </div>);
 }
 

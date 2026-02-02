@@ -7,15 +7,17 @@
 }
 
 .theme-element .descriptions {
-    margin-top: 4px;
+    height: 28px;
+    margin-top: 12px;
     margin-left: 8px;
     display: flex;
     flex-direction: row;
-    align-items: end;
+    align-items: center;
     margin-right: 4px;
 }
 
-.theme-element .descriptions .title {
+.theme-element .descriptions > .title {
+    margin-top: 2px;
     font-family: NixgonFont, serif;
     font-size: 14px;
     font-weight: 500;

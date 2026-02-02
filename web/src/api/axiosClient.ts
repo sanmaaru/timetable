@@ -39,8 +39,10 @@ const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach((prom) => {
         if (error)
             prom.reject(error)
-        else
+        else {
             prom.resolve(token)
+            isRefreshing = false
+        }
     })
 
     failedQueue = []

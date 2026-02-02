@@ -5,10 +5,8 @@ import {Schedule} from "../types/schedule";
 const parseTimetableData = (timetable: any) => {
     const classes: Class[] = [];
     const schedules: Schedule[] = [];
-    timetable.forEach((entry: any, index: number) => {
+    timetable.forEach((entry: any) => {
         const newClass: Class = {
-            color: "#2B2A2A",
-            textColor: "#EEEEEE",
             subject: entry.subject,
             teacher: entry.teacher,
             division: entry.division

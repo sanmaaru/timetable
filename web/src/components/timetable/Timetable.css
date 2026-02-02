@@ -25,7 +25,7 @@
     height: 32px;
 }
 
-.timetable-title .title {
+.timetable-title > .title {
     font-size: 28px;
     font-family: "Pretendard", serif;
     font-weight: 900;

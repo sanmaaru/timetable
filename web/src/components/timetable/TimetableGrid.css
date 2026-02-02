@@ -50,8 +50,8 @@
     transform: translateY(-3px);
 }
 
-.timetable-info .subject {
-    margin-top: 5%;
+.timetable-info > .subject {
+    margin-top: 10px;
     margin-left: 12px;
     font-size: 14px;
     font-family: "Pretendard", serif;
@@ -60,9 +60,9 @@
     grid-column: 1 / span 2;
 }
 
-.timetable-info .teacher {
+.timetable-info > .teacher {
     margin-left: 12px;
-    margin-bottom: 10%;
+    margin-bottom: 12px;
     font-size: 12px;
     grid-row: 2;
     grid-column: 1;
@@ -71,7 +71,7 @@
     font-weight: 500;
 }
 
-.timetable-info .division {
+.timetable-info > .division {
     margin-right: 14px;
     margin-bottom: 10%;
     font-size: 12px;
@@ -83,7 +83,7 @@
     font-weight: 500;
 }
 
-.timetable-grid-cell span {
+.timetable-grid-cell > span {
     font-family: "Pretendard", serif;
     font-weight: 500;
     font-size: 14px;

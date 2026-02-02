@@ -16,7 +16,7 @@ interface ThemeElementProps {
 }
 
 const ThemeElement = ({theme}: ThemeElementProps) => {
-    const { ref: containerRef, width, height } = useContainerSize();
+    const { ref: containerRef, width } = useContainerSize();
     const [isOpen, setIsOpen] = React.useState(false);
 
     const navigate = useNavigate();
@@ -25,10 +25,10 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
         navigate(`/theme/${theme.theme_id}`)
     }
 
-    const cardNumbers = theme.colorSchemas.length
-    const cards = theme.colorSchemas.map((colorSchema, index) => {
+    const cardNumbers = theme.colorSchemes.length
+    const cards = theme.colorSchemes.map((colorSchema, index) => {
         const cardWidth = 160
-        const gap = Math.max(width * 0.15, (width-cardWidth) / cardNumbers)
+        const gap = Math.min(width * 0.15, (width-cardWidth) / cardNumbers)
         const leftPos = gap * index
 
         return (
