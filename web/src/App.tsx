@@ -6,8 +6,9 @@ import Login from "./pages/auth/Login";
 import SignUp from "./pages/auth/SignUp";
 import ProtectedRoute from "./auth/ProtectedRoute";
 import Layout from "./pages/Layout";
-import Theme from "./pages/Theme";
+import Theme from "./pages/theme/Theme";
 import Account from "./pages/Account";
+import ThemeView from "./pages/theme/ThemeView";
 
 function App() {
     return (
@@ -20,6 +21,7 @@ function App() {
                     <Route element={<Layout/>}>
                         <Route path="/" element={<Home/>}/>
                         <Route path="/theme" element={<Theme/>}/>
+                        <Route path="/theme/:themeId" element={<ThemeView/>}></Route>
                         <Route path="/account" element={<Account/>}/>
                     </Route>
                 </Route>

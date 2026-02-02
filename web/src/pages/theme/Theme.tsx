@@ -1,7 +1,7 @@
 import React from "react";
 import './Theme.css'
-import ThemeList from "../components/theme/ThemeList";
-import Add from '../resources/icon/icn_add.svg?react'
+import ThemeList from "../../components/theme/ThemeList";
+import Add from '../../resources/icon/icn_add.svg?react'
 
 const Theme = () => {
     const themes = [
@@ -10,11 +10,13 @@ const Theme = () => {
                 { subject: '선형대수학', color: '#ff0000', textColor: '#ffffff' },
                 { subject: '선형대수학', color: '#00ff00', textColor: '#ffffff' },
                 { subject: '선형대수학', color: '#0000ff', textColor: '#ffffff' }
-            ]
+            ],
+            theme_id: 'asdf'
         },
         { title: '조시우님의 테마 (1)', colorSchemas: [
                 { subject: '선형대수학', color: '#ff0000', textColor: '#ffffff' }
-            ]
+            ],
+            theme_id: 'asdfasdf'
         }
     ]
 

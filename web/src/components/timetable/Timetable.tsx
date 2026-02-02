@@ -2,6 +2,7 @@ import React from "react";
 import './Timetable.css';
 import {DAY_LIST, Schedule} from "../../types/schedule";
 import TimetableGrid from "./TimetableGrid";
+import {Theme} from "../../types/theme";
 
 const days = DAY_LIST;
 
@@ -22,6 +23,7 @@ interface TimetableProps {
 
     name: string
     schedules: Schedule[];
+    theme: Theme;
 
 }
 

@@ -5,7 +5,7 @@
     flex-direction: column;
 }
 
-#theme .title {
+.title {
     font-family: Pretendard, serif;
     font-size: 28px;
     font-weight: 900;
@@ -13,7 +13,7 @@
     margin-top: 12px;
 }
 
-#theme .container {
+.container {
     margin-top: 16px;
     width: 100%;
     height: 100%;
@@ -21,14 +21,18 @@
     flex-direction: column;
 }
 
-#theme .container .subtitle span {
+.container .theme-list {
+    margin-bottom: 36px;
+}
+
+.container .subtitle span {
     font-family: Pretendard, serif;
     font-size: 24px;
     font-weight: 800;
     color: #121212;
 }
 
-#theme .container .subtitle {
+.container .subtitle {
     margin-left: 8px;
     margin-top: 10px;
     padding-right: 14px;
@@ -37,13 +41,13 @@
     align-items: center;
 }
 
-#theme .container .subtitle svg {
+.container .subtitle svg {
     width: 16px;
     height: 16px;
     margin-left: auto;
 }
 
-#theme .container .theme-list {
+.container .theme-list {
     margin-top: 12px;
     margin-bottom: 36px;
 }

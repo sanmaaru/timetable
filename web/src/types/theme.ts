@@ -1,6 +1,6 @@
 export interface Theme {
     title: string;
-    // theme_id: string;
+    theme_id: string;
     colorSchemas: ColorSchema[]
 }
 
