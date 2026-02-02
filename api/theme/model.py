@@ -17,9 +17,9 @@ class Theme(Base):
     created_at = Column(DateTime(), nullable=False)
     updated_at = Column(DateTime(), nullable=False)
 
-    owner = relationship("User", back_populates="owning_themes")
+    owner = relationship("User", back_populates="owning_themes", foreign_keys=[owner_id])
     color_schemes = relationship("ColorScheme", back_populates="theme", cascade='all, delete-orphan')
-    selectors = relationship('User', back_populates="selected_theme", passive_deletes=True)
+    selectors = relationship('User', back_populates="selected_theme", passive_deletes=True, foreign_keys="[User.selected_theme_id]")
 
 
 
@@ -34,3 +34,4 @@ class ColorScheme(Base):
     text_color = Column(Hex(length=6), nullable=False)
 
     theme = relationship("Theme", back_populates="color_schemes")
+    subject = relationship('Subject')

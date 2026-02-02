@@ -1,4 +1,4 @@
-from template import *
+from .template import *
 from database import *
 from pathlib import Path
 
@@ -26,3 +26,5 @@ create_user_info(
     name='administrator', 
     role=role.ADMINISTRATOR
 )
+
+session.commit()

@@ -5,27 +5,27 @@ from sqlalchemy.orm import Session
 
 from theme.model import Theme, ColorScheme
 from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException
-from theme.schemas import ColorSchemeSchema, ThemeSchema
+from theme.schemas import ColorSchemeSchema, ThemeSchema, parse_color_schemes
 from core.exceptions import NullValueException
-from database import User
+from auth.model import User, UserInfo
 
 DEFAULT_COLOR = '#2B2A2A'
 DEFAULT_TEXT_COLOR = '#EEEEEE'
 
-def create_default_theme(user: User, session: Session, title: str = None):
+def create_default_theme(user: User, user_info: UserInfo, session: Session, title: str = None):
     if title is None:
         title = f'{user.username}님의 테마'
 
     theme = Theme(
-        owner_id=user.user_id,
         title=title,
         published=False,
         created_at=datetime.now(),
         updated_at=datetime.now(),
     )
+    theme.owner = user
     session.add(theme)
 
-    subjects = [enrollment.clazz.lecture.subject.name for enrollment in user.user_info.enrollments]
+    subjects = set([enrollment.clazz.lecture.subject for enrollment in user_info.enrollments])
     for subject in subjects:
         color_scheme = ColorScheme(
             theme_id=theme.theme_id,
@@ -35,42 +35,59 @@ def create_default_theme(user: User, session: Session, title: str = None):
         )
         session.add(color_scheme)
 
+    return theme
 
-def get_selected_theme(user: User):
+
+def query_selected_theme(user: User):
     selected_theme = user.selected_theme
-    color_schemas = []
-    for color_schema in selected_theme.color_schemas:
-        color_schemas.append(ColorSchemeSchema(
-            subject = color_schema.subject.name,
-            color = color_schema.color,
-            text_color = color_schema.text_color
-        ))
+    color_schemes = parse_color_schemes(selected_theme.color_schemes)
 
     return ThemeSchema(
         title=selected_theme.title,
         published=selected_theme.published,
-        color_schemas=color_schemas,
+        color_schemes=color_schemes,
         created_at=selected_theme.created_at,
         updated_at=selected_theme.updated_at,
         theme_id=selected_theme.theme_id,
+        selected=True
     )
 
-def get_theme(theme_id, user: User, session):
-    if theme_id is None:
-        raise NullValueException('Theme ID must not be null', 'theme_id')
+def query_all_themes(user: User):
+    theme_schemas = []
+    themes = user.owning_themes
+    for theme in themes:
+        theme_schema_args = {
+            'title': theme.title,
+            'published': theme.published,
+            'color_schemes': parse_color_schemes(theme.color_schemes),
+            'created_at': theme.created_at,
+            'updated_at': theme.updated_at,
+            'theme_id': theme.theme_id,
+        }
 
-    if isinstance(theme_id, str):
-        theme_id = ulid.from_str(theme_id)
+        if user.selected_theme_id == theme.theme_id:
+            theme_schema_args['selected'] = True
 
-    theme = (session.query(Theme)
-             .filter(Theme.theme_id == theme_id)
-             .one_or_none())
+        theme_schemas.append(ThemeSchema(**theme_schema_args))
+
+    return theme_schemas
+
+def query_theme(theme_id, user: User, session: Session):
+    theme: Theme | None = session.query(Theme).filter(Theme.theme_id == theme_id).one_or_none()
 
     if theme is None:
-        raise ThemeNotFoundException('Theme does not exist')
+        raise ThemeNotFoundException('Theme does not exist', theme_id=theme_id)
 
     # published 되지 않은 theme의 user가 owner와 다르다면 소유하지 않았다는 뜻
     if (not theme.published) and (theme.owner_id != user.user_id):
-        raise ThemeNotOwnedByException('Theme does not owned by ' + theme.owner)
+        raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
 
-    return theme
+    return ThemeSchema(
+        title=theme.title,
+        published=theme.published,
+        color_schemes=parse_color_schemes(theme.color_schemes),
+        created_at=theme.created_at,
+        updated_at=theme.updated_at,
+        theme_id=theme.theme_id,
+        selected=(user.selected_theme_id == theme.theme_id),
+    )

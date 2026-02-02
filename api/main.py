@@ -1,5 +1,4 @@
 import json
-import time
 from typing import Optional
 
 import structlog
@@ -11,13 +10,15 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 from starlette.responses import JSONResponse
 
+import theme.exceptions
+from auth.auth import role
+from auth.model import User, UserInfo, IdentifyToken
+from auth.router import router as auth_router
 from core.dependencies import get_current_user
 from core.exceptions import NullValueException
 from core.middleware import RequestLogMiddleware
+from database import conn, Period, init_db
 from log.logger import configure_logger
-from auth.auth import role
-from auth.router import router as auth_router
-from database import conn, User, Period, init_db, UserInfo, IdentifyToken
 from theme.router import router as theme_router
 
 # TODO: for dev
@@ -156,3 +157,5 @@ async def global_error_handler(request: Request, exc: Exception):
             'request_id': request.headers.get('X-Request-Id')
         }
     )
+
+theme.exceptions.include_exception_handlers(app)

@@ -4,13 +4,13 @@ from typing import Generic, TypeVar
 from fastapi import status
 from pydantic import BaseModel
 
-from database import User
+from auth.model import User
 
 T = TypeVar("T")
 
 class MetaSchema(BaseModel):
     user_id: str
-    status: int
+    status: int = status.HTTP_200_OK
     responded_at: datetime
 
 class BaseResponse(BaseModel, Generic[T]):

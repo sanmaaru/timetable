@@ -99,7 +99,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                     response.background = new_task
 
             else:
-                await logger.info(
+                logger.info(
                     'Request handled',
                     status_code=response.status_code,
                     process_time=process_time
