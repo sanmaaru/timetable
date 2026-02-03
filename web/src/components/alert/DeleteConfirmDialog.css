@@ -1,0 +1,57 @@
+.delete-confirm-dialog {
+    border-radius: 12px;
+    background-color: #ffffff;
+    box-shadow: 0 0 4px #ededed;
+    width: 400px;
+    height: 160px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.delete-confirm-dialog > span {
+    font-family: NixgonFont, serif;
+    white-space: pre-wrap;
+}
+
+.delete-confirm-dialog > span:first-child {
+    font-size: 18px;
+    /*font-weight: bold;*/
+    margin-top: 20px;
+    margin-left: 16px;
+    color: #ff0000;
+}
+
+.delete-confirm-dialog > span:nth-child(2) {
+    font-size: 16px;
+    margin-top: 16px;
+    margin-left: 16px;
+    margin-right: 16px;
+    line-height: 1.3;
+}
+
+.delete-confirm-dialog > div {
+    width: 100%;
+    height: 50px;
+    margin-top: auto;
+    display: flex;
+    flex-direction: row;
+}
+
+.delete-confirm-dialog > div > button {
+    width: 50%;
+    height: 100%;
+    padding: 0;
+    border: none;
+    background-color: #ffffff;
+    font-family: NixgonFont, serif;
+    font-size: 16px;
+}
+
+.delete-confirm-dialog > div > button:hover {
+    background-color: #ededed;
+}
+
+.delete-confirm-dialog > div > button:nth-child(2) {
+    color: #ff0000;
+}

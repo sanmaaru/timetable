@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef} from "react";
 import './ThemeElement.css'
 import {Theme} from "../../types/theme";
 import useContainerSize from "../../hooks/useContainerSize";
@@ -10,6 +10,8 @@ import ActionMenu from "../ActionMenu";
 import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
 import Pencil from '../../resources/icon/icn_pencil.svg?react'
 import Share from '../../resources/icon/icn_share.svg?react'
+import {deleteTheme} from "../../api/fetchTheme";
+import DeleteConfirmDialog, {DeleteConfirmDialogRef} from "../alert/DeleteConfirmDialog";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -21,8 +23,17 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
 
     const navigate = useNavigate();
 
-    const onClickView = () => {
+    const handleView = () => {
         navigate(`/theme/${theme.theme_id}`)
+    }
+
+    const deleteConfirmRef = useRef<DeleteConfirmDialogRef>();
+    const handleDelete = async () => {
+        deleteConfirmRef.current?.show({
+            onConfirm: async () => {
+                await deleteTheme(theme.theme_id)
+            }
+        });
     }
 
     const cardNumbers = theme.colorSchemes.length
@@ -51,7 +62,7 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
     const buttons = [
         { icon: Pencil, text: '수정' , onClick: () => alert('test - trash') },
         { icon: Share, text: '온라인에 공유' , onClick: () => alert('test - trash') },
-        { icon: Trashcan, text: '휴지통으로 이동' , onClick: () => alert('test - trash'), color: '#ff0000' },
+        { icon: Trashcan, text: '휴지통으로 이동' , onClick: handleDelete, color: '#ff0000' },
     ]
 
     const { refs, floatingStyles, context } = useFloating({
@@ -81,7 +92,7 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
             </div>
             <div className='descriptions'>
                 <span className='title' title={theme.title}>{theme.title}</span>
-                <button onClick={onClickView} title={'테마 미리보기'}>
+                <button onClick={handleView} title={'테마 미리보기'}>
                     <View/>
                 </button>
                 <button
@@ -100,6 +111,7 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
                 floatingMenuProps={getFloatingProps()}
                 floatingStyles={floatingStyles}
                 buttons={buttons}/>}
+            <DeleteConfirmDialog ref={deleteConfirmRef} content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}/>
         </div>
     )
 }

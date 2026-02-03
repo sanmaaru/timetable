@@ -1,11 +1,9 @@
-import React, {useEffect, useState} from "react";
+import React from "react";
 import './ThemeView.css';
 import {useParams} from "react-router-dom";
-import {fetchTimetable} from "../../api/fetchTimetable";
-import Timetable from "../../components/timetable/Timetable";
-import {TimetableData} from "../../types/timetable";
 import useTimetable from "../../hooks/useTimetable";
-import DetailBar from "../../components/detailBar/DetailBar";
+import TimetableGrid from "../../components/timetable/TimetableGrid";
+import TimetableHeader from "../../components/timetable/TimetableHeader";
 
 const ThemeView = () => {
     const { themeId } = useParams()
@@ -13,7 +11,6 @@ const ThemeView = () => {
 
     if (isLoading) {
         return (<div id='theme-view'>
-            <Timetable title={'테마 미리보기'} name={''} schedules={[]} theme={{ title: '', theme_id: '', colorSchemes: [] }}/>
         </div>)
     }
 
@@ -26,8 +23,17 @@ const ThemeView = () => {
     const { schedules } = timetableData;
 
     return (<div id='theme-view'>
-        <Timetable title={'테마 미리보기'} name={themeData.title} schedules={schedules} theme={themeData}/>
-        <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운" image="/assets/image/detail_image.png"/>
+        <div className='title container'>
+            <span className='title'>{'테마 미리보기'}</span>
+            <span className='name'> - {themeData.title}</span>
+        </div>
+        <div>
+            <TimetableHeader/>
+            <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes}/>
+        </div>
+        <div>
+
+        </div>
     </div>)
 }
 

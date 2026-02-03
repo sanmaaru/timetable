@@ -31,7 +31,7 @@ export const fetchThemes = async () => {
 }
 
 export const fetchTheme = async (themeId: string) => {
-    const response = await privateAxiosClient.get(`/theme/?theme_id=${themeId}`, {});
+    const response = await privateAxiosClient.get(`/theme/${themeId}`, {});
 
     const rawData = response.data.data;
     return parseThemeData(rawData);
@@ -42,4 +42,12 @@ export const fetchSelectedTheme = async () => {
 
     const rawData = response.data.data;
     return parseThemeData(rawData)
+}
+
+export const deleteTheme = async (themeId: string) => {
+    try {
+        const response = await privateAxiosClient.delete(`/theme/${themeId}`);
+    } catch (error) {
+        console.log(error);
+    }
 }

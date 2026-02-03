@@ -1,0 +1,8 @@
+.timetable-header {
+    border-radius: 8px;
+    border: 1px solid #fafafa;
+    margin-top: 12px;
+    width: 100%;
+    height: 36px;
+    box-shadow: 3px 3px 4px #ededed;
+}
