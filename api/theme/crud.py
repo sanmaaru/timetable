@@ -1,18 +1,19 @@
 from datetime import datetime
 
-import ulid.ulid
 from sqlalchemy.orm import Session
+from ulid import ULID
 
-from theme.model import Theme, ColorScheme
-from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException
-from theme.schemas import ColorSchemeSchema, ThemeSchema, parse_color_schemes
-from core.exceptions import NullValueException
 from auth.model import User, UserInfo
+from core.exceptions import NullValueException
+from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException, LastThemeDeleteException, \
+    ThemeInUseException
+from theme.model import Theme, ColorScheme
+from theme.schemas import ThemeSchema, parse_color_schemes
 
 DEFAULT_COLOR = '#2B2A2A'
 DEFAULT_TEXT_COLOR = '#EEEEEE'
 
-def create_default_theme(user: User, user_info: UserInfo, session: Session, title: str = None):
+def service_create_default_theme(user: User, user_info: UserInfo, session: Session, title: str = None):
     if title is None:
         title = f'{user.username}님의 테마'
 
@@ -37,6 +38,24 @@ def create_default_theme(user: User, user_info: UserInfo, session: Session, titl
 
     return theme
 
+def service_delete_theme(user: User, theme_id: ULID, session: Session):
+    if theme_id is None:
+        raise NullValueException('Theme id is null', invalid='theme_id')
+
+    theme = session.query(Theme).filter(Theme.theme_id == theme_id).one_or_none()
+    if theme is None:
+        raise ThemeNotFoundException('Theme does not exist', theme_id=theme_id)
+
+    if theme.owner_id != user.user_id:
+        raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
+
+    if user.selected_theme_id == theme_id:
+        raise ThemeInUseException('Cannot delete the theme currently in use', theme_id=theme_id)
+
+    if len(user.owning_themes) <= 1:
+        raise LastThemeDeleteException('Each user is required to posses a minimum of one theme')
+
+    session.delete(theme)
 
 def query_selected_theme(user: User):
     selected_theme = user.selected_theme
@@ -91,3 +110,13 @@ def query_theme(theme_id, user: User, session: Session):
         theme_id=theme.theme_id,
         selected=(user.selected_theme_id == theme.theme_id),
     )
+
+def service_change_selected_theme(user: User, theme_id: ULID, session: Session):
+    theme = session.query(Theme).filter(Theme.theme_id == theme_id).one_or_none()
+    if theme is None:
+        raise ThemeNotFoundException('Theme does not exist', theme_id=theme_id)
+
+    if theme.owner_id != user.user_id:
+        raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
+
+    user.selected_theme_id = theme.theme_id

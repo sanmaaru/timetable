@@ -9,7 +9,7 @@ from pydantic import BaseModel, EmailStr, Field
 from auth.auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
 from auth.model import User, UserInfo
 from database import conn
-from theme.crud import create_default_theme
+from theme.crud import service_create_default_theme
 from util import create_id
 
 router = APIRouter(prefix='/auth', tags=['auth'])
@@ -137,7 +137,7 @@ def signup(input: SignUpInput, session = Depends(conn)):
     session.add(user)
     session.flush()
 
-    theme = create_default_theme(user, user_info, session)
+    theme = service_create_default_theme(user, user_info, session)
     user.selected_theme = theme
 
     # 회원가입 완료시 identifer 삭제
