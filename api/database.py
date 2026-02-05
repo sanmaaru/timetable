@@ -6,11 +6,9 @@ from typing import Any
 import ulid
 from dotenv import load_dotenv
 from sqlalchemy import (
-    Column, Float, ForeignKey, SmallInteger, String, Integer, create_engine, TypeDecorator, BINARY, LargeBinary
+    Column, ForeignKey, SmallInteger, String, create_engine, TypeDecorator, BINARY, LargeBinary
 )
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-
-from util import get_grade
 
 load_dotenv('../.env')
 

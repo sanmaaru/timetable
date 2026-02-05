@@ -5,9 +5,9 @@ import queue
 import sys
 from logging.handlers import QueueHandler
 from typing import Any
+from xml.etree.ElementTree import indent
 
 import structlog
-from structlog.dev import ConsoleRenderer
 
 # TODO: 나중에 파일로 빼는거 고려
 SENSITIVE_KEYS = {
@@ -90,7 +90,7 @@ def configure_logger(json: bool = True, level: str = 'INFO'):
         processors = preprocessors + [
             structlog.processors.format_exc_info,
             structlog.processors.dict_tracebacks,
-            structlog.processors.JSONRenderer(),
+            structlog.processors.JSONRenderer(indent=4),
         ]
     else:
         processors = preprocessors + [
@@ -109,7 +109,7 @@ def configure_logger(json: bool = True, level: str = 'INFO'):
         foreign_pre_chain=preprocessors,
         processors=[
             structlog.stdlib.ProcessorFormatter.remove_processors_meta,
-            structlog.processors.JSONRenderer() if json else structlog.dev.ConsoleRenderer(),
+            structlog.processors.JSONRenderer(indent=4) if json else structlog.dev.ConsoleRenderer(),
         ]
     )
     handler = logging.StreamHandler(sys.stdout)

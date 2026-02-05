@@ -49,11 +49,11 @@ def service_delete_theme(user: User, theme_id: ULID, session: Session):
     if theme.owner_id != user.user_id:
         raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
 
-    if user.selected_theme_id == theme_id:
-        raise ThemeInUseException('Cannot delete the theme currently in use', theme_id=theme_id)
-
     if len(user.owning_themes) <= 1:
         raise LastThemeDeleteException('Each user is required to posses a minimum of one theme')
+
+    if user.selected_theme_id == theme_id:
+        raise ThemeInUseException('Cannot delete the theme currently in use', theme_id=theme_id)
 
     session.delete(theme)
 

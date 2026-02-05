@@ -1,19 +1,18 @@
 from datetime import datetime
-from typing import Optional, List, Union
+from typing import List
 
-import ulid
-from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.params import Query, Path
+from fastapi import APIRouter, Depends, status
+from fastapi.params import Path
 from sqlalchemy.orm import Session
 
-from core.types import ULIDInput
+from auth.model import User
+from core.dependencies import get_current_user
+from core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
+from core.types import ULIDModel
+from database import conn
 from theme.crud import query_selected_theme, query_theme, query_all_themes, service_delete_theme, \
     service_change_selected_theme
 from theme.schemas import ThemeSchema, ThemeChangeInput
-from core.dependencies import get_current_user
-from core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
-from database import conn
-from auth.model import User
 
 router = APIRouter(prefix='/theme', tags=['theme'])
 
@@ -38,9 +37,6 @@ def change_selected_theme(
         session: Session = Depends(conn)
 ):
     theme_id = input.theme_id
-    if isinstance(theme_id, str):
-        theme_id = ulid.from_str(theme_id)
-
     service_change_selected_theme(user, theme_id, session)
     session.commit()
 
@@ -55,7 +51,7 @@ def change_selected_theme(
 @router.get('/{theme_id}', response_model=BaseResponse[ThemeSchema])
 def get_theme(
         user: User = Depends(get_current_user),
-        theme_id: ULIDInput = Path(description='theme id want to query'),
+        theme_id: ULIDModel = Path(description='theme id want to query'),
         session: Session = Depends(conn)
 ):
     theme = query_theme(theme_id, user, session)
@@ -63,13 +59,10 @@ def get_theme(
 
 @router.delete('/{theme_id}')
 def delete_theme(
-        theme_id: ULIDInput = Path(description='theme id want to delete'),
+        theme_id: ULIDModel = Path(description='theme id want to delete'),
         user: User = Depends(get_current_user),
         session: Session = Depends(conn)
 ):
-    if isinstance(theme_id, str):
-        theme_id = ulid.from_str(theme_id)
-
     service_delete_theme(user, theme_id, session)
     session.commit()
     return SuccessResponse(

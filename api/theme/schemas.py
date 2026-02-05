@@ -4,7 +4,7 @@ from typing import List, Any
 from pydantic import BaseModel, field_validator
 from ulid import ULID
 
-from core.types import ULIDInput
+from core.types import ULIDModel
 from theme.model import ColorScheme
 
 
@@ -45,4 +45,4 @@ class ThemeSchema(BaseModel):
 
 
 class ThemeChangeInput(BaseModel):
-    theme_id: ULIDInput
+    theme_id: ULIDModel

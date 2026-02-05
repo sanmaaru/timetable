@@ -1,30 +1,29 @@
-from typing import Any, Annotated
+from typing import Any
 
 import ulid
-from fastapi.exceptions import RequestValidationError
-from pydantic import BeforeValidator, PlainSerializer, WithJsonSchema
-from ulid import ULID
+from pydantic import GetCoreSchemaHandler
+from pydantic_core import core_schema
 
 
-## ==== ULID ====
-def validate_ulid(v: Any) -> ULID | None:
-    if v is None:
-        return None
+class ULIDModel(ulid.ULID):
 
-    if isinstance(v, ULID):
-        return v
+    @classmethod
+    def __get_pydantic_core_schema__(
+            cls, source_type: Any, handler: GetCoreSchemaHandler
+    ) -> core_schema.CoreSchema:
+        return core_schema.json_or_python_schema(
+            json_schema=core_schema.str_schema(),
+            python_schema=core_schema.no_info_after_validator_function(
+                cls.validate,
+                core_schema.str_schema()
+            ),
+            serialization=core_schema.plain_serializer_function_ser_schema(str),
+        )
 
-    try:
-        return ulid.from_str(v)
-    except ValueError:
-        raise RequestValidationError('invalid ulid value')
+    @classmethod
+    def validate(cls, v: str):
+        try:
+            return ulid.from_str(v)
+        except ValueError:
+            raise ValueError("Invalid ULID format")
 
-def serialize_ulid(v: ULID) -> str:
-    return str(v)
-
-ULIDInput = Annotated[
-    str,
-    BeforeValidator(validate_ulid),
-    PlainSerializer(serialize_ulid, return_type=str),
-    WithJsonSchema({'type': 'string', 'example': '01KG7NGMX0QVK86MZKQ1QR8XJJ'}),
-]
