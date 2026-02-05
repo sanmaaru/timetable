@@ -3,7 +3,7 @@ import {Theme} from "../types/theme";
 import {fetchThemes} from "../api/fetchTheme";
 
 export const useThemes = () => {
-    const [loading, setLoading] = useState<boolean>(true);
+    const [isLoading, setLoading] = useState<boolean>(true);
     const [themeData, setThemeData] = useState<Theme[] | null>(null);
 
     useEffect(() => {
@@ -21,7 +21,7 @@ export const useThemes = () => {
         loadData();
     }, [])
 
-    return { loading, themeData }
+    return { isLoading, themeData }
 }
 
 

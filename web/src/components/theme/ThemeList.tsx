@@ -2,6 +2,7 @@ import React from 'react';
 import './ThemeList.css';
 import ThemeElement from "./ThemeElement";
 import {Theme} from "../../types/theme";
+import {DialogProvider} from "../alert/dialog/DialogProvider";
 
 interface ThemeListProps {
     themes: Theme[]
@@ -16,7 +17,9 @@ const ThemeList = ({themes}: ThemeListProps) => {
 
     return (
         <div className='theme-list'>
-            {drawThemeElements(themes)}
+            <DialogProvider>
+                {drawThemeElements(themes)}
+            </DialogProvider>
         </div>
     );
 }

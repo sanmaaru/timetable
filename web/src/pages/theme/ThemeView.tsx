@@ -1,13 +1,22 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import './ThemeView.css';
 import {useParams} from "react-router-dom";
 import useTimetable from "../../hooks/useTimetable";
 import TimetableGrid from "../../components/timetable/TimetableGrid";
 import TimetableHeader from "../../components/timetable/TimetableHeader";
+import {useToast} from "../../components/alert/toast/ToastContext";
 
 const ThemeView = () => {
     const { themeId } = useParams()
     const { timetableData, themeData, isLoading } =  useTimetable(themeId)
+
+    const toast = useToast()
+
+    useEffect(() => {
+        if(!isLoading && (!timetableData || !themeData)) {
+            toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
+        }
+    }, [isLoading, timetableData, themeData, toast, themeId])
 
     if (isLoading) {
         return (<div id='theme-view'>
@@ -15,8 +24,7 @@ const ThemeView = () => {
     }
 
     if (!timetableData || !themeData) {
-        return (<div>
-            알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요
+        return (<div id='theme-view'>
         </div>)
     }
 

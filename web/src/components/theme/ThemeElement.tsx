@@ -1,4 +1,4 @@
-import React, {useRef} from "react";
+import React, {useCallback, useState} from "react";
 import './ThemeElement.css'
 import {Theme} from "../../types/theme";
 import useContainerSize from "../../hooks/useContainerSize";
@@ -11,7 +11,10 @@ import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
 import Pencil from '../../resources/icon/icn_pencil.svg?react'
 import Share from '../../resources/icon/icn_share.svg?react'
 import {deleteTheme} from "../../api/fetchTheme";
-import DeleteConfirmDialog, {DeleteConfirmDialogRef} from "../alert/DeleteConfirmDialog";
+import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
+import {useDialog} from "../alert/dialog/DialogProvider";
+import {useToast} from "../alert/toast/ToastContext";
+import useThemeActions from "../../hooks/useThemeActions";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -19,21 +22,13 @@ interface ThemeElementProps {
 
 const ThemeElement = ({theme}: ThemeElementProps) => {
     const { ref: containerRef, width } = useContainerSize();
-    const [isOpen, setIsOpen] = React.useState(false);
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { open, close, isOpen }  = useDialog()
 
     const navigate = useNavigate();
 
     const handleView = () => {
         navigate(`/theme/${theme.theme_id}`)
-    }
-
-    const deleteConfirmRef = useRef<DeleteConfirmDialogRef>();
-    const handleDelete = async () => {
-        deleteConfirmRef.current?.show({
-            onConfirm: async () => {
-                await deleteTheme(theme.theme_id)
-            }
-        });
     }
 
     const cardNumbers = theme.colorSchemes.length
@@ -59,6 +54,24 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
         )
     })
 
+    const { handleDeleteTheme } = useThemeActions(theme.theme_id)
+
+    const handleConfirmDelete = useCallback(async () => {
+        await handleDeleteTheme()
+        close()
+    }, [handleDeleteTheme, close])
+
+    const handleDelete = () => {
+        open(<DeleteConfirmDialog
+            context={{ open, close, isOpen }}
+            content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}
+            onConfirm={handleConfirmDelete}
+            />
+        )
+    }
+
+
+
     const buttons = [
         { icon: Pencil, text: '수정' , onClick: () => alert('test - trash') },
         { icon: Share, text: '온라인에 공유' , onClick: () => alert('test - trash') },
@@ -66,10 +79,13 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
     ]
 
     const { refs, floatingStyles, context } = useFloating({
-        open: isOpen,
-        onOpenChange: setIsOpen,
+        open: isMenuOpen,
+        onOpenChange: setIsMenuOpen,
         placement: 'bottom-start',
-        whileElementsMounted: autoUpdate,
+        whileElementsMounted: (reference, floating, update) =>
+            autoUpdate(reference, floating, update, {
+                layoutShift: false
+            }),
         middleware: [
             offset(5),
             flip(),
@@ -96,7 +112,7 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
                     <View/>
                 </button>
                 <button
-                    className={isOpen ? 'clicked' : ''}
+                    className={isMenuOpen ? 'clicked' : ''}
                     title={'옵션 더보기'}
                     ref={refs.setReference}
                     {...getReferenceProps()}
@@ -105,13 +121,14 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
                 </button>
             </div>
 
-            {isOpen && <ActionMenu
+            {isMenuOpen && <ActionMenu
                 context={context}
                 setFloating={refs.setFloating}
                 floatingMenuProps={getFloatingProps()}
                 floatingStyles={floatingStyles}
-                buttons={buttons}/>}
-            <DeleteConfirmDialog ref={deleteConfirmRef} content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}/>
+                buttons={buttons}
+                isOpen={isMenuOpen}
+            />}
         </div>
     )
 }

@@ -1,4 +1,4 @@
-.action-menu {
+.action-menu  {
     z-index: 10;
     width: 240px;
     height: auto;
@@ -24,6 +24,7 @@
     align-items: center;
 }
 
+
 .action-menu > button:hover {
     background: #f2f2f2;
 }
@@ -38,4 +39,5 @@
 .action-menu > button > svg {
     width: 16px;
     height: 16px;
+    margin-left: 12px;
 }

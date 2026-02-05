@@ -1,5 +1,6 @@
 import {privateAxiosClient} from "./axiosClient";
 import {ColorScheme, Theme} from "../types/theme";
+import {AxiosError} from "axios";
 
 const parseThemeData = (theme: any) => {
     const colorSchemes: ColorScheme[] = [];
@@ -47,7 +48,16 @@ export const fetchSelectedTheme = async () => {
 export const deleteTheme = async (themeId: string) => {
     try {
         const response = await privateAxiosClient.delete(`/theme/${themeId}`);
+        return null;
     } catch (error) {
-        console.log(error);
+        if (!(error instanceof AxiosError))
+            return 'UNKNOWN_ERROR';
+
+        const code= error.response?.data?.code
+
+        if (code)
+            return code
+        else
+            return 'UNKNOWN_ERROR';
     }
 }

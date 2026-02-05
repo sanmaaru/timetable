@@ -1,13 +1,21 @@
-import React from "react";
+import React, {useEffect} from "react";
 import './Theme.css'
 import ThemeList from "../../components/theme/ThemeList";
 import Add from '../../resources/icon/icn_add.svg?react'
 import { useThemes } from "../../hooks/useThemes";
+import {useToast} from "../../components/alert/toast/ToastContext";
 
 const Theme = () => {
-    const { loading, themeData: themes } = useThemes();
+    const { isLoading, themeData: themes } = useThemes();
 
-    if (loading) {
+    const { addToast } = useToast();
+    useEffect(() => {
+        if (!isLoading && !themes) {
+            addToast('테마를 불러오는 과정에서 오류가 발생하였습니다. 관리자에게 문의해주세요', 'error')
+        }
+    }, [isLoading, themes])
+
+    if (isLoading || (!themes)) {
         return (<div id={'theme'}>
             <span className='title'>시간표 테마</span>
             <div className='container'>
@@ -22,11 +30,6 @@ const Theme = () => {
         </div>)
     }
 
-    if (!themes) {
-        return (<div>
-            알 수 없는 오류가 발생했습니다. 관리자에게 문의해주세요
-        </div>)
-    }
 
     return (
         <div id={'theme'}>

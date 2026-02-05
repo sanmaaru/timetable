@@ -24,7 +24,8 @@ const useTimetable = (themeId: string | null = null) => {
 
                 setThemeData(theme)
             } catch (error: any) {
-                console.error(error);
+                setTimetableData(null)
+                setThemeData(null)
             } finally {
                 setIsLoading(false);
             }

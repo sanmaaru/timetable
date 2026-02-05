@@ -15,7 +15,7 @@
 }
 
 .delete-confirm-dialog > span:first-child {
-    font-size: 18px;
+    font-size: 16px;
     /*font-weight: bold;*/
     margin-top: 20px;
     margin-left: 16px;
@@ -23,7 +23,7 @@
 }
 
 .delete-confirm-dialog > span:nth-child(2) {
-    font-size: 16px;
+    font-size: 14px;
     margin-top: 16px;
     margin-left: 16px;
     margin-right: 16px;
@@ -45,7 +45,7 @@
     border: none;
     background-color: #ffffff;
     font-family: NixgonFont, serif;
-    font-size: 16px;
+    font-size: 14px;
 }
 
 .delete-confirm-dialog > div > button:hover {

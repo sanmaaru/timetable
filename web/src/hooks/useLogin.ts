@@ -1,46 +1,13 @@
 import {SubmitHandler, useForm} from "react-hook-form";
-import React, {useState} from "react";
+import {useState} from "react";
 import {publicAxiosClient} from "../api/axiosClient";
 import {setTokens} from "../auth/auth";
-import {replace, useNavigate} from "react-router-dom";
-import {AxiosError} from "axios";
+import {useNavigate} from "react-router-dom";
+import {handleLoginError, LOGIN_ERROR_MESSAGES} from "../constants/authMessages";
 
 export interface LoginInput {
     username: string;
     password: string;
-}
-
-const ERROR_MESSAGES = {
-    GENERAL: '로그인 과정 중에 오류가 발생하였습니다. 관리자에게 제보해 주세요.',
-    PASSWORD: '비밀번호가 일치하지 않습니다',
-    USERNAME: '존재하지 않는 사용자 이름입니다.'
-}
-
-const INVALID_TOKEN = {
-    USERNAME: 'username',
-    PASSWORD: 'password',
-}
-
-const handleApiError = (invalid: string) => {
-    let object, message
-    switch (invalid) {
-        case INVALID_TOKEN.USERNAME:
-            object = 'username'
-            message = ERROR_MESSAGES.USERNAME
-            break;
-
-        case INVALID_TOKEN.PASSWORD:
-            object = 'password'
-            message = ERROR_MESSAGES.PASSWORD
-            break;
-
-        default:
-            object = null
-            message = ERROR_MESSAGES.GENERAL
-            break;
-    }
-
-    return { object, message }
 }
 
 export const useLogin = () => {
@@ -74,14 +41,14 @@ export const useLogin = () => {
             navigate('/', {replace: true});
         } catch(error: any) {
             if (!error.response || error.response.status !== 401) {
-                setGlobalErrorMessage(ERROR_MESSAGES.GENERAL);
+                setGlobalErrorMessage(LOGIN_ERROR_MESSAGES.GENERAL);
                 return
             }
 
             const invalid = error.response.data.detail.invalid;
-            const { object, message } = handleApiError(invalid);
+            const { object, message } = handleLoginError(invalid);
             if (object == null) {
-                setGlobalErrorMessage(ERROR_MESSAGES.GENERAL);
+                setGlobalErrorMessage(LOGIN_ERROR_MESSAGES.GENERAL);
             } else {
                 setError(object, {
                     type: 'server',
