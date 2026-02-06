@@ -15,6 +15,7 @@ import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
 import {useDialog} from "../alert/dialog/DialogProvider";
 import {useToast} from "../alert/toast/ToastContext";
 import useThemeActions from "../../hooks/useThemeActions";
+import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -24,12 +25,8 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
     const { ref: containerRef, width } = useContainerSize();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { open, close, isOpen }  = useDialog()
-
     const navigate = useNavigate();
 
-    const handleView = () => {
-        navigate(`/theme/${theme.theme_id}`)
-    }
 
     const cardNumbers = theme.colorSchemes.length
     const cards = theme.colorSchemes.map((colorSchema, index) => {
@@ -53,6 +50,14 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
             </div>
         )
     })
+
+    const handleView = () => {
+        open(<ThemePreviewDialog
+            context={{ open, close, isOpen }}
+            themeId={theme.theme_id}
+            title={theme.title}
+        />)
+    }
 
     const { handleDeleteTheme } = useThemeActions(theme.theme_id)
 

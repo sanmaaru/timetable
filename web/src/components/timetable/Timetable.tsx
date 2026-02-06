@@ -19,7 +19,7 @@ const Timetable = ({name, schedules, theme}: TimetableProps) => {
             <span className='name'> - {name}</span>
         </div>
         <TimetableHeader/>
-        <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes}/>
+        <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes} detail={true}/>
     </div>);
 }
 

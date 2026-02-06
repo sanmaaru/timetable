@@ -35,12 +35,14 @@ const ThemeView = () => {
             <span className='title'>{'테마 미리보기'}</span>
             <span className='name'> - {themeData.title}</span>
         </div>
-        <div>
-            <TimetableHeader/>
-            <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes}/>
-        </div>
-        <div>
+        <div className='content'>
+            <div className='timetable'>
+                <TimetableHeader/>
+                <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes} detail={false}/>
+            </div>
+            <div className='detail'>
 
+            </div>
         </div>
     </div>)
 }

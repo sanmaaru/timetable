@@ -37,6 +37,10 @@ const DialogProvider = ({ children }: DialogProviderProps) => {
             {isOpen && (<FloatingPortal>
                 <FloatingOverlay
                     lockScroll
+                    onMouseDown={(e) => {
+                        if (e.target === e.currentTarget)
+                            close()
+                    }}
                     style={{
                         backgroundColor: `rgba(0, 0, 0, 0.6)`,
                         display: "grid",

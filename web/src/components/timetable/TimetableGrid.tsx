@@ -11,10 +11,11 @@ interface TimetableGridProps {
 
     schedules: Schedule[];
     colorSchemes: ColorScheme[];
+    detail: boolean;
 
 }
 
-const drawSchedule = (schedules: Schedule[], colorSchemes: ColorScheme[]) => {
+const drawSchedule = (schedules: Schedule[], colorSchemes: ColorScheme[], detail: boolean) => {
     const subjectColorMap = colorSchemes.reduce((acc, { subject, color, textColor}) => {
         acc[subject] = { color, textColor };
         return acc
@@ -41,17 +42,19 @@ const drawSchedule = (schedules: Schedule[], colorSchemes: ColorScheme[]) => {
                 className="timetable-info"
             >
                 <span className='subject'>{schedule.class.subject}</span>
-                <span className='teacher'>{schedule.class.teacher}T</span>
                 <span className='division'>{schedule.class.division}분반</span>
+                {detail && [
+                    <span className='teacher'>{schedule.class.teacher}T</span>,
+                ]}
             </div>
         </div>]
     });
 };
 
-const TimetableGrid = ({schedules, colorSchemes}: TimetableGridProps) => {
+const TimetableGrid = ({schedules, colorSchemes, detail = false}: TimetableGridProps) => {
     return (
         <div className="timetable-grid-column timetable-grid-row timetable-grid">
-            {drawSchedule(schedules, colorSchemes)}
+            {drawSchedule(schedules, colorSchemes, detail)}
             {periods.map(period => ( // create cell of period
                 <div
                     key={`timetable-grid-${period}`}
