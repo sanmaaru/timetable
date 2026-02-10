@@ -1,14 +1,19 @@
-import React, {useEffect, useRef} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import './ThemeView.css';
 import {useParams} from "react-router-dom";
 import useTimetable from "../../hooks/useTimetable";
 import TimetableGrid from "../../components/timetable/TimetableGrid";
 import TimetableHeader from "../../components/timetable/TimetableHeader";
 import {useToast} from "../../components/alert/toast/ToastContext";
+import ColorSchemaElement from "../../components/theme/ColorSchemaElement";
 
 const ThemeView = () => {
     const { themeId } = useParams()
     const { timetableData, themeData, isLoading } =  useTimetable(themeId)
+    const [focus, setFocus] = useState<string | null>(null);
+    const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1});
+    const itemsRef = useRef(new Map());
+    const wrapperRef = useRef<HTMLDivElement | null>(null);
 
     const toast = useToast()
 
@@ -17,6 +22,57 @@ const ThemeView = () => {
             toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
         }
     }, [isLoading, timetableData, themeData, toast, themeId])
+
+    useEffect(() => {
+        if (!focus || !itemsRef.current.get(focus) || !wrapperRef.current) {
+            setTransform({ x: 0, y: 0, scale: 1 });
+            return;
+        }
+
+        const wrapper = wrapperRef.current;
+        const target = itemsRef.current.get(focus);
+
+        const wrapperW = wrapper.offsetWidth;
+        const wrapperH = wrapper.offsetHeight;
+
+        const targetLeft= target.offsetLeft;
+        const targetTop = target.offsetTop;
+        const targetW = target.offsetWidth;
+        const targetH = target.offsetHeight;
+
+        const targetCenterX = targetLeft + targetW/2;
+        const targetCenterY = targetTop + targetH/2;
+
+        const scale = 2.0;
+
+        const moveX = (wrapperW / 2) - (targetCenterX * scale);
+        const moveY = (wrapperH / 2) - (targetCenterY * scale);
+
+        setTransform({ x: moveX, y: moveY, scale: scale });
+    }, [focus, itemsRef, wrapperRef]);
+
+    const getTransformStyle = useCallback(() => {
+        return {
+            transform: `translate(${transform.x}px, ${transform.y}px) scale(${transform.scale})`,
+            transformOrigin: "0 0",
+            transition: `transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)`,
+        }
+    }, [transform])
+
+    const handleFocus = useCallback((subject: string | null) => {
+        itemsRef.current.forEach((element) => {
+            element?.classList.remove('focus');
+        })
+
+        if(subject) {
+            const current = itemsRef.current.get(subject)
+            if (current) {
+                current.classList.add('focus')
+            }
+        }
+
+        setFocus(subject)
+    }, [itemsRef])
 
     if (isLoading) {
         return (<div id='theme-view'>
@@ -30,18 +86,29 @@ const ThemeView = () => {
 
     const { schedules } = timetableData;
 
+
     return (<div id='theme-view'>
         <div className='title container'>
             <span className='title'>{'테마 미리보기'}</span>
             <span className='name'> - {themeData.title}</span>
         </div>
         <div className='content'>
-            <div className='timetable'>
-                <TimetableHeader/>
-                <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes} detail={false}/>
+            <div className='timetable' ref={wrapperRef} style={getTransformStyle()}>
+                <div className={`wrapper ${focus ? 'focus' : ''}`}>
+                    <TimetableHeader/>
+                    <TimetableGrid
+                        schedules={schedules}
+                        colorSchemes={themeData.colorSchemes}
+                        detail={false}
+                        scheduleRefMap={itemsRef}
+                    />
+                </div>
             </div>
             <div className='detail'>
-
+                <span className='title'>테마 세부사항</span>
+                {themeData.colorSchemes.map((value, idx) =>
+                    (<ColorSchemaElement colorScheme={value} key={idx} onClick={handleFocus} focus={focus}/>)
+                )}
             </div>
         </div>
     </div>)

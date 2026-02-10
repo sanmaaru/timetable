@@ -7,15 +7,15 @@ import Options from '../../resources/icon/icn_options.svg?react'
 import {useNavigate} from "react-router-dom";
 import {autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useInteractions} from "@floating-ui/react";
 import ActionMenu from "../ActionMenu";
+import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
+import {useDialog} from "../alert/dialog/DialogProvider";
+import useThemeActions from "../../hooks/useThemeActions";
+import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
+
 import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
 import Pencil from '../../resources/icon/icn_pencil.svg?react'
 import Share from '../../resources/icon/icn_share.svg?react'
-import {deleteTheme} from "../../api/fetchTheme";
-import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
-import {useDialog} from "../alert/dialog/DialogProvider";
-import {useToast} from "../alert/toast/ToastContext";
-import useThemeActions from "../../hooks/useThemeActions";
-import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
+import Magnifier from '../../resources/icon/icn_magnifier.svg?react'
 
 interface ThemeElementProps {
     theme: Theme;
@@ -79,6 +79,7 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
 
     const buttons = [
         { icon: Pencil, text: '수정' , onClick: () => alert('test - trash') },
+        { icon: Magnifier, text: '자세히 보기', onClick: () => navigate(`/theme/${theme.theme_id}`) },
         { icon: Share, text: '온라인에 공유' , onClick: () => alert('test - trash') },
         { icon: Trashcan, text: '휴지통으로 이동' , onClick: handleDelete, color: '#ff0000' },
     ]

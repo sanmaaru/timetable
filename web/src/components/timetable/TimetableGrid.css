@@ -43,6 +43,7 @@
     display: grid;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
+    padding: 10px 12px 12px;
 }
 
 
@@ -51,8 +52,6 @@
 }
 
 .timetable-info > .subject {
-    margin-top: 10px;
-    margin-left: 12px;
     font-size: 14px;
     font-family: "Pretendard", serif;
     font-weight: 900;
@@ -61,8 +60,6 @@
 }
 
 .timetable-info > .teacher {
-    margin-left: 12px;
-    margin-bottom: 12px;
     font-size: 12px;
     grid-row: 2;
     grid-column: 1;
@@ -72,8 +69,6 @@
 }
 
 .timetable-info > .division {
-    margin-right: 14px;
-    margin-bottom: 10%;
     font-size: 12px;
     grid-row: 2;
     grid-column: 2;
