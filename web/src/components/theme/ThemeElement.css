@@ -27,9 +27,14 @@
     margin-left: auto;
 }
 
-.theme-element > .descriptions > *:nth-child(3) > svg {
+.theme-element > .descriptions > .menu > svg {
     rotate: 90deg;
 }
+
+.theme-element > .descriptions > .selected > svg {
+    fill: #ed9200;
+}
+
 
 .theme-element > .descriptions > button {
     width: 27px;
@@ -69,6 +74,13 @@
 
 .theme-element .descriptions > button:not(.clicked):hover > svg {
     fill: #121212;
+}
+.theme-element > .descriptions > .selected:hover {
+    background-color: #fffaf2 !important;
+}
+
+.theme-element > .descriptions > .selected:hover > svg {
+    fill: #ffbc42 !important;
 }
 
 .theme-element .cards {

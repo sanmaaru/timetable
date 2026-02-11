@@ -1,12 +1,15 @@
-import React, {useEffect} from "react";
+import React, {useCallback, useEffect} from "react";
 import './Theme.css'
 import ThemeList from "../../components/theme/ThemeList";
 import Add from '../../resources/icon/icn_add.svg?react'
 import { useThemes } from "../../hooks/useThemes";
 import {useToast} from "../../components/alert/toast/ToastContext";
+import {useDialog} from "../../components/alert/dialog/DialogProvider";
+import CreateThemeDialog from "../../components/alert/dialog/CreateThemeDialog";
 
 const Theme = () => {
-    const { isLoading, themeData: themes } = useThemes();
+    const { isLoading, themeData: themes, loadData } = useThemes();
+    const { open, close, isOpen } = useDialog()
 
     const { addToast } = useToast();
     useEffect(() => {
@@ -15,13 +18,23 @@ const Theme = () => {
         }
     }, [isLoading, themes])
 
+    const handleCreateTheme = useCallback(() => {
+        open(<CreateThemeDialog
+            context={{ open, close, isOpen }}
+            onSuccess={async () => {await loadData()}}
+        />)
+    }, [open, close, isOpen])
+
+
     if (isLoading || (!themes)) {
         return (<div id={'theme'}>
             <span className='title'>시간표 테마</span>
             <div className='container'>
                 <div className='subtitle'>
                     <span>나의 테마</span>
-                    <Add/>
+                    <button>
+                        <Add/>
+                    </button>
                 </div>
                 <div className='subtitle'>
                     <span>온라인 테마</span>
@@ -37,9 +50,11 @@ const Theme = () => {
             <div className='container'>
                 <div className='subtitle'>
                     <span>나의 테마</span>
-                    <Add/>
+                    <button onClick={handleCreateTheme}>
+                        <Add/>
+                    </button>
                 </div>
-                <ThemeList themes={themes}/>
+                <ThemeList themes={themes} loader={loadData}/>
                 <div className='subtitle'>
                     <span>온라인 테마</span>
                 </div>

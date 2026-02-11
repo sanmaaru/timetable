@@ -9,6 +9,7 @@ import Layout from "./pages/Layout";
 import Theme from "./pages/theme/Theme";
 import Account from "./pages/Account";
 import ThemeView from "./pages/theme/ThemeView";
+import ThemeEdit from "./pages/theme/ThemeEdit";
 
 function App() {
     return (
@@ -22,6 +23,7 @@ function App() {
                         <Route path="/" element={<Home/>}/>
                         <Route path="/theme" element={<Theme/>}/>
                         <Route path="/theme/:themeId" element={<ThemeView/>}></Route>
+                        <Route path="/theme/:themeId/edit" element={<ThemeEdit/>}></Route>
                         <Route path="/account" element={<Account/>}/>
                     </Route>
                 </Route>

@@ -16,6 +16,7 @@ const parseThemeData = (theme: any) => {
         title: theme.title,
         theme_id: theme.theme_id,
         colorSchemes: colorSchemes,
+        selected: theme.selected,
     }
 }
 
@@ -47,7 +48,7 @@ export const fetchSelectedTheme = async () => {
 
 export const deleteTheme = async (themeId: string) => {
     try {
-        const response = await privateAxiosClient.delete(`/theme/${themeId}`);
+        await privateAxiosClient.delete(`/theme/${themeId}`);
         return null;
     } catch (error) {
         if (!(error instanceof AxiosError))
@@ -59,5 +60,47 @@ export const deleteTheme = async (themeId: string) => {
             return code
         else
             return 'UNKNOWN_ERROR';
+    }
+}
+
+export const putSelectedTheme = async (themeId: string) => {
+    try {
+        await privateAxiosClient.put(`/theme/selected`, {
+            theme_id: themeId,
+        });
+        return null;
+    } catch (error) {
+        if (!(error instanceof AxiosError))
+            return 'UNKNOWN_ERROR';
+
+        const code = error.response?.data?.code
+        if (code)
+            return code
+        else
+            return 'UNKNOWN_ERROR';
+    }
+}
+
+export const createTheme = async (title: string) => {
+    try {
+        const response = await privateAxiosClient.post(`/theme/`, {
+            title: title
+        })
+
+        const rawData = response.data.data;
+        console.log(rawData);
+        return {
+            data: parseThemeData(rawData),
+            error: null
+        };
+    } catch (error) {
+        if (!(error instanceof AxiosError))
+            return {
+                data: null,
+                error: 'UNKNOWN_ERROR'
+            };
+
+        const code = error.response?.data?.code
+        return { data: null, error: code ? code : 'UNKNOWN_ERROR' };
     }
 }

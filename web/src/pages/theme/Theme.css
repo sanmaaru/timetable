@@ -41,13 +41,21 @@
     align-items: center;
 }
 
-#theme > .container .subtitle svg {
+#theme > .container .subtitle > button {
     width: 16px;
     height: 16px;
     margin-left: auto;
+    background: none;
+    border: none;
 }
 
-#theme > .container .subtitle svg:hover {
+#theme > .container .subtitle > button > svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+#theme > .container .subtitle > button:hover > svg {
     fill: #5b5b5b;
 }
 

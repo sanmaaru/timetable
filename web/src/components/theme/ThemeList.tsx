@@ -6,12 +6,13 @@ import {DialogProvider} from "../alert/dialog/DialogProvider";
 
 interface ThemeListProps {
     themes: Theme[]
+    loader: () => void;
 }
 
-const ThemeList = ({themes}: ThemeListProps) => {
+const ThemeList = ({themes, loader}: ThemeListProps) => {
     const drawThemeElements = (themes: Theme[]) => (
         themes.map((theme: Theme, index) => (
-            <ThemeElement theme={theme} key={index}/>
+            <ThemeElement theme={theme} key={index} loader={loader}/>
         ))
     )
 

@@ -1,9 +1,9 @@
 import React from 'react';
-import StandardInput from "../../components/login/StandardInput";
+import StandardInput from "../../components/Input/StandardInput";
 import './Signup.css'
-import StandardButton from "../../components/login/StandardButton";
+import StandardButton from "../../components/button/StandardButton";
 import TitleLogo from "../../components/TitleLogo";
-import PasswordInput from "../../components/login/PasswordInput";
+import PasswordInput from "../../components/Input/PasswordInput";
 import {Link} from "react-router-dom";
 import {useSignUp} from "../../hooks/useSignUp";
 

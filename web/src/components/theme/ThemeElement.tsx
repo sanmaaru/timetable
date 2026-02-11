@@ -16,17 +16,22 @@ import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
 import Pencil from '../../resources/icon/icn_pencil.svg?react'
 import Share from '../../resources/icon/icn_share.svg?react'
 import Magnifier from '../../resources/icon/icn_magnifier.svg?react'
+import Sparkle from '../../resources/icon/icn_sparkle.svg?react'
+import ChangeConfirmDialog from "../alert/dialog/ChangeConfirmDialog";
 
 interface ThemeElementProps {
     theme: Theme;
+    loader: () => void;
 }
 
-const ThemeElement = ({theme}: ThemeElementProps) => {
+const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     const { ref: containerRef, width } = useContainerSize();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { open, close, isOpen }  = useDialog()
     const navigate = useNavigate();
+    const { handleDeleteTheme, handlePutSelectedTheme } = useThemeActions(theme.theme_id)
 
+    const selected = theme.selected
 
     const cardNumbers = theme.colorSchemes.length
     const cards = theme.colorSchemes.map((colorSchema, index) => {
@@ -50,30 +55,45 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
             </div>
         )
     })
+    const handleConfirmChange = useCallback(async () => {
+        await handlePutSelectedTheme(loader)
+        close()
+    }, [handlePutSelectedTheme, close, loader])
 
-    const handleView = () => {
+    const handleChange = useCallback(() => {
+        if (selected)
+            return;
+
+        open(<ChangeConfirmDialog
+            context={{ open, close, isOpen }}
+            content={`사용자의 시간표의 테마를 \'${theme.title}\'로 바꾸시겠습니까?`}
+            onConfirm={handleConfirmChange}
+        />)
+    }, [selected, theme.title, open, close, isOpen, handleConfirmChange]);
+
+    const handleView = useCallback(() => {
         open(<ThemePreviewDialog
             context={{ open, close, isOpen }}
             themeId={theme.theme_id}
             title={theme.title}
         />)
-    }
-
-    const { handleDeleteTheme } = useThemeActions(theme.theme_id)
-
-    const handleConfirmDelete = useCallback(async () => {
-        await handleDeleteTheme()
-        close()
-    }, [handleDeleteTheme, close])
+    }, [open, close, isOpen]);
 
     const handleDelete = () => {
         open(<DeleteConfirmDialog
-            context={{ open, close, isOpen }}
-            content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}
-            onConfirm={handleConfirmDelete}
+                context={{ open, close, isOpen }}
+                content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}
+                onConfirm={handleConfirmDelete}
             />
         )
     }
+
+    const handleConfirmDelete = useCallback(async () => {
+        await handleDeleteTheme(loader)
+        close()
+    }, [handleDeleteTheme, close])
+
+
 
 
 
@@ -114,11 +134,18 @@ const ThemeElement = ({theme}: ThemeElementProps) => {
             </div>
             <div className='descriptions'>
                 <span className='title' title={theme.title}>{theme.title}</span>
+                <button
+                    onClick={handleChange}
+                    title={selected ? '사용 중인 테마' : '테마 사용하기'}
+                    className={selected ? 'selected' : ''}
+                >
+                    <Sparkle/>
+                </button>
                 <button onClick={handleView} title={'테마 미리보기'}>
                     <View/>
                 </button>
                 <button
-                    className={isMenuOpen ? 'clicked' : ''}
+                    className={`menu ${isMenuOpen ? 'clicked' : ''}`}
                     title={'옵션 더보기'}
                     ref={refs.setReference}
                     {...getReferenceProps()}
