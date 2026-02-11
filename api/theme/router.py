@@ -11,8 +11,8 @@ from core.response import BaseResponse, create_response, SuccessResponse, MetaSc
 from core.types import ULIDModel
 from database import conn
 from theme.crud import query_selected_theme, query_theme, query_all_themes, service_delete_theme, \
-    service_change_selected_theme
-from theme.schemas import ThemeSchema, ThemeChangeInput
+    service_change_selected_theme, service_create_default_theme, get_theme_schema
+from theme.schemas import ThemeSchema, ThemeChangeInput, ThemeCreateInput
 
 router = APIRouter(prefix='/theme', tags=['theme'])
 
@@ -22,6 +22,16 @@ def get_theme(
 ):
     themes = query_all_themes(user)
     return create_response(user, themes)
+
+@router.post('/', response_model=BaseResponse[ThemeSchema])
+def post_theme(
+        input: ThemeCreateInput,
+        user: User = Depends(get_current_user),
+        session: Session = Depends(conn)
+):
+    theme = service_create_default_theme(user, user.user_info, session, input.title)
+    session.commit()
+    return create_response(user, get_theme_schema(theme, user))
 
 @router.get('/selected', response_model=BaseResponse[ThemeSchema])
 def get_selected_theme(

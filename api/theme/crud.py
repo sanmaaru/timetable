@@ -6,7 +6,7 @@ from ulid import ULID
 from auth.model import User, UserInfo
 from core.exceptions import NullValueException
 from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException, LastThemeDeleteException, \
-    ThemeInUseException
+    ThemeInUseException, ThemeAlreadySelectedException
 from theme.model import Theme, ColorScheme
 from theme.schemas import ThemeSchema, parse_color_schemes
 
@@ -59,35 +59,14 @@ def service_delete_theme(user: User, theme_id: ULID, session: Session):
 
 def query_selected_theme(user: User):
     selected_theme = user.selected_theme
-    color_schemes = parse_color_schemes(selected_theme.color_schemes)
 
-    return ThemeSchema(
-        title=selected_theme.title,
-        published=selected_theme.published,
-        color_schemes=color_schemes,
-        created_at=selected_theme.created_at,
-        updated_at=selected_theme.updated_at,
-        theme_id=selected_theme.theme_id,
-        selected=True
-    )
+    return get_theme_schema(selected_theme, user)
 
 def query_all_themes(user: User):
     theme_schemas = []
     themes = user.owning_themes
     for theme in themes:
-        theme_schema_args = {
-            'title': theme.title,
-            'published': theme.published,
-            'color_schemes': parse_color_schemes(theme.color_schemes),
-            'created_at': theme.created_at,
-            'updated_at': theme.updated_at,
-            'theme_id': theme.theme_id,
-        }
-
-        if user.selected_theme_id == theme.theme_id:
-            theme_schema_args['selected'] = True
-
-        theme_schemas.append(ThemeSchema(**theme_schema_args))
+        theme_schemas.append(get_theme_schema(theme, user))
 
     return theme_schemas
 
@@ -101,15 +80,7 @@ def query_theme(theme_id, user: User, session: Session):
     if (not theme.published) and (theme.owner_id != user.user_id):
         raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
 
-    return ThemeSchema(
-        title=theme.title,
-        published=theme.published,
-        color_schemes=parse_color_schemes(theme.color_schemes),
-        created_at=theme.created_at,
-        updated_at=theme.updated_at,
-        theme_id=theme.theme_id,
-        selected=(user.selected_theme_id == theme.theme_id),
-    )
+    return get_theme_schema(theme, user)
 
 def service_change_selected_theme(user: User, theme_id: ULID, session: Session):
     theme = session.query(Theme).filter(Theme.theme_id == theme_id).one_or_none()
@@ -119,4 +90,18 @@ def service_change_selected_theme(user: User, theme_id: ULID, session: Session):
     if theme.owner_id != user.user_id:
         raise ThemeNotOwnedByException('Theme does not owned by ' + user.user_id, theme_id=theme_id)
 
+    if user.selected_theme_id == theme.theme_id:
+        raise ThemeAlreadySelectedException('Theme already selected')
+
     user.selected_theme_id = theme.theme_id
+
+def get_theme_schema(theme: Theme, user: User):
+    return ThemeSchema(
+        title=theme.title,
+        published=theme.published,
+        color_schemes=parse_color_schemes(theme.color_schemes),
+        created_at=theme.created_at,
+        updated_at=theme.updated_at,
+        theme_id=theme.theme_id,
+        selected=(user.selected_theme_id == theme.theme_id),
+    )

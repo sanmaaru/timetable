@@ -46,3 +46,6 @@ class ThemeSchema(BaseModel):
 
 class ThemeChangeInput(BaseModel):
     theme_id: ULIDModel
+
+class ThemeCreateInput(BaseModel):
+    title: str
