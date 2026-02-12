@@ -10,8 +10,11 @@ import Theme from "./pages/theme/Theme";
 import Account from "./pages/Account";
 import ThemeView from "./pages/theme/ThemeView";
 import ThemeEdit from "./pages/theme/ThemeEdit";
+import {recentUsedColor} from "./util/cookies";
 
 function App() {
+    recentUsedColor.init()
+
     return (
         <BrowserRouter>
             <Routes>

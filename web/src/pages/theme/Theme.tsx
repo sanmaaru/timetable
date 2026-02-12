@@ -2,7 +2,7 @@ import React, {useCallback, useEffect} from "react";
 import './Theme.css'
 import ThemeList from "../../components/theme/ThemeList";
 import Add from '../../resources/icon/icn_add.svg?react'
-import { useThemes } from "../../hooks/useThemes";
+import { useThemes } from "../../hooks/theme/useThemes";
 import {useToast} from "../../components/alert/toast/ToastContext";
 import {useDialog} from "../../components/alert/dialog/DialogProvider";
 import CreateThemeDialog from "../../components/alert/dialog/CreateThemeDialog";
@@ -37,7 +37,7 @@ const Theme = () => {
                     </button>
                 </div>
                 <div className='subtitle'>
-                    <span>온라인 테마</span>
+                    {/*<span>온라인 테마</span>*/}
                 </div>
             </div>
         </div>)
@@ -56,7 +56,7 @@ const Theme = () => {
                 </div>
                 <ThemeList themes={themes} loader={loadData}/>
                 <div className='subtitle'>
-                    <span>온라인 테마</span>
+                    {/*<span>온라인 테마</span>*/}
                 </div>
             </div>
         </div>

@@ -6,10 +6,12 @@ import TimetableGrid from "../../components/timetable/TimetableGrid";
 import TimetableHeader from "../../components/timetable/TimetableHeader";
 import {useToast} from "../../components/alert/toast/ToastContext";
 import ColorSchemaElement from "../../components/theme/ColorSchemaElement";
+import {useTheme} from "../../hooks/theme/useThemes";
 
 const ThemeView = () => {
     const { themeId } = useParams()
-    const { timetableData, themeData, isLoading } =  useTimetable(themeId)
+    const { timetableData, isLoading: isTimetableLoading} =  useTimetable()
+    const { themeData, isLoading: isThemeLoading } = useTheme(themeId)
     const [focus, setFocus] = useState<string | null>(null);
     const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1});
     const itemsRef = useRef(new Map());
@@ -18,10 +20,10 @@ const ThemeView = () => {
     const toast = useToast()
 
     useEffect(() => {
-        if(!isLoading && (!timetableData || !themeData)) {
+        if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
             toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
         }
-    }, [isLoading, timetableData, themeData, toast, themeId])
+    }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
     useEffect(() => {
         if (!focus || !itemsRef.current.get(focus) || !wrapperRef.current) {
@@ -74,12 +76,8 @@ const ThemeView = () => {
         setFocus(subject)
     }, [itemsRef])
 
-    if (isLoading) {
-        return (<div id='theme-view'>
-        </div>)
-    }
 
-    if (!timetableData || !themeData) {
+    if (isThemeLoading || isTimetableLoading || !timetableData || !themeData) {
         return (<div id='theme-view'>
         </div>)
     }
@@ -105,7 +103,7 @@ const ThemeView = () => {
                 </div>
             </div>
             <div className='detail'>
-                <span className='title'>테마 세부사항</span>
+                <span className='title'>색 조합표</span>
                 {themeData.colorSchemes.map((value, idx) =>
                     (<ColorSchemaElement colorScheme={value} key={idx} onClick={handleFocus} focus={focus}/>)
                 )}

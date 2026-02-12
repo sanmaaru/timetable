@@ -1,0 +1,15 @@
+.IconButton {
+    background: none;
+    border: none;
+    border-radius: 6px;
+    padding: 6px;
+}
+
+.IconButton:hover {
+    background: #f2f2f2;
+}
+
+.IconButton > svg {
+    width: 100%;
+    height: 100%;
+}

@@ -9,7 +9,7 @@ import {autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useI
 import ActionMenu from "../ActionMenu";
 import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
 import {useDialog} from "../alert/dialog/DialogProvider";
-import useThemeActions from "../../hooks/useThemeActions";
+import useThemeActions from "../../hooks/theme/useThemeActions";
 import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
 
 import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
@@ -98,7 +98,7 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
 
 
     const buttons = [
-        { icon: Pencil, text: '수정' , onClick: () => alert('test - trash') },
+        { icon: Pencil, text: '수정' , onClick: () => navigate(`/theme/${theme.theme_id}/edit`) },
         { icon: Magnifier, text: '자세히 보기', onClick: () => navigate(`/theme/${theme.theme_id}`) },
         { icon: Share, text: '온라인에 공유' , onClick: () => alert('test - trash') },
         { icon: Trashcan, text: '휴지통으로 이동' , onClick: handleDelete, color: '#ff0000' },
@@ -160,7 +160,6 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
                 floatingMenuProps={getFloatingProps()}
                 floatingStyles={floatingStyles}
                 buttons={buttons}
-                isOpen={isMenuOpen}
             />}
         </div>
     )

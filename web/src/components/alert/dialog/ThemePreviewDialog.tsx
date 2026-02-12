@@ -6,6 +6,7 @@ import useTimetable from "../../../hooks/useTimetable";
 import {useToast} from "../toast/ToastContext";
 import React, {useEffect} from "react";
 import Close from '../../../resources/icon/icn_close.svg?react';
+import {useTheme} from "../../../hooks/theme/useThemes";
 
 export interface ThemePreviewDialogProps {
     context: DialogContextType
@@ -16,18 +17,19 @@ export interface ThemePreviewDialogProps {
 const ThemePreviewDialog = ({context: dialogContext, themeId, title} : ThemePreviewDialogProps) => {
     const { close } = dialogContext;
 
-    const { timetableData, themeData, isLoading } =  useTimetable(themeId)
+    const { timetableData, isLoading: isTimetableLoading } =  useTimetable()
+    const { isLoading: isThemeLoading, themeData,  } = useTheme(themeId)
 
     const toast = useToast()
 
     useEffect(() => {
-        if(!isLoading && (!timetableData || !themeData)) {
+        if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
             toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
             close()
         }
-    }, [isLoading, timetableData, themeData, toast, themeId, close])
+    }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId, close])
 
-    if (isLoading) {
+    if (isTimetableLoading || isTimetableLoading) {
         return (<div id='theme-preview-dialog'>
         </div>)
     }

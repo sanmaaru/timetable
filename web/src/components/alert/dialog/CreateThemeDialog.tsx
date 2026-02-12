@@ -4,7 +4,7 @@ import {DialogContextType} from "./DialogProvider";
 import StandardInput from "../../Input/StandardInput";
 import {SubmitHandler, useForm, UseFormSetError} from "react-hook-form";
 import StandardButton from "../../button/StandardButton";
-import {useCreateTheme} from "../../../hooks/useThemeActions";
+import {useCreateTheme} from "../../../hooks/theme/useThemeActions";
 import {useToast} from "../toast/ToastContext";
 import {useNavigate} from "react-router-dom";
 import {getThemeErrorMessage} from "../../../constants/themeMessages";

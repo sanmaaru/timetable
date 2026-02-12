@@ -1,8 +1,8 @@
 import {useCallback, useState} from "react";
-import {createTheme, deleteTheme, putSelectedTheme} from "../api/fetchTheme";
-import {useToast} from "../components/alert/toast/ToastContext";
-import {getThemeErrorMessage} from "../constants/themeMessages";
-import {Theme} from "../types/theme";
+import {createTheme, deleteTheme, putSelectedTheme} from "../../api/fetchTheme";
+import {useToast} from "../../components/alert/toast/ToastContext";
+import {getThemeErrorMessage} from "../../constants/themeMessages";
+import {Theme} from "../../types/theme";
 
 const useThemeActions= (theme_id: string) => {
     const toast = useToast();

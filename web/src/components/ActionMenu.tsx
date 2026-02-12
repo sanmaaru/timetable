@@ -15,7 +15,6 @@ interface ActionMenuProps {
     floatingMenuProps: Record<string, unknown>;
     floatingStyles: React.CSSProperties;
     buttons: ActionMenuButton[];
-    isOpen: boolean;
 }
 
 const ActionMenu = ({
@@ -24,7 +23,6 @@ const ActionMenu = ({
                         floatingMenuProps,
                         floatingStyles,
                         buttons,
-                        isOpen
 }: ActionMenuProps) => {
     const menuButtons = buttons.map((value, index) => {
         return <button
