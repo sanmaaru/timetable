@@ -29,7 +29,7 @@ services:
     build: ./api
     container_name: timetable-api
     restart: unless-stopped
-    command: ["uv", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5000"]
+    command: ["uv", "run", "uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]
     environment:
       CONNECTION: '${CONNECTION}'
     ports:

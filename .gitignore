@@ -21,6 +21,9 @@ api/resources
 db_data
 initdb
 
-# # web
-# web/.idea
-# web/node_modules
+.idea
+
+# web
+web/node_modules
+web/.idea
+>>>>>>> feature/theme

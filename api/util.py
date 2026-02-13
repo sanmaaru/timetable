@@ -1,7 +1,11 @@
 import hashlib, base64, math, random
+from fastapi import HTTPException, status
 import pandas as pd
 from datetime import datetime
 from typing import Any
+
+from api.auth import JWT
+
 
 def hash_with_base64(data, length: int):
     if length % 4 != 0:
@@ -18,7 +22,7 @@ def hash_with_base64(data, length: int):
     return hashed_b64 
 
 def create_id(s1, s2, s3 = None):
-    if s3 == None:
+    if s3 is None:
         s3 = random.randrange(0, 999)
     hashed1 = hash_with_base64(s1, 16)
     hashed2 = hash_with_base64(s2, 12)
