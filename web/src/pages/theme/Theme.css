@@ -1,0 +1,65 @@
+#theme {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#theme > .title {
+    font-family: Pretendard, serif;
+    font-size: 28px;
+    font-weight: 900;
+    color: #000000;
+    margin-top: 12px;
+}
+
+#theme > .container {
+    margin-top: 16px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#theme > .container .theme-list {
+    margin-bottom: 36px;
+}
+
+#theme > .container .subtitle span {
+    font-family: Pretendard, serif;
+    font-size: 24px;
+    font-weight: 800;
+    color: #121212;
+}
+
+#theme > .container .subtitle {
+    margin-left: 8px;
+    margin-top: 10px;
+    padding-right: 14px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+#theme > .container .subtitle > button {
+    width: 16px;
+    height: 16px;
+    margin-left: auto;
+    background: none;
+    border: none;
+}
+
+#theme > .container .subtitle > button > svg {
+    width: 16px;
+    height: 16px;
+}
+
+
+#theme > .container .subtitle > button:hover > svg {
+    fill: #5b5b5b;
+}
+
+#theme > .container .theme-list {
+    margin-top: 12px;
+    margin-bottom: 36px;
+}

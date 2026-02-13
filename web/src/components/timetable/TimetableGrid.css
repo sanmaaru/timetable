@@ -1,0 +1,94 @@
+.timetable-grid-column {
+    display: grid;
+    grid-template-columns: 0.34fr repeat(5, minmax(0, 1fr));
+
+    background-color: #eeeeee;
+    column-gap: 1px;
+    overflow: hidden;
+
+    border-radius: 12px;
+}
+
+.timetable-grid-row {
+    display: grid;
+    grid-template-rows: repeat(9, minmax(0, 1fr));
+    background-color: #eeeeee;
+    row-gap: 1px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.timetable-grid-cell {
+    background-color: #ffffff;
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.timetable-class {
+    z-index: 10;
+    margin: 4px ;
+    border-radius: 6px;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-gap: 10%;
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.timetable-info {
+    grid-column: 1;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 12px 12px;
+}
+
+
+.timetable-class:hover {
+    transform: translateY(-3px);
+}
+
+.timetable-info > .subject {
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 900;
+    grid-row: 1;
+    grid-column: 1 / span 2;
+}
+
+.timetable-info > .teacher {
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 1;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
+}
+
+.timetable-info > .division {
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: end;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
+}
+
+.timetable-grid-cell > span {
+    font-family: "Pretendard", serif;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

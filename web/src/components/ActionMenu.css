@@ -1,0 +1,43 @@
+.action-menu  {
+    z-index: 10;
+    width: 240px;
+    height: auto;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border: 1px solid #dbdbdb80;
+    border-radius: 8px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+    gap: 4px;
+}
+
+.action-menu > button {
+    width: 94%;
+    height: 30px;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+
+.action-menu > button:hover {
+    background: #f2f2f2;
+}
+
+.action-menu > button > span {
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    margin-top: 2px;
+    margin-left: 12px;
+}
+
+.action-menu > button > svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 12px;
+}

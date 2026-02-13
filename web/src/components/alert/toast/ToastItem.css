@@ -1,0 +1,23 @@
+.toast-item {
+    width: 420px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    border-radius: 12px;
+    border: 1px solid #ededed;
+    background: #ffffff;
+    box-shadow: 4px 2px 3px #ededed;
+}
+
+.toast-item > span {
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    margin-left: 24px;
+}
+
+.toast-item > button {
+    width: 20px;
+    height: 20px;
+    margin-left: auto;
+    margin-right: 12px;
+}

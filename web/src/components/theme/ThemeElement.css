@@ -1,0 +1,118 @@
+.theme-element {
+    height: auto;
+    width: 400px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+}
+
+.theme-element .descriptions {
+    height: 28px;
+    margin-top: 12px;
+    margin-left: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 4px;
+}
+
+.theme-element .descriptions > .title {
+    margin-top: 2px;
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.theme-element > .descriptions > *:nth-child(2) {
+    margin-left: auto;
+}
+
+.theme-element > .descriptions > .menu > svg {
+    rotate: 90deg;
+}
+
+.theme-element > .descriptions > .selected > svg {
+    fill: #ed9200;
+}
+
+
+.theme-element > .descriptions > button {
+    width: 27px;
+    height: 27px;
+    background: none;
+    margin-right: 16px;
+    border-radius: 4px;
+    border: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.1s;
+}
+
+.theme-element > .descriptions > button:active {
+    transform: scale(0.9);
+}
+
+.theme-element .descriptions button > svg {
+    width: 18px;
+    height: 18px;
+    fill: #6d6d6d;
+}
+
+.theme-element .descriptions > button.clicked {
+    background-color: #caf0f8;
+}
+
+.theme-element .descriptions > button.clicked > svg{
+    fill: #0077b6;
+}
+
+.theme-element .descriptions > button:not(.clicked):hover {
+    background-color: #ededed;
+}
+
+.theme-element .descriptions > button:not(.clicked):hover > svg {
+    fill: #121212;
+}
+.theme-element > .descriptions > .selected:hover {
+    background-color: #fffaf2 !important;
+}
+
+.theme-element > .descriptions > .selected:hover > svg {
+    fill: #ffbc42 !important;
+}
+
+.theme-element .cards {
+    width: 100%;
+    height: 240px;
+    position: relative;
+}
+
+.theme-element .cards > .card {
+    position: absolute;
+    height: 100%;
+    box-shadow: 2px 0 4px #858585;
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+    padding-left: 8px;
+    gap: 3px;
+    transition: transform .15s ease-out;
+    border-radius: 8px
+}
+
+.theme-element .cards > .card span {
+    font-size: 12px;
+    margin-left: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.theme-element .cards > .card:hover {
+    transform: translateY(-44px);
+}
+
+.theme-element .cards > .card:hover span {
+    opacity: 1;
+}

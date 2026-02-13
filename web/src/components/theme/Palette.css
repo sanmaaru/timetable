@@ -1,0 +1,106 @@
+.Palette {
+    background-color: #ededed;
+    border-radius: 8px;
+    border: 1px solid #ededed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+}
+
+.Palette > div {
+    width: 100%;
+    background: #ffffff;
+}
+
+.Palette > .header {
+    height: 48px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.Palette > .header > span {
+    font-family: Pretendard, serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-right: auto;
+}
+
+.Palette > .header > .IconButton {
+    height: 24px;
+    width: 24px;
+    margin-left: auto;
+}
+
+.Palette > .content {
+    scrollbar-width: thin;
+    height: 360px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 30px 20px 24px;
+}
+
+.Palette > .content > span {
+    font-family: Pretendard, serif;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.Palette > .content > div {
+    display:grid;
+    grid-template-columns: repeat(7, minmax(32px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.Palette > .content > div > .color-box {
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+    transition: scale 0.1s ease-in, outline-offset 0.1s ease-in;
+}
+
+.Palette > .content > div > .color-box:hover {
+    scale: 0.9;
+    outline: 2px solid #ededed;
+    outline-offset: 4px;
+}
+
+.Palette > .content > div > .color-box.selected {
+    outline: 2px solid #ededed;
+    outline-offset: 4px;
+}
+
+.Palette > .content > div > .color-picker {
+    width: 32px;
+    height: 32px;
+}
+
+.Palette > .content > div > .color-picker > div > button {
+    width: 100%;
+    height: 100%;
+}
+
+.Palette > .footer {
+    height: 60px;
+    display: flex;
+    padding: 12px 24px;
+    align-items: center;
+}
+
+.Palette > .footer > div {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+}
+
+.Palette > .footer > span {
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    margin-left: auto;
+}

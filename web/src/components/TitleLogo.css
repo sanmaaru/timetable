@@ -1,0 +1,28 @@
+.title-logo {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: max-content 1fr;
+    container-type: inline-size;
+}
+
+.title-logo .app-name {
+    font-family: "Pretendard", serif;
+    font-weight: 900;
+    color: #000000;
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.title-logo .logo {
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+    filter:
+}
+
+.title-logo .subtitle {
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
+    color: #000000;
+    grid-area: 2 / 1 / 2 / 3;
+}

@@ -1,0 +1,78 @@
+.EditableColorSchemeElement {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    row-gap: 12px;
+    cursor: pointer;
+}
+
+.EditableColorSchemeElement:hover {
+    row-gap: 16px;
+}
+
+.EditableColorSchemeElement:hover > span {
+    color: #000000;
+    font-size: 15px;
+}
+
+.EditableColorSchemeElement > span {
+    font-family: 'NixgonFont', serif;
+    font-size: 14px;
+    color: #6d6d6d;
+    grid-row: 1;
+    font-weight: bold;
+}
+
+.EditableColorSchemeElement.focus > span {
+    color: #000000;
+    font-size: 16px;
+}
+
+.EditableColorSchemeElement.focus {
+    row-gap: 16px;
+}
+
+.EditableColorSchemeElement.focus > div {
+    height: 3px;
+}
+
+
+.EditableColorSchemeElement > span:nth-child(2) {
+    margin-left: auto;
+}
+
+.EditableColorSchemeElement > div {
+    width: 100%;
+    height: 2px;
+    grid-column: 1/-1;
+}
+
+.EditableColorSchemeElement > .palette {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 32px;
+}
+
+.EditableColorSchemeElement > .palette > div {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.EditableColorSchemeElement > .palette > div > span {
+    font-family: 'NixgonFont', serif;
+    font-size: 14px;
+    margin-left: 4px;
+}
+
+.EditableColorSchemeElement > .palette > div > button {
+    border: none;
+    cursor: pointer;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
+    margin-right: 12px;
+    border-radius: 4px;
+}
