@@ -30,7 +30,8 @@
 }
 
 .Palette > .header > .IconButton {
-    height: 100%;
+    height: 24px;
+    width: 24px;
     margin-left: auto;
 }
 
@@ -78,10 +79,9 @@
 .Palette > .content > div > .color-picker {
     width: 32px;
     height: 32px;
-    padding: 6px;
 }
 
-.Palette > .content > div > .color-picker > svg {
+.Palette > .content > div > .color-picker > div > button {
     width: 100%;
     height: 100%;
 }

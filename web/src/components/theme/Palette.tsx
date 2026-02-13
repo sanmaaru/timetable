@@ -1,12 +1,22 @@
-import React, {forwardRef, useRef} from 'react';
+import React, {forwardRef} from 'react';
 import './Palette.css';
-import {FloatingFocusManager, FloatingPortal} from "@floating-ui/react";
+import {
+    autoUpdate,
+    flip,
+    FloatingFocusManager,
+    FloatingPortal,
+    offset,
+    shift, useClick,
+    useDismiss,
+    useFloating, useInteractions
+} from "@floating-ui/react";
 import {recentUsedColor} from "../../util/cookies";
 import {shade} from "../../util/color";
 import {defaultColors} from "../../constants/colors";
 import Close from '../../resources/icon/icn_close.svg?react';
 import Add from '../../resources/icon/icn_add.svg?react';
 import IconButton from "../button/IconButton";
+import {ChromePicker, ColorResult} from "react-color";
 
 interface PaletteProps {
     context: PaletteContext;
@@ -22,39 +32,76 @@ interface PaletteContext {
     context: any;
 }
 
+const drawColorBox = (color: string, selected: string, handleSetColor: (color: string) => void, key?: string) => {
+    return <div
+        key={key}
+        className={`color-box ${selected === color ? 'selected' : ''}`}
+        style={{
+            backgroundColor: color,
+            border: `0.25px solid ${shade(color, 0.1)}`,
+        }}
+        onClick={() => handleSetColor(color)}
+    />
+}
+
 const drawColorBoxes = (colors: string[], selected: string, handleSetColor: (color: string) => void) => {
     return colors.map((color, index) => (
-        <div
-            key={`${index}-${color}`}
-            className={`color-box ${selected === color ? 'selected' : ''}`}
-            style={{
-                backgroundColor: color,
-                border: `0.25px solid ${shade(color, 0.1)}`,
-            }}
-            onClick={() => handleSetColor(color)}
-        />
+        drawColorBox(color, selected, handleSetColor, `${index}-${color}`)
     ))
 }
 
 const Palette = forwardRef<HTMLDivElement, PaletteProps>((props, ref) => {
     const { color, setColor } = props;
     const { setOpen, isMounted, context, styles, getFloatingProps } = props.context;
+    const [displayPicker, setDisplayPicker] = React.useState(false);
+
+    const handleClickPicker= () => {
+        if (displayPicker) {
+            handleSetColor(color);
+            setDisplayPicker(false);
+        } else {
+            setPickerColor(color);
+            setDisplayPicker(true);
+        }
+    }
+
+    const [pickerColor, setPickerColor] = React.useState(color);
+    const {
+        refs: pickerRefs,
+        floatingStyles: pickerStyles,
+        context: pickerContext
+    } = useFloating({
+        open: displayPicker,
+        onOpenChange: handleClickPicker,
+        placement: 'bottom-start',
+        middleware: [
+            offset(10),
+            flip(),
+            shift()
+        ],
+        whileElementsMounted: autoUpdate
+    })
+
+    const dismiss = useDismiss(pickerContext, {
+        bubbles: false,
+        outsidePressEvent: 'mousedown'
+    })
+    const click = useClick(pickerContext)
+    const { getReferenceProps, getFloatingProps: getPickerFloatingProps } = useInteractions([ dismiss, click ])
 
     if (!isMounted)
         return null;
-
-    const colorPickerRef = useRef<HTMLInputElement>(null);
-
-    const handleClickPicker = () => {
-        colorPickerRef.current?.click();
-    }
 
     const handleSetColor = (color: string) => {
         setColor(color);
         recentUsedColor.append(color);
     }
 
-    console.log(recentUsedColor.query());
+    const handlePickerChange = (color: ColorResult) => {
+        setPickerColor(color.hex)
+        setColor(color.hex)
+    }
+
 
     return (
         <FloatingPortal>
@@ -64,6 +111,7 @@ const Palette = forwardRef<HTMLDivElement, PaletteProps>((props, ref) => {
                     ref={ref}
                     style={styles}
                     {...getFloatingProps()}
+                    onClick={handleClickPicker}
                 >
                     <div className='header'>
                         <span>색상</span>
@@ -74,16 +122,39 @@ const Palette = forwardRef<HTMLDivElement, PaletteProps>((props, ref) => {
                     <div className='content'>
                         <span>최근에 사용한 색상</span>
                         <div>
-                            <div className='color-picker' onClick={handleClickPicker}>
-                                <Add/>
+                            <div className='color-picker'>
+                                <div
+                                    ref={pickerRefs.setReference}
+                                    {...getReferenceProps()}
+                                    style={{ display: 'inline' }}
+                                >
+                                    <IconButton>
+                                        <Add/>
+                                    </IconButton>
+                                </div>
+                                {displayPicker && (
+                                    <FloatingPortal>
+                                        <div
+                                            ref={pickerRefs.setFloating}
+                                            style={{
+                                                ...pickerStyles,
+                                                zIndex: 9999
+                                            }}
+                                            {...getPickerFloatingProps()}
+                                            onMouseDown={(e) => e.stopPropagation()}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <ChromePicker
+                                                color={pickerColor}
+                                                onChange={handlePickerChange}
+                                                disableAlpha={true}
+                                            />
+                                        </div>
+                                    </FloatingPortal>
+                                )}
                             </div>
-                            <input
-                                ref={colorPickerRef}
-                                type='color'
-                                value={color}
-                                style={{ display: 'none' }}
-                            />
-                            {drawColorBoxes(recentUsedColor.query(), color, handleSetColor)}
+                            {[displayPicker && drawColorBox(pickerColor, color, handleSetColor),
+                                ...drawColorBoxes(recentUsedColor.query(), color, handleSetColor)]}
                         </div>
                         <span>기본 팔레트</span>
                         <div>

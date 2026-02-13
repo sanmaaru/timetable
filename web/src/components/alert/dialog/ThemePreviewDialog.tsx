@@ -7,6 +7,7 @@ import {useToast} from "../toast/ToastContext";
 import React, {useEffect} from "react";
 import Close from '../../../resources/icon/icn_close.svg?react';
 import {useTheme} from "../../../hooks/theme/useThemes";
+import IconButton from "../../button/IconButton";
 
 export interface ThemePreviewDialogProps {
     context: DialogContextType
@@ -50,9 +51,9 @@ const ThemePreviewDialog = ({context: dialogContext, themeId, title} : ThemePrev
                 <TimetableHeader/>
                 <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes} detail={false}/>
             </div>
-            <Close
-                onClick={close}
-            />
+            <IconButton onClick={() => close()}>
+                <Close/>
+            </IconButton>
         </div>
     )
 }

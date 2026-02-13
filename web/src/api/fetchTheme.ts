@@ -104,3 +104,25 @@ export const createTheme = async (title: string) => {
         return { data: null, error: code ? code : 'UNKNOWN_ERROR' };
     }
 }
+
+export const putTheme = async (themeId: string, theme: Theme) => {
+    try {
+        const response = await privateAxiosClient.put(`/theme/${themeId}`, {
+            title: theme.title,
+            color_schemes: theme.colorSchemes.map((item: ColorScheme) => ({
+                subject: item.subject,
+                color: item.color.replace('#', ''),
+                text_color: item.textColor.replace('#', '') ,
+            })),
+        })
+    } catch (error) {
+        if (!(error instanceof AxiosError))
+            return 'UNKNOWN_ERROR'
+
+        const code = error.response?.data?.code
+        if (code)
+            return code
+        else
+            return 'UNKNOWN_ERROR';
+    }
+}

@@ -25,15 +25,11 @@
     min-height: 0;
 }
 
-.theme-preview-dialog > svg {
+.theme-preview-dialog > button {
     position: absolute;
     top: 16px;
     right: 28px;
-    width: 16px;
-    height: 16px;
+    width: 24px;
+    height: 24px;
     margin-left: auto;
-}
-
-.theme-preview-dialog > svg:hover {
-    fill: #5b5b5b;
 }

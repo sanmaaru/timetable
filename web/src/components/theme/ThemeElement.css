@@ -92,7 +92,7 @@
 .theme-element .cards > .card {
     position: absolute;
     height: 100%;
-    box-shadow: 2px 0 4px #5b5b5b;
+    box-shadow: 2px 0 4px #858585;
     display: flex;
     flex-direction: column;
     padding-top: 8px;

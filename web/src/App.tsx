@@ -1,38 +1,63 @@
-import './App.css';
 import React from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import  Home from './pages/Home';
-import Login from "./pages/auth/Login";
-import SignUp from "./pages/auth/SignUp";
-import ProtectedRoute from "./auth/ProtectedRoute";
-import Layout from "./pages/Layout";
-import Theme from "./pages/theme/Theme";
-import Account from "./pages/Account";
-import ThemeView from "./pages/theme/ThemeView";
-import ThemeEdit from "./pages/theme/ThemeEdit";
-import {recentUsedColor} from "./util/cookies";
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+
+import Login from './pages/auth/Login';
+import SignUp from './pages/auth/SignUp';
+import Home from './pages/Home';
+import Theme from './pages/theme/Theme';
+import ThemeView from './pages/theme/ThemeView';
+import ThemeEdit from './pages/theme/ThemeEdit';
+import Account from './pages/Account';
+import ProtectedRoute from './auth/ProtectedRoute';
+import Layout from './pages/Layout';
+import {recentUsedColor} from "./util/cookies"; // Layout 컴포넌트
+
+const router = createBrowserRouter([
+    {
+        path: "/login",
+        element: <Login />,
+    },
+    {
+        path: "/signup",
+        element: <SignUp />,
+    },
+
+    {
+        element: <ProtectedRoute />,
+        children: [
+            {
+                element: <Layout />,
+                children: [
+                    {
+                        path: "/",
+                        element: <Home />,
+                    },
+                    {
+                        path: "/theme",
+                        element: <Theme />,
+                    },
+                    {
+                        path: "/theme/:themeId",
+                        element: <ThemeView />,
+                    },
+                    {
+                        path: "/theme/:themeId/edit",
+                        element: <ThemeEdit />,
+                    },
+                    {
+                        path: "/account",
+                        element: <Account />,
+                    },
+                ],
+            },
+        ],
+    },
+]);
 
 function App() {
     recentUsedColor.init()
-
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route path="/login" element={<Login/>} />
-                <Route path="/signup" element={<SignUp/>} />
-
-                <Route element={<ProtectedRoute/>}>
-                    <Route element={<Layout/>}>
-                        <Route path="/" element={<Home/>}/>
-                        <Route path="/theme" element={<Theme/>}/>
-                        <Route path="/theme/:themeId" element={<ThemeView/>}></Route>
-                        <Route path="/theme/:themeId/edit" element={<ThemeEdit/>}></Route>
-                        <Route path="/account" element={<Account/>}/>
-                    </Route>
-                </Route>
-            </Routes>
-        </BrowserRouter>
-    );
+    return <RouterProvider router={router} />;
 }
 
-export default App
+export default App;
+

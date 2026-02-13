@@ -39,10 +39,6 @@
 }
 
 .CreateThemeDialog > form > .btn-area > button:first-child {
-    background-color: #dbdbdb;
+    background-color: #f0f0f0;
     color: #000000;
-}
-
-.CreateThemeDialog > form > .btn-area > button:first-child:hover {
-    background-color: #c8c8c8;
 }

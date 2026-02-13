@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import './ThemeEdit.css'
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import useTimetable from "../../hooks/useTimetable";
 import {useToast} from "../../components/alert/toast/ToastContext";
 import TimetableHeader from "../../components/timetable/TimetableHeader";
@@ -8,17 +8,25 @@ import TimetableGrid from "../../components/timetable/TimetableGrid";
 import EditableColorSchemaElement from "../../components/theme/EditableColorSchemaElement";
 import StandardButton from "../../components/button/StandardButton";
 import {useMutableTheme} from "../../hooks/theme/useThemes";
+import {getThemeErrorMessage} from "../../constants/themeMessages";
+import {DialogProvider, useDialog} from "../../components/alert/dialog/DialogProvider";
+import SaveDialog from "../../components/alert/dialog/SaveDialog";
+import {usePreventLeave} from "../../hooks/usePreventLeave";
 
 const ThemeEdit = () => {
     const { themeId } = useParams()
     const { timetableData, isLoading: isTimetableLoading } =  useTimetable()
-    const { themeData, isLoading: isThemeLoading, loadData, setColorScheme, update } = useMutableTheme(themeId ?? '')
+    const { themeData, isLoading: isThemeLoading, loadData, setColorScheme, update, isSaved } = useMutableTheme(themeId ?? '')
     const [focus, setFocus] = useState<string | null>(null);
     const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1});
     const itemsRef = useRef(new Map());
     const wrapperRef = useRef<HTMLDivElement | null>(null);
 
     const toast = useToast()
+    const { open, close, isOpen } = useDialog()
+    const navigate = useNavigate();
+
+    const { bypass } = usePreventLeave(!isSaved, '저장하지 않으면 변경 내용이 손실됩니다. 그래도 나가시겠습니까?')
 
     useEffect(() => {
         if(!isTimetableLoading && !isThemeLoading && (!timetableData || !themeData)) {
@@ -77,6 +85,31 @@ const ThemeEdit = () => {
         setFocus(subject)
     }, [itemsRef])
 
+    const handleClickSave = async () => {
+        await update(() => {
+            toast.addToast('성공적으로 테마가 저장되었습니다', 'success')
+        }, (error) => {
+            toast.addToast(getThemeErrorMessage(error), 'error')
+        })
+        await loadData()
+    }
+
+    const handleClickQuit = useCallback(async () => {
+        if (isSaved) {
+            navigate('/theme')
+            return
+        }
+
+        open(<SaveDialog
+            context={{ open, close, isOpen }}
+            onConfirm={handleClickSave}
+            onSuccess={() => { bypass(); navigate('/theme') }}
+            color={'#ff0000'}
+        >
+            저장하지 않으면 변경 내용이 손실됩니다.
+        </SaveDialog>)
+    }, [isSaved])
+
     if (isThemeLoading || isTimetableLoading) {
         return (<div id='ThemeEdit'>
         </div>)
@@ -90,40 +123,43 @@ const ThemeEdit = () => {
     const { schedules } = timetableData;
 
     return (
-        <div id='ThemeEdit'>
-            <div className='title'>
-                <span className='title'>{'테마 수정'}</span>
-                <span className='name'> - {themeData.title}</span>
-            </div>
-            <div className='content'>
-                <div className='timetable' ref={wrapperRef} style={getTransformStyle()}>
-                    <div className={`wrapper ${focus ? 'focus' : ''}`}>
-                        <TimetableHeader/>
-                        <TimetableGrid
-                            schedules={schedules}
-                            colorSchemes={themeData.colorSchemes}
-                            detail={false}
-                            scheduleRefMap={itemsRef}
-                        />
+        <DialogProvider>
+            <div id='ThemeEdit'>
+                <div className='title'>
+                    <span className='title'>{'테마 수정'}</span>
+                    <span className='name'> - {themeData.title}</span>
+                </div>
+                <div className='content'>
+                    <div className='timetable' ref={wrapperRef} style={getTransformStyle()}>
+                        <div className={`wrapper ${focus ? 'focus' : ''}`}>
+                            <TimetableHeader/>
+                            <TimetableGrid
+                                schedules={schedules}
+                                colorSchemes={themeData.colorSchemes}
+                                detail={false}
+                                scheduleRefMap={itemsRef}
+                            />
+                        </div>
+                    </div>
+                    <div className='detail'>
+                        <span className='title'>색 조합표</span>
+                        {themeData.colorSchemes.map((value, idx) =>
+                            (<EditableColorSchemaElement
+                                colorScheme={value}
+                                setColorScheme={setColorScheme}
+                                key={idx}
+                                onClick={handleFocus}
+                                focus={focus}/>)
+                        )}
+                        <div className='footer'>
+                            <StandardButton label={'나가기'} loading={false} type={'button'} onClick={handleClickQuit}/>
+                            <StandardButton label={'저장'} loading={false} type={'button'} onClick={handleClickSave}/>
+                        </div>
                     </div>
                 </div>
-                <div className='detail'>
-                    <span className='title'>색 조합표</span>
-                    {themeData.colorSchemes.map((value, idx) =>
-                        (<EditableColorSchemaElement
-                            colorScheme={value}
-                            setColorScheme={setColorScheme}
-                            key={idx}
-                            onClick={handleFocus}
-                            focus={focus}/>)
-                    )}
-                    <div className='footer'>
-                        <StandardButton label={'취소'} loading={false} type={'button'}/>
-                        <StandardButton label={'저장'} loading={false} type={'button'}/>
-                    </div>
-                </div>
             </div>
-        </div>
+        </DialogProvider>
+
     )
 }
 

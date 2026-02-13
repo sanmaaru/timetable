@@ -7,7 +7,6 @@ import Options from '../../resources/icon/icn_options.svg?react'
 import {useNavigate} from "react-router-dom";
 import {autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useInteractions} from "@floating-ui/react";
 import ActionMenu from "../ActionMenu";
-import DeleteConfirmDialog from "../alert/dialog/DeleteConfirmDialog";
 import {useDialog} from "../alert/dialog/DialogProvider";
 import useThemeActions from "../../hooks/theme/useThemeActions";
 import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
@@ -17,7 +16,7 @@ import Pencil from '../../resources/icon/icn_pencil.svg?react'
 import Share from '../../resources/icon/icn_share.svg?react'
 import Magnifier from '../../resources/icon/icn_magnifier.svg?react'
 import Sparkle from '../../resources/icon/icn_sparkle.svg?react'
-import ChangeConfirmDialog from "../alert/dialog/ChangeConfirmDialog";
+import DefaultDialog from "../alert/dialog/DefaultDialog";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -64,11 +63,12 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
         if (selected)
             return;
 
-        open(<ChangeConfirmDialog
+        open(<DefaultDialog
             context={{ open, close, isOpen }}
-            content={`사용자의 시간표의 테마를 \'${theme.title}\'로 바꾸시겠습니까?`}
+            title={'! 정말로 변경하시겠습니까?'}
             onConfirm={handleConfirmChange}
-        />)
+            confirm={'변경'}
+        >{`사용자의 시간표의 테마를 \'${theme.title}\'로 바꾸시겠습니까?`}</DefaultDialog>)
     }, [selected, theme.title, open, close, isOpen, handleConfirmChange]);
 
     const handleView = useCallback(() => {
@@ -80,12 +80,13 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     }, [open, close, isOpen]);
 
     const handleDelete = () => {
-        open(<DeleteConfirmDialog
-                context={{ open, close, isOpen }}
-                content={'한 번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}
-                onConfirm={handleConfirmDelete}
-            />
-        )
+        open(<DefaultDialog
+            context={{ open, close, isOpen }}
+            title={'! 정말로 삭제하시겠습니까?'}
+            onConfirm={handleConfirmDelete}
+            color={'#ff0000'}
+            confirm={'삭제'}
+        >한번 삭제한 테마는 다시 복구할 수 없습니다. \n그래도 삭제하시겠습니까?</DefaultDialog>)
     }
 
     const handleConfirmDelete = useCallback(async () => {

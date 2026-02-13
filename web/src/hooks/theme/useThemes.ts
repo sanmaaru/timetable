@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useState} from "react";
 import {Theme} from "../../types/theme";
-import {fetchSelectedTheme, fetchTheme, fetchThemes} from "../../api/fetchTheme";
+import {fetchSelectedTheme, fetchTheme, fetchThemes, putTheme} from "../../api/fetchTheme";
 import theme from "../../pages/theme/Theme";
 
 export const useThemes = () => {
@@ -54,6 +54,7 @@ export const useTheme = (themeId?: string | null) => {
 export const useMutableTheme = (themeId: string | null) => {
     const [isLoading, setLoading] = useState<boolean>(true);
     const [themeData, setThemeData] = useState<Theme | null>(null);
+    const [isSaved, setIsSaved] = useState<boolean>(true);
 
     const loadData = useCallback(async () => {
         try {
@@ -75,9 +76,8 @@ export const useMutableTheme = (themeId: string | null) => {
     }, [])
 
     const setColorScheme = useCallback((subject: string, color?: string, textColor?: string) => {
-        // 1. 함수형 업데이트 사용 (themeData를 의존성 배열에 안 넣어도 됨 -> 최신 상태 보장)
         setThemeData((prev) => {
-            if (!prev) return null; // 데이터가 없으면 무시
+            if (!prev) return null;
 
             return {
                 ...prev,
@@ -93,14 +93,26 @@ export const useMutableTheme = (themeId: string | null) => {
                 })
             };
         });
+
+        setIsSaved(false);
     }, []);
 
 
-    const update = useCallback(() => { // api 통신
+    const update = useCallback(async (onSuccess?: () => void, onFail?: (error: string) => void) => { // api 통신
+        if (!themeData) {
+            onFail?.('')
+            return
+        }
 
+        const error = await putTheme(themeData.theme_id, themeData)
+        if (error)
+            onFail?.(error)
+        else
+            onSuccess?.()
+        setIsSaved(true)
     }, [themeData, themeId])
 
-    return { isLoading, themeData, update, loadData, setColorScheme };
+    return { isLoading, themeData, update, loadData, setColorScheme, isSaved };
 }
 
 

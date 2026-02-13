@@ -7,14 +7,22 @@
     color: #ffffff;
     font-family: "NixgonFont", serif;
     font-size: 14px;
+    position: relative;
+    overflow: hidden;
 }
 
-
-
-.standard-button:hover {
-    background: #373737;
+.standard-button:hover::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
 }
 
 .standard-button.loading {
-    background: #373737;
+    content: "";
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
 }

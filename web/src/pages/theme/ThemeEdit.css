@@ -81,6 +81,10 @@
     opacity: 1 !important;
 }
 
+#ThemeEdit > .content > .detail {
+    display: flex;
+}
+
 #ThemeEdit > .content > .detail > .title {
     display: inline-block;
     height: 32px;
@@ -91,17 +95,19 @@
 }
 
 #ThemeEdit > .content > .detail > .footer {
-    margin-top: 64px;
+    margin-top: auto;
+    margin-bottom: 24px;
     display: flex;
     flex-direction: row;
     gap: 8px;
 }
 
 #ThemeEdit > .content > .detail > .footer > button {
-    width: min(250px, 40%);
+    width: min(180px, 40%);
 }
 
 #ThemeEdit > .content > .detail > .footer > button:first-child {
     margin-left: auto;
+    background-color: #e0e0e0;
+    color: #000000;
 }
-
