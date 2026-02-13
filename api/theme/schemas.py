@@ -44,8 +44,12 @@ class ThemeSchema(BaseModel):
     selected: bool = False
 
 
-class ThemeChangeInput(BaseModel):
+class SelectedThemeChangeInput(BaseModel):
     theme_id: ULIDModel
+
+class ThemeChangeInput(BaseModel):
+    title: str
+    color_schemes: List[ColorSchemeSchema]
 
 class ThemeCreateInput(BaseModel):
     title: str

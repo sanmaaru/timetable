@@ -15,7 +15,7 @@ from auth.auth import role
 from auth.model import User, UserInfo, IdentifyToken
 from auth.router import router as auth_router
 from core.dependencies import get_current_user
-from core.exceptions import NullValueException
+from core.exceptions import NullValueException, UnknownValueException
 from core.middleware import RequestLogMiddleware
 from database import conn, Period, init_db
 from log.logger import configure_logger
@@ -126,6 +126,17 @@ async def null_value_exception_handler(request: Request, exception: NullValueExc
             'detail': exception.message,
             'message': 'Null value could not be accepted',
             'invalid': exception.invalid
+        }
+    )
+
+@app.exception_handler(UnknownValueException)
+async def unknown_value_exception_handler(request: Request, exception: UnknownValueException):
+    request.state.error = exception
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            'detail': exception.message,
+            'message': 'Unknown value',
         }
     )
 

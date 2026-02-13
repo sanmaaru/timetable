@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from ulid import ULID
 
 from auth.model import User, UserInfo
-from core.exceptions import NullValueException
+from core.exceptions import NullValueException, UnknownValueException
 from theme.exceptions import ThemeNotFoundException, ThemeNotOwnedByException, LastThemeDeleteException, \
-    ThemeInUseException, ThemeAlreadySelectedException
+    ThemeInUseException, ThemeAlreadySelectedException, ColorSchemeNotFoundException
 from theme.model import Theme, ColorScheme
-from theme.schemas import ThemeSchema, parse_color_schemes
+from theme.schemas import ThemeSchema, parse_color_schemes, ColorSchemeSchema
 
 DEFAULT_COLOR = '#2B2A2A'
 DEFAULT_TEXT_COLOR = '#EEEEEE'
@@ -56,6 +56,7 @@ def service_delete_theme(user: User, theme_id: ULID, session: Session):
         raise ThemeInUseException('Cannot delete the theme currently in use', theme_id=theme_id)
 
     session.delete(theme)
+    session.flush()
 
 def query_selected_theme(user: User):
     selected_theme = user.selected_theme
@@ -70,7 +71,7 @@ def query_all_themes(user: User):
 
     return theme_schemas
 
-def query_theme(theme_id, user: User, session: Session):
+def query_theme(theme_id: ULID, user: User, session: Session):
     theme: Theme | None = session.query(Theme).filter(Theme.theme_id == theme_id).one_or_none()
 
     if theme is None:
@@ -94,6 +95,38 @@ def service_change_selected_theme(user: User, theme_id: ULID, session: Session):
         raise ThemeAlreadySelectedException('Theme already selected')
 
     user.selected_theme_id = theme.theme_id
+    session.flush()
+    session.refresh(user)
+
+def service_change_theme(user: User, theme_id: ULID, session: Session, title: str | None = None, color_schemes: list[ColorSchemeSchema] | None = None):
+    theme = session.query(Theme).options(
+        joinedload(Theme.color_schemes).joinedload(ColorScheme.subject)
+    ).filter(Theme.theme_id == theme_id).one_or_none()
+
+    if theme is None:
+        raise ThemeNotFoundException('Theme does not exist', theme_id=theme_id)
+
+    if theme.owner_id != user.user_id:
+        raise ThemeNotOwnedByException('Cannot change theme not owned by ' + user.user_id, theme_id=theme_id)
+
+    if title:
+        theme.title = title
+
+    if color_schemes:
+        current_schemes_map = { cs.subject.name : cs for cs in theme.color_schemes }
+
+        for new_scheme in color_schemes:
+            target_scheme = current_schemes_map.get(new_scheme.subject)
+
+            if target_scheme:
+                target_scheme.color = new_scheme.color
+                target_scheme.text_color = new_scheme.text_color
+            else:
+                raise ColorSchemeNotFoundException('Cannot find color scheme for ' + new_scheme.subject, theme_id=theme_id)
+
+    theme.updated_at = datetime.now()
+
+    session.flush()
 
 def get_theme_schema(theme: Theme, user: User):
     return ThemeSchema(

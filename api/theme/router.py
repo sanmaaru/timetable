@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import List
 
 from fastapi import APIRouter, Depends, status
-from fastapi.params import Path
+from fastapi.params import Path, Body
 from sqlalchemy.orm import Session
 
 from auth.model import User
@@ -11,8 +11,8 @@ from core.response import BaseResponse, create_response, SuccessResponse, MetaSc
 from core.types import ULIDModel
 from database import conn
 from theme.crud import query_selected_theme, query_theme, query_all_themes, service_delete_theme, \
-    service_change_selected_theme, service_create_default_theme, get_theme_schema
-from theme.schemas import ThemeSchema, ThemeChangeInput, ThemeCreateInput
+    service_change_selected_theme, service_create_default_theme, get_theme_schema, service_change_theme
+from theme.schemas import ThemeSchema, SelectedThemeChangeInput, ThemeCreateInput, ThemeChangeInput
 
 router = APIRouter(prefix='/theme', tags=['theme'])
 
@@ -42,7 +42,7 @@ def get_selected_theme(
 
 @router.put('/selected')
 def change_selected_theme(
-        input: ThemeChangeInput,
+        input: SelectedThemeChangeInput,
         user: User = Depends(get_current_user),
         session: Session = Depends(conn)
 ):
@@ -83,4 +83,19 @@ def delete_theme(
         )
     )
 
-
+@router.put('/{theme_id}')
+def put_theme(
+        theme_id: ULIDModel = Path(description='theme id want to change'),
+        input: ThemeChangeInput = Body(description='theme data to change'),
+        user: User = Depends(get_current_user),
+        session: Session = Depends(conn)
+):
+    service_change_theme(user, theme_id, session, input.title, input.color_schemes)
+    session.commit()
+    return SuccessResponse(
+        meta=MetaSchema(
+            user_id=user.user_id,
+            status=status.HTTP_202_ACCEPTED,
+            responded_at=datetime.now(),
+        )
+    )

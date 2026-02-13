@@ -4,10 +4,20 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 from ulid import ULID
 
+from core.exceptions import UnknownValueException
 
-class ThemeNotFoundException(Exception):
+
+class ThemeNotFoundException(UnknownValueException):
 
     code = 'CANNOT_FOUND_THEME'
+
+    def __init__(self, message: str = None, theme_id: ULID = None):
+        self.message = message
+        self.theme_id = theme_id
+
+class ColorSchemeNotFoundException(UnknownValueException):
+
+    code = 'CANNOT_FOUND_COLOR_SCHEME'
 
     def __init__(self, message: str = None, theme_id: ULID = None):
         self.message = message
@@ -61,6 +71,15 @@ async def theme_not_found_exception_handler(request: Request, exc: ThemeNotFound
         invalid=exc.theme_id
     )
 
+async def color_scheme_not_found_exception_handler(request: Request, exc: ThemeNotFoundException):
+    return create_exception_response(
+        request=request,
+        exc=exc,
+        status_code=status.HTTP_404_NOT_FOUND,
+        message=exc.message,
+        code=exc.code,
+    )
+
 async def theme_not_owned_by_exception_handler(request: Request, exc: ThemeNotOwnedByException):
     return create_exception_response(
         request=request,
@@ -104,3 +123,4 @@ def include_exception_handlers(app: FastAPI):
     app.add_exception_handler(LastThemeDeleteException, last_theme_delete_exception_handler)
     app.add_exception_handler(ThemeInUseException, theme_in_use_exception_handler)
     app.add_exception_handler(ThemeAlreadySelectedException, theme_already_selected_exception_handler)
+    app.add_exception_handler(ColorSchemeNotFoundException, color_scheme_not_found_exception_handler)
