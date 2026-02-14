@@ -8,10 +8,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 
-from auth.auth import create_user_info, role
-from auth.model import UserInfo
-from database import Class, Subject, Lecture, Period, Enrollment
-from util import is_empty, get_generation
+from app.auth.auth import create_user_info, role
+from app.auth import UserInfo
+from app.core.database import Class, Subject, Lecture, Period, Enrollment
+from app.util import is_empty, get_generation
 
 
 # __all__ = ['upload_students', 'upload_teachers']

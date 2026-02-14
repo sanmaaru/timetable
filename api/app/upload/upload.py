@@ -1,5 +1,5 @@
 from .template import *
-from database import *
+from app.core.database import *
 from pathlib import Path
 
 session = next(conn())
