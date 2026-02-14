@@ -1,16 +1,18 @@
-from database import UserInfo, User
-from util import hash_with_base64
-from jose import JWTError
-from sqlalchemy.orm import Session
-from util import create_id
-from jose import jwt, JWTError
-from dotenv import load_dotenv
+import os
+import secrets
+import string
 from datetime import datetime, timezone, timedelta
-from sqlalchemy.orm.session import Session
-from util import hash_with_base64
-import database as db
-import os, secrets, string
 
+from dotenv import load_dotenv
+from jose import jwt, JWTError
+from sqlalchemy.orm.session import Session
+
+import auth.model
+import database as db
+from auth.exceptions import RefreshTokenError
+from auth.model import UserInfo, User
+from util import create_id
+from util import hash_with_base64
 
 load_dotenv()
 
@@ -123,7 +125,7 @@ class JWT:
 
 
 REFRESH_TOKEN_EXPIRE_DAY = 30
-RefreshDB = db.RefreshToken
+RefreshDB = auth.model.RefreshToken
 
 class RefreshToken:
 
@@ -242,6 +244,8 @@ class RefreshToken:
         id = f"{sgn_hashed}-{iss_hashed}==-{dat_hashed}"
         return id        
 
+IdentifyTokenDB = auth.model.IdentifyToken
+
 class IdentifyToken:
 
     def __init__(self, token_id: str, user_info_id: str) -> None:
@@ -249,45 +253,45 @@ class IdentifyToken:
         self.token_id = token_id
 
     def drop(self, session: Session):
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
-        if token == None:
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.token_id == self.token_id).one_or_none()
+        if token is None:
             return
         
         session.delete(token)
 
     def upload(self, session: Session):
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == self.token_id).one_or_none()
-        if token != None:
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.token_id == self.token_id).one_or_none()
+        if token is not None:
             return
         
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == self.user_info_id).one_or_none()
-        if token != None:
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.user_info_id == self.user_info_id).one_or_none()
+        if token is not None:
             return
         
-        token = db.IdentifyToken(token_id=self.token_id, user_info_id=self.user_info_id)
+        token = IdentifyTokenDB(token_id=self.token_id, user_info_id=self.user_info_id)
         session.add(token)
     
 
     @classmethod
     def get_token(cls, session: Session, token_id):
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
-        if token == None:
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.token_id == token_id).one_or_none()
+        if token is None:
             return None
         
         return IdentifyToken(token_id, token.user_info_id)
     
     @classmethod
     def issue(cls, session: Session, user_info_id: str):
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.user_info_id == user_info_id).one_or_none()
-        if token != None:
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.user_info_id == user_info_id).one_or_none()
+        if token is not None:
             return IdentifyToken(token.token_id, token.user_info_id)
 
         token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
-        token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+        token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.token_id == token_id).one_or_none()
         # check multiplicity
-        while token != None:
+        while token is not None:
             token_id = ''.join(secrets.choice(string.ascii_letters) for _ in range(8))
-            token = session.query(db.IdentifyToken).filter(db.IdentifyToken.token_id == token_id).one_or_none()
+            token = session.query(IdentifyTokenDB).filter(IdentifyTokenDB.token_id == token_id).one_or_none()
         
         token = IdentifyToken(token_id, user_info_id)
         token.upload(session)
@@ -301,12 +305,9 @@ def issue(user_id: str, session: Session, issuer: str) -> tuple[JWT, RefreshToke
     
     return jwt, refresh
 
-class RefreshTokenError(Exception):
-    pass
-
 def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=False) -> tuple[str, str]:
     refresh_token = RefreshToken.get_token(refresh, session)
-    if refresh_token == None:
+    if refresh_token is None:
         raise RefreshTokenError('refresh token must not be none')
     
     jwt = JWT.decode(access)
@@ -323,7 +324,7 @@ def reissue(session: Session, refresh: str, access: str, reload_refresh: bool=Fa
 
 def grant_authority(user_id: str, role: int, session: Session):
     user = session.query(User).filter(User.user_id == user_id).one_or_none()
-    if user == None:
+    if user is None:
         raise ValueError('No user found: ' + user_id)
     
     user_info = user.user_info

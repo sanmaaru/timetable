@@ -1,14 +1,18 @@
-from sqlalchemy.orm.session import Session
-from sqlalchemy.orm import joinedload
-from sqlalchemy.exc import SQLAlchemyError
-from database import UserInfo, Class, Subject, Lecture, Period, Enrollment
+import copy
 from dataclasses import dataclass
-from util import is_empty, get_generation
 from itertools import chain
-from auth.auth import create_user_info, role
+
 import numpy as np
 import pandas as pd
-import re, copy
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.session import Session
+
+from auth.auth import create_user_info, role
+from auth.model import UserInfo
+from database import Class, Subject, Lecture, Period, Enrollment
+from util import is_empty, get_generation
+
 
 # __all__ = ['upload_students', 'upload_teachers']
 

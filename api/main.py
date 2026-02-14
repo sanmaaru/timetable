@@ -1,5 +1,4 @@
 import json
-import time
 from typing import Optional
 
 import structlog
@@ -11,13 +10,15 @@ from sqlalchemy.orm import joinedload
 from sqlalchemy.orm.session import Session
 from starlette.responses import JSONResponse
 
-from api.core.dependencies import get_current_user
-from api.core.exceptions import NullValueException
-from api.core.middleware import RequestLogMiddleware
-from api.log.logger import configure_logger
+import theme.exceptions
 from auth.auth import role
+from auth.model import User, UserInfo, IdentifyToken
 from auth.router import router as auth_router
-from database import conn, User, Period, init_db, UserInfo, IdentifyToken
+from core.dependencies import get_current_user
+from core.exceptions import NullValueException, UnknownValueException
+from core.middleware import RequestLogMiddleware
+from database import conn, Period, init_db
+from log.logger import configure_logger
 from theme.router import router as theme_router
 
 # TODO: for dev
@@ -128,6 +129,17 @@ async def null_value_exception_handler(request: Request, exception: NullValueExc
         }
     )
 
+@app.exception_handler(UnknownValueException)
+async def unknown_value_exception_handler(request: Request, exception: UnknownValueException):
+    request.state.error = exception
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={
+            'detail': exception.message,
+            'message': 'Unknown value',
+        }
+    )
+
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
@@ -156,3 +168,5 @@ async def global_error_handler(request: Request, exc: Exception):
             'request_id': request.headers.get('X-Request-Id')
         }
     )
+
+theme.exceptions.include_exception_handlers(app)

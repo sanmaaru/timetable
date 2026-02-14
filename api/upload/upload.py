@@ -1,5 +1,5 @@
-from template import *
-from ..database import *
+from .template import *
+from database import *
 from pathlib import Path
 
 session = next(conn())
@@ -26,3 +26,5 @@ create_user_info(
     name='administrator', 
     role=role.ADMINISTRATOR
 )
+
+session.commit()

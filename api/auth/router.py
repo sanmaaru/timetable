@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from jose import JWTError
 from pydantic import BaseModel, EmailStr, Field
 
-from .auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
-from ..database import conn, User
-from ..theme.crud import create_default_theme
-from ..util import create_id
+from auth.auth import issue, LOGIN_ISSUER, reissue, RefreshTokenError, IdentifyToken
+from auth.model import User, UserInfo
+from database import conn
+from theme.crud import service_create_default_theme
+from util import create_id
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 hasher = PasswordHasher()
@@ -104,7 +105,7 @@ class SignUpInput(BaseModel):
 def signup(input: SignUpInput, session = Depends(conn)):
     # indentifier token을 이용해서 신원확인
     token = IdentifyToken.get_token(session, input.identify_token)
-    if token == None:
+    if token is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, 
             detail= {
@@ -132,8 +133,12 @@ def signup(input: SignUpInput, session = Depends(conn)):
     user_info_id = token.user_info_id
     
     user = User(user_id=user_id, username=username, password=hashed, email=str(email), user_info_id=user_info_id)
+    user_info = session.query(UserInfo).filter(UserInfo.user_info_id == user_info_id).one_or_none()
     session.add(user)
-    create_default_theme(user, session)
+    session.flush()
+
+    theme = service_create_default_theme(user, user_info, session)
+    user.selected_theme = theme
 
     # 회원가입 완료시 identifer 삭제
     token.drop(session)

@@ -10,7 +10,8 @@ from starlette.background import BackgroundTask, BackgroundTasks
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
 
-from api.log.logger import mask_sensitive_data
+from core.exceptions import exception_to_object
+from log.logger import mask_sensitive_data
 
 logger = structlog.get_logger()
 
@@ -63,6 +64,8 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             if response.status_code >= 400:
                 current_context = structlog.contextvars.get_contextvars()
                 error = getattr(request.state, 'error', None)
+                if error:
+                    error = exception_to_object(error)
                 method = 'error' if response.status_code >= 500 else 'info'
 
                 body_bytes = b""
@@ -99,7 +102,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
                     response.background = new_task
 
             else:
-                await logger.info(
+                logger.info(
                     'Request handled',
                     status_code=response.status_code,
                     process_time=process_time
@@ -109,7 +112,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
 
         except Exception as e:
             current_context = structlog.contextvars.get_contextvars()
-            error = e
+            error = exception_to_object(e)
             method = 'error'
 
             body_bytes = b""
@@ -192,7 +195,7 @@ class RequestLogMiddleware(BaseHTTPMiddleware):
             except Exception:
                 masked_body = 'Cannot parse body'
         else:
-            masked_body = 'Body skipped'
+            masked_body = 'Body skipped' if not is_cached else 'Body is not cached'
 
 
         masked_header = mask_sensitive_data(header) if not self.debug else header
