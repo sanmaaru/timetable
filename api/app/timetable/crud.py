@@ -1,6 +1,7 @@
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, joinedload
+from ulid.ulid import ULID
 
 from app.auth.model import User, UserInfo
 from app.timetable.model import Class, Lecture
@@ -17,16 +18,16 @@ async def query_timetable(user: User, session: AsyncSession):
                 joinedload(Class.lecture).joinedload(Lecture.teacher_info)
             )
         )
-        .where(UserInfo.user_id == user.user_id)
+        .where(UserInfo.user_info_id == user.user_info_id)
     )
     result = await session.execute(stmt)
     user_info = result.scalar_one()
 
-    # 2. 스키마에 데이터 주입
-    # Pydantic이 user_info.classes를 리스트로 순회하며
-    # TimetableItemSchema로 자동 변환합니다.
     return TimetableSchema(
         username=user.username,
         name=user_info.name,
         timetable=user_info.classes
     )
+
+async def query_class(user: User, class_id: ULID, session: AsyncSession):
+    pass

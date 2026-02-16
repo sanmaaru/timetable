@@ -13,7 +13,7 @@ from app.auth.exceptions import AuthorizationError, RefreshTokenError
 from app.auth.model import User, UserInfo, IdentifyToken, RefreshToken
 from app.core.config import configs
 from app.core.exceptions import ConflictError
-from app.auth.schemas import TokenPayload
+from app.auth.schemas import TokenPayload, UserInfoData
 from app.theme.crud import service_create_default_theme
 
 hasher = PasswordHasher()
@@ -25,27 +25,23 @@ class Role:
     MANAGER=4
     ADMINISTRATOR=8
 
-async def create_user_info(session: AsyncSession, name: str, role: int,
-                     generation: int | None = None, clazz: int | None = None, number: int | None = None,
-                     credit: int | None = None):
-    stmt = select(UserInfo).filter(UserInfo.name == name,
-                                        UserInfo.role == role,
-                                        UserInfo.generation == generation,
-                                        UserInfo.clazz == clazz,
-                                        UserInfo.number == number,
-                                        UserInfo.credit == credit
-                                   )
+async def create_user_info(session: AsyncSession, user_info_data: UserInfoData, role: int):
+    stmt = select(UserInfo).filter(UserInfo.name == user_info_data.name,
+                                   UserInfo.generation == user_info_data.generation,
+                                   UserInfo.clazz == user_info_data.clazz,
+                                   UserInfo.number == user_info_data.number,
+                                   UserInfo.credit == user_info_data.credit)
     user_info = (await session.execute(stmt)).scalars().one_or_none()
     if user_info is not None:
         raise ConflictError('Multiple user exists', payload={'conflict': user_info.user_info_id})
 
     user_info = UserInfo(
-        name=name,
+        name=user_info_data.name,
         role=role,
-        generation=generation,
-        clazz=clazz,
-        number=number,
-        credit=credit
+        generation=user_info_data.generation,
+        clazz=user_info_data.clazz,
+        number=user_info_data.number,
+        credit=user_info_data.credit
     )
 
     session.add(user_info)

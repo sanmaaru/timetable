@@ -1,17 +1,12 @@
 import copy
-from dataclasses import dataclass
 from itertools import chain
 
 import numpy as np
 import pandas as pd
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import joinedload
-from sqlalchemy.orm.session import Session
 
-from app.auth.auth import create_user_info, role
-from app.auth import UserInfo
-from app.core.database import Class, Subject, Lecture, Period, Enrollment
-from app.util import is_empty, get_generation
+from app.upload.exceptions import ParseError
+from app.upload.schema import EnrollmentInfo, PeriodInfo, LectureInfo
+from app.util.common import is_empty, get_generation
 
 
 # __all__ = ['upload_students', 'upload_teachers']
@@ -306,48 +301,6 @@ def get_board(path):
 
     return board
 
-class ParseError(Exception):
-    pass
-
-@dataclass
-class EnrollmentInfo:
-    generation: int
-    clazz: int
-    number: int
-    name: str
-    subjects: list[tuple[str, int]] # (subject, division)
-
-    def __repr__(self) -> str:
-        return f'[generation: {self.generation}, clazz: {self.clazz}, number: {self.number}, name: {self.name}, subjects: {self.subjects}]'
-    
-    def __str__(self) -> str:
-        return self.__repr__()
-
-@dataclass
-class LectureInfo:
-    subject: str
-    teacher: str
-    room: str
-
-    def __repr__(self) -> str:
-        return f'[subject={self.subject}, teacher={self.teacher}, room={self.room}]'
-    
-    def __str__(self) -> str:
-        return self.__repr__()
-
-@dataclass
-class PeriodInfo:
-    subject: str
-    teacher: str
-    division: int
-    day: int
-    period: int
-
-    def __repr__(self) -> str:
-        return f'[subject={self.subject}, teacher={self.teacher}, division={self.division}, day={self.day}, period={self.period}]'
-    
-    def __str__(self) -> str:
-        return self.__repr__()
     
 def parse_enrollments(path: str) -> tuple[list[EnrollmentInfo], list[PeriodInfo]]:
     board = get_board(path)
@@ -381,6 +334,7 @@ def parse_enrollments(path: str) -> tuple[list[EnrollmentInfo], list[PeriodInfo]
 
         student = organized['student']
         classes = organized['class']
+        credit = organized['credit']
         if not isinstance(classes, list):
             classes = [classes]
 
@@ -389,6 +343,7 @@ def parse_enrollments(path: str) -> tuple[list[EnrollmentInfo], list[PeriodInfo]
             student[1],
             student[2],
             student[3],
+            credit,
             classes
         )
         student_info_list.append(student_info)
@@ -417,7 +372,7 @@ def parse_lectures(path: str) -> list[LectureInfo]:
             if type == 'teacher':
                 room = contents[idx+1][1]
                 if not room:
-                    raise ParseError(f'[teacher={content}] room is none')
+                    raise ParseError(f'room is none', teacher=content)
                 
                 lecture_info = LectureInfo(subject=subject, teacher=content, room=room)
                 if lecture_info not in lecture_info_list:
@@ -439,7 +394,7 @@ def parse_periods(path: str) -> list[PeriodInfo]:
             type = type_content[0]
             content = type_content[1]
             if type == 'subject':
-                if content == None:
+                if content is None:
                     subject = subject_cache
                     continue
                 
@@ -447,13 +402,13 @@ def parse_periods(path: str) -> list[PeriodInfo]:
                 subject_cache = subject
             
             if type == 'teacher':
-                if content == None:
+                if content is None:
                     continue
 
                 teacher = content
 
             if type == 'period':
-                if content == None:
+                if content is None:
                     continue
 
                 day = idx - (PERIOD_START_COL - 1)
@@ -489,142 +444,3 @@ def unify_periods(periods: list[PeriodInfo], muti_tch_period: list[PeriodInfo], 
         period_info_list.append(period)
     
     return period_info_list
-
-## ===== Upload Logic =====
-class UploadError(Exception):
-    pass
-
-def upload_students(students: list[EnrollmentInfo], session: Session):
-    try:
-        for student in students:
-            create_user_info(session, student.name, role.STUDENT, student.generation, student.clazz, student.number)
-        session.commit()
-    except:
-        session.rollback()
-        raise
-
-def upload_teachers(teachers: list[LectureInfo], session: Session):
-    try:
-        for lecture in teachers:
-            teacher_names = map(str.strip, lecture.teacher.split(","))
-            for teacher_name in teacher_names:
-                teacher = session.query(UserInfo).filter(
-                    UserInfo.name == teacher_name, 
-                    UserInfo.role.op('&')(role.TEACHER) != 0
-                ).one_or_none()
-                if teacher == None:
-                    create_user_info(session, teacher_name, role.TEACHER)
-        session.commit()
-    except:
-        session.rollback()
-        raise 
-
-def upload_enrollments(students: list[EnrollmentInfo], session: Session):
-    try:
-        cache = {} # cache of subject_name and division of student
-        for student in students:
-            db_student = session.query(UserInfo).filter(
-                UserInfo.generation == student.generation,
-                UserInfo.clazz == student.clazz, 
-                UserInfo.number == student.number, 
-                UserInfo.name == student.name).one_or_none()
-            if db_student == None:
-                raise UploadError(f'{student} cannot find student')
-        
-
-            # refactor with join
-            for subject_name, division in student.subjects:
-                if (subject_name, division) not in cache:
-                    classes = (session.query(Class).join(Class.lecture).join(Lecture.subject)
-                            .filter(Class.division == division, Subject.name == subject_name)
-                            .options(joinedload(Class.lecture).joinedload(Lecture.subject))
-                            .all())
-                    
-                    if len(classes) == 0:
-                        raise UploadError(f'[subject={subject_name}, division={division}] cannot find class')
-                    
-                    cache[(subject_name, division)] = [x.class_id for x in classes]
-
-                class_ids = cache[(subject_name, division)]
-                for class_id in class_ids:
-                    enrollment = Enrollment(class_id=class_id, user_info_id=db_student.user_info_id)
-                    session.add(enrollment)
-        session.commit()
-    except (UploadError, SQLAlchemyError):
-        session.rollback()
-        raise 
-            
-
-def upload_lectures(lectures: list[LectureInfo], session: Session):
-    try:
-        for lecture in lectures:
-        
-            # create subject if not the subject exists
-            subject = session.query(Subject).filter(Subject.name == lecture.subject).one_or_none()
-            if subject == None:
-                subject = Subject(name=lecture.subject)
-                session.add(subject)
-                session.flush()
-
-            # create lecture
-            teacher_name = lecture.teacher.split(",")[0].strip()
-            teacher = session.query(UserInfo).filter(
-                UserInfo.name == teacher_name, 
-                UserInfo.role.op('&')(role.TEACHER) != 0
-            ).one_or_none()
-            if teacher == None:
-                raise UploadError(f'{lecture} cannot find teacher')
-
-            # confirm multiplicity
-            db_lecture = session.query(Lecture).filter(
-            Lecture.subject_id == subject.subject_id, 
-                Lecture.teacher_info_id == teacher.user_info_id,
-                Lecture.room == lecture.room
-            ).one_or_none()
-            if db_lecture != None:
-                continue
-
-            lecture = Lecture(subject_id=subject.subject_id, teacher_info_id=teacher.user_info_id, room=lecture.room)
-            session.add(lecture)
-
-        session.commit()
-    except (UploadError, SQLAlchemyError):
-        session.rollback()
-        raise
-            
-
-def upload_periods(periods: list[PeriodInfo], session: Session):
-    try:
-        cache = {}
-        for period in periods:
-            teacher_name = period.teacher.split(',')[0].strip()
-
-            if (period.subject, teacher_name) not in cache:
-                # Lecture 가져오기
-                lecture = (session.query(Lecture).join(Lecture.subject).join(Lecture.teacher_info)
-                           .filter(Subject.name == period.subject, UserInfo.name == teacher_name)
-                           .options(joinedload(Lecture.subject), joinedload(Lecture.teacher_info))
-                           .all())
-            
-                if len(lecture) > 1:
-                    raise UploadError(f'{period} too many lectures')
-                elif len(lecture) == 0:
-                    raise UploadError(f'{period} cannot find lecture')
-                
-                cache[(period.subject, teacher_name)] = lecture[0].lecture_id
-            
-            lecture_id = cache[(period.subject, teacher_name)]
-
-            clazz = session.query(Class).where(Class.lecture_id == lecture_id,
-                                                       Class.division == period.division).one_or_none()
-            if clazz == None:
-                clazz = Class(lecture_id=lecture_id, division=period.division)
-                session.add(clazz)
-                session.flush()
-                    
-            period = Period(class_id=clazz.class_id, period=period.period, day=period.day)
-            session.add(period)
-        session.commit()
-    except (UploadError, SQLAlchemyError):
-        session.rollback()
-        raise

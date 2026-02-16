@@ -3,6 +3,7 @@ from typing import List, Any
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from pydantic import field_validator
 
+from app.auth.schemas import UserSchema, UserInfoSchema
 from app.timetable.model import Period
 
 
@@ -54,3 +55,21 @@ class TimetableSchema(BaseModel):
     username: str
     name: str
     timetable: List[TimetableItemSchema]
+
+class ClassSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    division: int
+    classmates: List[UserInfoSchema]
+
+    lecture: Any = Field(exclude=True)
+
+    @computed_field
+    @property
+    def subject(self) -> str:
+        return self.lecture.subject.name
+
+    @computed_field
+    @property
+    def teacher(self) -> str:
+        return self.lecture.teacher_info.name

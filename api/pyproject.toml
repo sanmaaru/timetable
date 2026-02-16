@@ -5,9 +5,9 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aiomysql>=0.3.2",
     "argon2-cffi[binaries]>=25.1.0",
     "asgi-correlation-id>=4.3.4",
-    "basemodel",
     "fastapi[standard]>=0.121.2",
     "gdown>=5.2.0",
     "numpy>=2.3.5",

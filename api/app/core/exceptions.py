@@ -22,6 +22,27 @@ class ConflictError(ClientError):
     status_code = status.HTTP_409_CONFLICT
 
 
+class BasicError(Exception):
+
+    def __init__(self, message: str, **payloads):
+        self.message = message
+        self.payloads = payloads
+
+    def __str__(self):
+        payloads = []
+        for k, v in self.payloads.items():
+            payloads.append(f'{k}={v}')
+
+        return f'[{', '.join(payloads)}] {self.message}'
+
+    def __repr__(self):
+        payloads = []
+        for k, v in self.payloads.items():
+            payloads.append(f'{k}={v}')
+
+        return f'{self.__class__.__name__}(message={self.message}, {", ".join(payloads)})'
+
+
 logger = structlog.get_logger()
 async def handle_client_exception(request: Request, exc: ClientError):
     logger.warning(

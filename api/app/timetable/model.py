@@ -31,7 +31,7 @@ class Class(Base):
 
     periods = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
     enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
-    students_info = relationship('UserInfo', secondary='enrollments', back_populates='classes',
+    classmates = relationship('UserInfo', secondary='enrollments', back_populates='classes',
                                  overlaps='enrollments, clazz')
 
 

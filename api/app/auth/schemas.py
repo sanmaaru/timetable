@@ -1,13 +1,23 @@
+from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
 
 from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict, computed_field
 from ulid import ULID
 
+@dataclass
 class TokenPayload:
-    sub: str | None = None
-    iat: datetime | None = None
-    exp: datetime | None = None
+    sub: str | None
+    iat: datetime | None
+    exp: datetime | None
+
+@dataclass
+class UserInfoData:
+    name: str
+    generation: int | None = None
+    clazz: int | None = None
+    number: int | None = None
+    credit: int | None = None
 
 # === inputs ===
 class SignUpInput(BaseModel):
@@ -30,7 +40,7 @@ class TokenPair(BaseModel):
     refresh_token: str
     token_type: str = 'bearer'
 
-# === responses ===
+# === schemas ===
 class UserSchema(BaseModel):
     user_id: str
     email: str
@@ -45,6 +55,24 @@ class UserSchema(BaseModel):
             return str(v)
 
         return v
+
+class UserInfoSchema(BaseModel):
+    user_info_id: str
+    name: str
+    generation: int
+    clazz: int
+    number: int
+    credit: int
+
+    @field_validator('user_info_id', mode='before')
+    @classmethod
+    def serialize_ulid(cls, v: Any):
+        if isinstance(v, ULID):
+            return str(v)
+
+        return v
+
+    model_config = ConfigDict(from_attributes=True)
 
 class IdentifyTokenSchema(BaseModel):
 

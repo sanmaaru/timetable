@@ -42,7 +42,7 @@ class UserInfo(Base):
 
     taught_lectures = relationship('Lecture', back_populates='teacher_info')
     enrollments = relationship('Enrollment', back_populates='user_info', cascade='all, delete-orphan')
-    classes = relationship('Class', secondary='enrollments', back_populates='students_info')
+    classes = relationship('Class', secondary='enrollments', back_populates='classmates')
 
     user = relationship('User', uselist=False, back_populates='user_info')
 

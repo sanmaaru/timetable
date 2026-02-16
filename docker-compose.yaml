@@ -31,7 +31,10 @@ services:
     restart: unless-stopped
     command: ["uv", "run", "uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]
     environment:
-      CONNECTION: '${CONNECTION}'
+      SQL_ROOT_PASSWORD: '${SQL_ROOT_PASSWORD}'
+      SQL_DATABASE: '${SQL_DATABASE}'             
+      SQL_USER:  '${SQL_USER}'
+      SQL_PASSWORD: '${SQL_PASSWORD}'
     ports:
       - "5000:5000"
     depends_on:

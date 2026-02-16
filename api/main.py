@@ -12,8 +12,8 @@ from app.core.database import engine, Base
 from app.core.exceptions import handle_client_exception, ClientError, global_error_handler, validation_exception_handler
 from app.core.middleware import RequestLogMiddleware
 from app.theme.router import router as theme_router
+from app.timetable.router import router as timetable_router
 from app.util.logger import configure_logger
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -27,6 +27,7 @@ app = FastAPI(
 )
 app.include_router(auth_router)
 app.include_router(theme_router)
+app.include_router(timetable_router)
 
 app.add_middleware(
     CORSMiddleware,

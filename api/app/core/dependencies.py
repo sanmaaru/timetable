@@ -1,16 +1,16 @@
 from fastapi import Header, Depends, status
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.auth import JWT
+from app.auth.crud import decode_access
 from app.auth.exceptions import AuthorizationError
-from app.core.database import conn
 from app.auth.model import User
+from app.core.database import conn
 
 
-def get_current_user(
+async def get_current_user(
         auth: str = Header(default=None, alias="Authorization"),
-        session: Session = Depends(conn)
+        session: AsyncSession = Depends(conn)
 ):
     if auth is None:
         raise AuthorizationError(
@@ -22,13 +22,10 @@ def get_current_user(
     if scheme.lower() != 'bearer' or scheme is None:
         raise AuthorizationError(message="Infelicitous token type")
 
-    jwt = JWT.decode(token)
-    if jwt is None or not jwt.verify():
-        raise AuthorizationError(message="Invalid authorization token")
-
-    user_id = jwt.user_id
+    jwt = decode_access(token)
+    user_id = jwt['sub']
     stmt = select(User).filter(User.user_id == user_id)
-    user = session.execute(stmt).scalars().one_or_none()
+    user = (await session.execute(stmt)).scalars().one_or_none()
 
     if user is None:
         raise AuthorizationError(message="Invalid User")
