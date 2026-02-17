@@ -62,7 +62,7 @@ const parseTimetableData = (timetable: any) => {
 export const fetchTimetable = async () => {
     const response = await privateAxiosClient.get('/timetable', {});
 
-    const {name, timetable} = JSON.parse(response.data);
+    const {name, timetable} = response.data.data
     const {classes, schedules} = parseTimetableData(timetable);
 
     return { name, classes, schedules }

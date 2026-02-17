@@ -65,6 +65,13 @@ const Palette = forwardRef<HTMLDivElement, PaletteProps>((props, ref) => {
         }
     }
 
+    const closeColorPicker = () => {
+        if (displayPicker) {
+            handleSetColor(color);
+            setDisplayPicker(false);
+        }
+    }
+
     const [pickerColor, setPickerColor] = React.useState(color);
     const {
         refs: pickerRefs,
@@ -111,7 +118,7 @@ const Palette = forwardRef<HTMLDivElement, PaletteProps>((props, ref) => {
                     ref={ref}
                     style={styles}
                     {...getFloatingProps()}
-                    onClick={handleClickPicker}
+                    onClick={closeColorPicker}
                 >
                     <div className='header'>
                         <span>색상</span>

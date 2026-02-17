@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import {useState} from "react";
 import {publicAxiosClient} from "../api/axiosClient";
 import {handleSignUpError, SIGN_UP_ERROR_MESSAGES} from "../constants/authMessages";
+import {useToast} from "../components/alert/toast/ToastContext";
 
 export interface SignUpInput {
     username: string;
@@ -19,6 +20,7 @@ export const useSignUp = () => {
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [globalErrorMessage, setGlobalErrorMessage] = useState<string>('');
+    const { addToast } = useToast()
 
     const {
         register,
@@ -45,6 +47,7 @@ export const useSignUp = () => {
                 identify_token: data.identifyToken.trim(),
             });
 
+            addToast('회원가입이 성공적으로 이루어졌습니다.', 'success')
             navigate('/login', {replace: true});
         } catch (error: any) {
             if (!error.response || error.response?.status !in [ 401, 409 ]) {
