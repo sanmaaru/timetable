@@ -5,7 +5,7 @@ from sqlalchemy import String, ForeignKey, SmallInteger, Integer, DateTime
 from sqlalchemy.orm import relationship, Mapped, mapped_column, query_expression
 
 from app.core.database import Base, ULID, generate_ulid
-from app.util.common import get_grade
+from app.util.common import get_grade, generate_token
 
 
 class User(Base):
@@ -16,7 +16,7 @@ class User(Base):
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     email: Mapped[str] = mapped_column(String(255), nullable=False)
     user_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'), nullable=False, unique=True)
-    selected_theme_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('themes.theme_id', ondelete='RESTRICT'))
+    selected_theme_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('themes.theme_id', ondelete='RESTRICT'), nullable=True)
 
     user_info = relationship('UserInfo', uselist=False, back_populates='user')
     refresh_tokens = relationship('RefreshToken', back_populates='owner', cascade='all, delete-orphan')
@@ -65,7 +65,7 @@ class RefreshToken(Base):
 class IdentifyToken(Base):
     __tablename__ = 'identify_tokens'
 
-    token_id: Mapped[str] = mapped_column(String(8), primary_key=True)
+    token_id: Mapped[str] = mapped_column(String(8), primary_key=True, default=generate_token)
     user_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'), nullable=False, unique=True)
 
     user_info = relationship('UserInfo', uselist=False)

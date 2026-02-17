@@ -29,6 +29,7 @@ class TimetableItemSchema(BaseModel):
 
     division: int
     room: str | None = None
+    periods: List[PeriodSchema]
 
     lecture: Any = Field(exclude=True)
 
@@ -43,10 +44,6 @@ class TimetableItemSchema(BaseModel):
     def teacher(self) -> str:
         return self.lecture.teacher_info.name
 
-    @computed_field
-    @property
-    def periods(self) -> List[PeriodSchema]:
-        return [PeriodSchema.model_validate(p) for p in self.periods]
 
 
 class TimetableSchema(BaseModel):

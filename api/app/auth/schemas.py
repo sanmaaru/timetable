@@ -29,7 +29,6 @@ class SignUpInput(BaseModel):
 
 class RefreshTokenInput(BaseModel):
     refresh_token: str
-    access_token: str
 
 class LoginInput(BaseModel):
     username: str
@@ -39,6 +38,14 @@ class TokenPair(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = 'bearer'
+
+    @field_validator('refresh_token', mode='before')
+    @classmethod
+    def serialize_ulid(cls, v: Any):
+        if isinstance(v, ULID):
+            return str(v)
+
+        return v
 
 # === schemas ===
 class UserSchema(BaseModel):

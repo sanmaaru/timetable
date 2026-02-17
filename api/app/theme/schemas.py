@@ -30,7 +30,7 @@ class ThemeSchema(BaseModel):
     color_schemes: List[ColorSchemeSchema]
     created_at: datetime
     updated_at: datetime
-    selected: bool
+    selected: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

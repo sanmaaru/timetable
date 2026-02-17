@@ -7,6 +7,8 @@ from typing import Any
 
 import pandas as pd
 
+from app.core.config import configs
+
 
 def hash_with_base64(data, length: int):
     if length % 4 != 0:
@@ -65,3 +67,13 @@ def get_generation(grade: int):
 
 def get_grade(generation: int):
     return datetime.now().year - 1983 - generation + 1
+
+token_char = '1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+
+def generate_token():
+    token = ''
+    for _ in range(configs.ID_TOKEN_LENGTH):
+        idx = random.randint(0, len(token_char) - 1)
+        token += token_char[idx]
+
+    return token

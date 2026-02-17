@@ -6,6 +6,7 @@ import uuid
 from json import JSONDecodeError
 
 import structlog
+from fastapi.exceptions import RequestValidationError
 from starlette import status
 from starlette.types import ASGIApp, Scope, Receive, Send, Message
 
@@ -76,7 +77,7 @@ class RequestLogMiddleware:
         except Exception as e:
             process_time = time.perf_counter() - start_time
             self._log_error(request_body_chunk, scope, response_status, process_time, e)
-            raise e
+            # raise e
         else:
             process_time = time.perf_counter() - start_time
             if response_status >= 400:  # client error

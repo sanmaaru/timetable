@@ -64,6 +64,15 @@ async def query_tokens(session):
 
     return tokens
 
+async def query_token_for(name, session):
+    stmt = (select(IdentifyToken)
+            .join(IdentifyToken.user_info)
+            .where(UserInfo.name == name)
+            .options(joinedload(IdentifyToken.user_info)))
+    tokens = (await session.execute(stmt)).scalars().all()
+
+    return tokens
+
 async def grant_authority(user_id: str, role: int, session: AsyncSession):
     stmt = select(User).filter(User.user_id == user_id)
     user = (await session.execute(stmt)).scalars().one_or_none()
@@ -125,7 +134,7 @@ async def issue_refresh(session: AsyncSession, owner_id: ULID, expired_after: ti
 
 async def reissue_refresh(session: AsyncSession, user_id: ULID, refresh: ULID, expired_after: timedelta = None):
     stmt = select(RefreshToken).filter(RefreshToken.token_id == refresh)
-    refresh_token = (await (session.execute(stmt))).one_or_none()
+    refresh_token = (await (session.execute(stmt))).scalars().one_or_none()
 
     if refresh_token:
         await session.delete(refresh_token)
@@ -135,7 +144,9 @@ async def reissue_refresh(session: AsyncSession, user_id: ULID, refresh: ULID, e
     return new_refresh
 
 async def query_refresh(refresh: ULID, session: AsyncSession):
-    stmt = select(RefreshToken).filter(RefreshToken.token_id == refresh)
+    stmt = (select(RefreshToken)
+            .filter(RefreshToken.token_id == refresh)
+            .options(joinedload(RefreshToken.owner)))
     refresh_token = (await session.execute(stmt)).scalars().one_or_none()
 
     if refresh_token is None:
@@ -178,12 +189,10 @@ async def service_signup(
     user_info_id = token.user_info_id
 
     user = User(username=username, password=hashed, email=str(email), user_info_id=user_info_id)
-    stmt = select(UserInfo).filter(UserInfo.user_info_id == user_info_id)
-    user_info = (await session.execute(stmt)).scalars().one_or_none()
     session.add(user)
     await session.flush()
 
-    theme = service_create_default_theme(user, session)
+    theme = await service_create_default_theme(user, session)
     user.selected_theme = theme
 
     # 회원가입 완료시 identifer 삭제
@@ -216,11 +225,11 @@ async def service_login(username: str, password: str, session: AsyncSession):
 
     return access, refresh
 
-async def service_refresh(refresh: str, access: str, session: AsyncSession):
+async def service_refresh(refresh: str, session: AsyncSession):
     try:
-        data = decode_access(access)
+        refresh_token = await query_refresh(ulid.from_str(refresh), session)
 
-        user_id = ulid.from_str(data.sub)
+        user_id = refresh_token.owner_id
         new_refresh = await reissue_refresh(session, user_id, ulid.from_str(refresh))
 
         new_access = issue_access(user_id)

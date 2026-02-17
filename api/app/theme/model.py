@@ -14,7 +14,7 @@ class Theme(Base):
 
     theme_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
     owner_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey("users.user_id"), nullable=False)
-    parent_theme_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey("themes.theme_id"))
+    parent_theme_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey("themes.theme_id"), nullable=True)
     title: Mapped[str] = mapped_column(VARCHAR(255), nullable=False)
     published: Mapped[bool] = mapped_column(Boolean(), default=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

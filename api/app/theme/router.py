@@ -21,7 +21,7 @@ async def get_themes(
         session: AsyncSession = Depends(conn)
 ):
     themes = await query_all_themes(user, session)
-    return create_response(user, themes)
+    return create_response(themes, user.user_id)
 
 @router.post('/', response_model=BaseResponse[ThemeSchema], status_code=status.HTTP_201_CREATED)
 async def post_theme(
@@ -31,7 +31,7 @@ async def post_theme(
 ):
     theme = await service_create_default_theme(user, session, input.title)
     await session.commit()
-    return create_response(user, theme)
+    return create_response(theme, user.user_id)
 
 @router.get('/selected', response_model=BaseResponse[ThemeSchema])
 async def get_selected_theme(
@@ -39,7 +39,7 @@ async def get_selected_theme(
         session: AsyncSession = Depends(conn)
 ):
     selected_theme = await query_selected_theme(user, session)
-    return create_response(user, selected_theme)
+    return create_response(selected_theme, user.user_id)
 
 @router.put('/selected')
 async def change_selected_theme(
@@ -65,7 +65,7 @@ async def get_theme(
         session: AsyncSession = Depends(conn)
 ):
     theme = await query_theme(theme_id, user, session)
-    return create_response(user, theme)
+    return create_response(theme, user.user_id)
 
 @router.delete('/{theme_id}')
 async def delete_theme(

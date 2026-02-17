@@ -1,4 +1,5 @@
 import structlog
+from sqlalchemy import insert
 
 from app.auth.crud import *
 from .exceptions import UploadError
@@ -97,7 +98,7 @@ async def upload_teachers(teachers: list[LectureInfo], session: AsyncSession):
         names = map(str.strip, lecture.teacher.split(","))
         teacher_names.update(names)
 
-    teachers = [UserInfoData(t.name) for t in teacher_names]
+    teachers = [UserInfoData(t) for t in teacher_names]
     len_teachers = await bulk_create_teachers(session, teachers)
     await session.commit()
     logger.info(f'{len_teachers} teacher uploaded')
@@ -135,10 +136,15 @@ async def upload_enrollments(students: list[EnrollmentInfo], session: AsyncSessi
 
             class_ids = class_map[key]
             for class_id in class_ids:
-                enrollment = Enrollment(class_id=class_id, user_info_id=student_id)
-                new_objects.append(enrollment)
+                new_objects.append({
+                    'class_id': class_id,
+                    'user_info_id': student_id,
+                })
 
-    session.add_all(new_objects)
+    if new_objects:
+        stmt = insert(Enrollment).values(new_objects).prefix_with('IGNORE')
+        await session.execute(stmt)
+
     await session.commit()
 
 async def upload_lectures(lectures: list[LectureInfo], session: AsyncSession):
@@ -155,10 +161,12 @@ async def upload_lectures(lectures: list[LectureInfo], session: AsyncSession):
         if name not in subject_map.keys():
             subject = Subject(name=name)
             new_subjects.append(subject)
-            subject_map[name] = subject.subject_id
 
     session.add_all(new_subjects)
     await session.flush()
+
+    for subject in new_subjects:
+        subject_map[subject.name] = subject.subject_id
 
     teacher_names = set()
     for l in lectures:
@@ -176,7 +184,7 @@ async def upload_lectures(lectures: list[LectureInfo], session: AsyncSession):
             .where(Lecture.subject_id.in_(subject_map.values()))
             .options(joinedload(Lecture.subject), joinedload(Lecture.teacher_info)))
     existing_lectures = (await session.execute(stmt)).scalars().all()
-    existing_lecture_keys = set([(l.subject.name, l.teacher.name, l.room) for l in existing_lectures])
+    existing_lecture_keys = set([(l.subject.name, l.teacher_info.name, l.room) for l in existing_lectures])
 
     # === add new lectures ===
     new_objects = []
@@ -217,19 +225,18 @@ async def upload_periods(periods: list[PeriodInfo], session: AsyncSession):
     stmt = (select(Lecture)
             .join(Lecture.subject)
             .join(Lecture.teacher_info)
-            .where(Lecture.subject.in_(subjects),
+            .where(Subject.name.in_(subject_map.keys()),
                    Lecture.teacher_info_id.in_(teacher_map.values()))
             .options(joinedload(Lecture.subject),
                      joinedload(Lecture.teacher_info)))
     lectures = (await session.execute(stmt)).scalars().all()
-    lecture_map = { (l.subject.name, l.teacher.name): l.lecture_id for l in lectures }
+    lecture_map = { (l.subject.name, l.teacher_info.name): l.lecture_id for l in lectures }
 
     # === create classe ===
     stmt = select(Class).where(Class.lecture_id.in_(lecture_map.values()))
     classes = (await session.execute(stmt)).scalars().all()
 
     class_map = { (c.lecture_id, c.division): c for c in classes }
-
 
     new_classes = []
     new_periods = []
@@ -247,10 +254,23 @@ async def upload_periods(periods: list[PeriodInfo], session: AsyncSession):
             new_classes.append(clazz)
             class_map[class_key] = clazz
 
-        period = Period(clazz=clazz, period=p.period, day=p.day)
-        new_periods.append(period)
+        new_periods.append({
+            'clazz': clazz, 'period': p.period, 'day': p.day
+        })
+    if new_classes:
+        session.add_all(new_classes)
+        await session.flush()
 
+    if new_periods:
+        period_data = []
+        for p in new_periods:
+            period_data.append({
+                'class_id': p['clazz'].class_id,
+                'period': p['period'],
+                'day': p['day']
+            })
 
-    session.add_all(new_classes)
-    session.add_all(new_periods)
+        stmt = insert(Period).values(period_data).prefix_with('IGNORE')
+        await session.execute(stmt)
+
     await session.commit()

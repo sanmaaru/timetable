@@ -1,4 +1,6 @@
 import structlog
+import ulid
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from starlette import status
 from starlette.requests import Request
@@ -56,18 +58,16 @@ async def handle_client_exception(request: Request, exc: ClientError):
 
     return JSONResponse(
         status_code=exc.status_code,
-        content={
+        content=jsonable_encoder({
             'message': exc.message,
             'code': exc.code,
             **exc.payload,
-        }
+        }, custom_encoder={
+            ulid.ULID: str
+        })
     )
 
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
-    """
-    Handling pydantic validation errors
-    """
-
     error_details = exc.errors()
 
     request.state.error = error_details

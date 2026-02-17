@@ -1,6 +1,7 @@
 from fastapi import Header, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.auth.crud import decode_access
 from app.auth.exceptions import AuthorizationError
@@ -23,8 +24,10 @@ async def get_current_user(
         raise AuthorizationError(message="Infelicitous token type")
 
     jwt = decode_access(token)
-    user_id = jwt['sub']
-    stmt = select(User).filter(User.user_id == user_id)
+    user_id = jwt.sub
+    stmt = select(User).filter(User.user_id == user_id).options(
+        joinedload(User.user_info)
+    )
     user = (await session.execute(stmt)).scalars().one_or_none()
 
     if user is None:

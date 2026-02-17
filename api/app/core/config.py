@@ -24,6 +24,8 @@ class Configs(BaseSettings):
 
     REFRESH_TOKEN_EXPIRE_DAY: int = 30
 
+    ID_TOKEN_LENGTH: int
+
     THEME_DEFAULT_COLOR: str = '#2B2A2A'
     THEME_DEFAULT_TEXT_COLOR: str = '#EEEEEE'
 

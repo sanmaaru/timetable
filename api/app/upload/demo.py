@@ -1,3 +1,6 @@
+from pathlib import Path
+
+from app.core.database import conn
 from app.upload.upload import *
 
 session = next(conn())
@@ -19,6 +22,6 @@ upload_lectures(lectures, session)
 upload_periods(periods, session)
 upload_enrollments(enrollments, session)
 
-create_user_info(session, )
+create_user_info(session, UserInfoData('admin'), role=Role.ADMINISTRATOR)
 
 session.commit()

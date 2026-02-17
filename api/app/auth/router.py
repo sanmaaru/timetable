@@ -1,16 +1,14 @@
-from typing import Optional, List
+from typing import List
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Query
 
 from app.auth.crud import service_signup, service_login, service_refresh, Role, query_tokens
 from app.auth.exceptions import NoPermissionError
-from app.auth.model import IdentifyToken
 from app.auth.schemas import TokenPair, LoginInput, SignUpInput, UserSchema, RefreshTokenInput, IdentifyTokenSchema
+from app.core.database import conn
 from app.core.dependencies import get_current_user
 from app.core.response import create_response, BaseResponse
-from app.core.database import conn
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -29,9 +27,8 @@ async def login(input: LoginInput, session: AsyncSession = Depends(conn)):
 @router.post('/refresh', response_model=BaseResponse[TokenPair])
 async def refresh(input: RefreshTokenInput, session: AsyncSession = Depends(conn)):
     token = input.refresh_token
-    access = input.access_token
 
-    new_access, new_token = await service_refresh(token, access, session)
+    new_access, new_token = await service_refresh(token, session)
     await session.commit()
 
     return create_response(TokenPair(access_token=new_access, refresh_token=new_token))

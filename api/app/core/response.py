@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
 from typing import Generic, TypeVar
 
+import ulid
 from fastapi import status
+from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from ulid.ulid import ULID
 
@@ -10,7 +12,7 @@ from app.auth.model import User
 T = TypeVar("T")
 
 class MetaSchema(BaseModel):
-    user_id: str
+    user_id: str | None
     status: int = status.HTTP_200_OK
     responded_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
@@ -27,5 +29,5 @@ def create_response(data: T, user_id: ULID = None, status_code: int = status.HTT
             user_id = str(user_id) if user_id else None,
             status=status_code,
         ),
-        data = data
+        data=data
     )

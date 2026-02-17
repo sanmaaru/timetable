@@ -30,6 +30,7 @@ async def service_create_default_theme(user: User, session: AsyncSession, title:
             .distinct())
     result = await session.execute(stmt)
     subjects = set(result.scalars().all())
+    new_objects = []
     for subject in subjects:
         color_scheme = ColorScheme(
             theme_id=theme.theme_id,
@@ -37,12 +38,14 @@ async def service_create_default_theme(user: User, session: AsyncSession, title:
             color=configs.THEME_DEFAULT_COLOR,
             text_color=configs.THEME_DEFAULT_TEXT_COLOR
         )
-        session.add(color_scheme)
+        new_objects.append(color_scheme)
 
-    return theme
+    session.add_all(new_objects)
+
+    return await query_theme(theme.theme_id, user, session)
 
 async def service_delete_theme(user: User, theme_id: ULID, session: AsyncSession):
-    theme = query_theme(theme_id, user, session)
+    theme = await query_theme(theme_id, user, session)
 
     stmt = select(func.count()).select_from(Theme).where(Theme.owner_id == user.user_id)
     count = (await session.execute(stmt)).scalar()
@@ -56,7 +59,7 @@ async def service_delete_theme(user: User, theme_id: ULID, session: AsyncSession
 
 async def query_selected_theme(user: User, session: AsyncSession):
     stmt = (select(Theme)
-            .options(selectinload(Theme.color_schemes),
+            .options(selectinload(Theme.color_schemes).joinedload(ColorScheme.subject),
                      with_expression(Theme.selected, Theme.theme_id == user.selected_theme_id))
             .where(Theme.theme_id == user.selected_theme_id))
 
@@ -65,7 +68,7 @@ async def query_selected_theme(user: User, session: AsyncSession):
 
 async def query_all_themes(user: User, session: AsyncSession):
     stmt = (select(Theme)
-            .options(selectinload(Theme.color_schemes),
+            .options(selectinload(Theme.color_schemes).joinedload(ColorScheme.subject),
                      with_expression(Theme.selected, Theme.theme_id == user.selected_theme_id))
             .where(Theme.owner_id == user.user_id))
     result = await session.execute(stmt)
@@ -73,7 +76,7 @@ async def query_all_themes(user: User, session: AsyncSession):
 
 async def query_theme(theme_id: ULID, user: User, session: AsyncSession):
     stmt = (select(Theme)
-            .options(selectinload(Theme.color_schemes),
+            .options(selectinload(Theme.color_schemes).joinedload(ColorScheme.subject),
                      with_expression(Theme.selected, Theme.theme_id == user.selected_theme_id))
             .where(Theme.theme_id == theme_id))
     result = await session.execute(stmt)
