@@ -1,5 +1,6 @@
 from typing import List, Any
 
+import ulid.ulid
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from pydantic import field_validator
 
@@ -24,12 +25,13 @@ class PeriodSchema(BaseModel):
         return v
 
 
-class TimetableItemSchema(BaseModel):
+class ClassSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
+    class_id: str
     division: int
-    room: str | None = None
     periods: List[PeriodSchema]
+    classmates: List[UserInfoSchema]
 
     lecture: Any = Field(exclude=True)
 
@@ -44,6 +46,18 @@ class TimetableItemSchema(BaseModel):
     def teacher(self) -> str:
         return self.lecture.teacher_info.name
 
+    @computed_field
+    @property
+    def room(self) -> str:
+        return self.lecture.room
+
+    @field_validator("class_id", mode="before")
+    @classmethod
+    def serialize_ulid(cls, v: Any):
+        if isinstance(v, ulid.ULID):
+            return str(v)
+
+        return v
 
 
 class TimetableSchema(BaseModel):
@@ -51,22 +65,4 @@ class TimetableSchema(BaseModel):
 
     username: str
     name: str
-    timetable: List[TimetableItemSchema]
-
-class ClassSchema(BaseModel):
-    model_config = ConfigDict(from_attributes=True)
-
-    division: int
-    classmates: List[UserInfoSchema]
-
-    lecture: Any = Field(exclude=True)
-
-    @computed_field
-    @property
-    def subject(self) -> str:
-        return self.lecture.subject.name
-
-    @computed_field
-    @property
-    def teacher(self) -> str:
-        return self.lecture.teacher_info.name
+    timetable: List[ClassSchema]

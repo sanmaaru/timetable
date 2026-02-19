@@ -9,11 +9,20 @@ from app.core.dependencies import get_current_user
 from app.core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
 from app.core.types import ULIDModel
 from app.core.database import conn
+from app.sync.dependencies import get_status_dependency
+from app.sync.schemas import VersionResponse
 from app.theme.crud import query_selected_theme, query_theme, query_all_themes, service_delete_theme, \
     service_change_selected_theme, service_create_default_theme, service_change_theme
 from app.theme.schemas import ThemeSchema, SelectedThemeChangeInput, ThemeCreateInput, ThemeChangeInput
 
 router = APIRouter(prefix='/theme', tags=['theme'])
+theme_status_dep = get_status_dependency('theme')
+
+@router.get('/status', response_model=VersionResponse)
+async def get_theme_status(
+        theme_status: VersionResponse = Depends(theme_status_dep),
+):
+    return theme_status
 
 @router.get('/', response_model=BaseResponse[List[ThemeSchema]])
 async def get_themes(

@@ -14,6 +14,7 @@ from app.auth.model import User, UserInfo, IdentifyToken, RefreshToken
 from app.core.config import configs
 from app.core.exceptions import ConflictError
 from app.auth.schemas import TokenPayload, UserInfoData
+from app.sync.model import SyncStatus
 from app.theme.crud import service_create_default_theme
 
 hasher = PasswordHasher()
@@ -115,6 +116,13 @@ def decode_access(access: str):
 
 ### ==== About Refresh ====
 async def issue_refresh(session: AsyncSession, owner_id: ULID, expired_after: timedelta = None):
+    stmt = select(RefreshToken).filter(RefreshToken.owner_id == owner_id)
+    tokens = (await session.execute(stmt)).scalars().all()
+    for token in tokens:
+        await session.delete(token)
+
+    await session.flush()
+
     issued_at = datetime.now(timezone.utc)
 
     if expired_after is None:
@@ -194,6 +202,8 @@ async def service_signup(
 
     theme = await service_create_default_theme(user, session)
     user.selected_theme = theme
+
+    session.add(SyncStatus(user_id=user.user_id))
 
     # 회원가입 완료시 identifer 삭제
     await session.delete(token)
