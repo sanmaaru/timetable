@@ -1,8 +1,7 @@
 import React, {MutableRefObject} from 'react';
 import './TimetableGrid.css'
 import {DAY_LIST, PERIOD_LIST, Schedule} from "../../types/schedule";
-import {ColorScheme, Theme} from "../../types/theme";
-import timetable from "./Timetable";
+import {ColorScheme} from "../../types/theme";
 
 const periods = PERIOD_LIST
 const days = DAY_LIST
@@ -27,17 +26,18 @@ const drawSchedule = (
 
     return schedules.map(schedule => {
         const columnIdx = days.indexOf(schedule.day) + 2
-        const color = subjectColorMap[schedule.class.subject] ?? { color: '#ff0000', textColor: '#eeeeee' }
-        const subjectName = schedule.class.subject
+        const color = subjectColorMap[schedule.clazz.subject] ?? { color: '#ff0000', textColor: '#eeeeee' }
+        const classId = schedule.clazz.classId
         const setRef = (el: any) => {
             if (scheduleRefMap && el) {
-                scheduleRefMap.current.set(subjectName, el);
+                scheduleRefMap.current.set(classId, el);
             }
         }
 
         return [<div
             ref = {setRef}
-            key={`timetable-class-${columnIdx}-${schedule.period_from}`}
+            key={`timetable-class-${classId}`}
+            data-id={classId}
             className="timetable-class"
             style={{
                 backgroundColor: color.color,
@@ -52,10 +52,10 @@ const drawSchedule = (
                 key={`timetable-class-info-${columnIdx}-${schedule.period_from}`}
                 className="timetable-info"
             >
-                <span className='subject'>{schedule.class.subject}</span>
-                <span className='division'>{schedule.class.division}분반</span>
+                <span className='subject'>{schedule.clazz.subject}</span>
+                <span className='division'>{schedule.clazz.division}반</span>
                 {detail && [
-                    <span className='teacher'>{schedule.class.teacher}T</span>,
+                    <span className='teacher'>{schedule.clazz.teacher}T</span>,
                 ]}
             </div>
         </div>]

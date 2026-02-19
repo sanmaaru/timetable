@@ -7,6 +7,7 @@ import TimetableHeader from "../../components/timetable/TimetableHeader";
 import {useToast} from "../../components/alert/toast/ToastContext";
 import ColorSchemaElement from "../../components/theme/ColorSchemaElement";
 import {useTheme} from "../../hooks/theme/useThemes";
+import {timetable} from "../../util/storage";
 
 const ThemeView = () => {
     const { themeId } = useParams()
@@ -25,14 +26,26 @@ const ThemeView = () => {
         }
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
+    const subjectRefMap = useMemo(() => {
+        return Object.entries(itemsRef).reduce((acc, [classId, ref]) => {
+            const targetClass = timetable.getClass(classId)
+
+            if (targetClass && targetClass.subject) {
+                acc.set(targetClass.subject, ref)
+            }
+
+            return acc;
+        }, {} as Map<string, any>);
+    }, [itemsRef])
+
     useEffect(() => {
-        if (!focus || !itemsRef.current.get(focus) || !wrapperRef.current) {
+        if (!focus || !subjectRefMap.get(focus) || !wrapperRef.current) {
             setTransform({ x: 0, y: 0, scale: 1 });
             return;
         }
 
         const wrapper = wrapperRef.current;
-        const target = itemsRef.current.get(focus);
+        const target = subjectRefMap.get(focus);
 
         const wrapperW = wrapper.offsetWidth;
         const wrapperH = wrapper.offsetHeight;
@@ -51,7 +64,7 @@ const ThemeView = () => {
         const moveY = (wrapperH / 2) - (targetCenterY * scale);
 
         setTransform({ x: moveX, y: moveY, scale: scale });
-    }, [focus, itemsRef, wrapperRef]);
+    }, [focus, subjectRefMap, wrapperRef]);
 
     const getTransformStyle = useCallback(() => {
         return {
@@ -62,19 +75,19 @@ const ThemeView = () => {
     }, [transform])
 
     const handleFocus = useCallback((subject: string | null) => {
-        itemsRef.current.forEach((element) => {
+        subjectRefMap.forEach((element) => {
             element?.classList.remove('focus');
         })
 
         if(subject) {
-            const current = itemsRef.current.get(subject)
+            const current = subjectRefMap.get(subject)
             if (current) {
                 current.classList.add('focus')
             }
         }
 
         setFocus(subject)
-    }, [itemsRef])
+    }, [subjectRefMap])
 
 
     if (isThemeLoading || isTimetableLoading || !timetableData || !themeData) {

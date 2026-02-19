@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import './ThemeEdit.css'
 import {useNavigate, useParams} from "react-router-dom";
 import useTimetable from "../../hooks/useTimetable";
@@ -12,6 +12,7 @@ import {getThemeErrorMessage} from "../../constants/themeMessages";
 import {DialogProvider, useDialog} from "../../components/alert/dialog/DialogProvider";
 import SaveDialog from "../../components/alert/dialog/SaveDialog";
 import {usePreventLeave} from "../../hooks/usePreventLeave";
+import {timetable} from "../../util/storage";
 
 const ThemeEdit = () => {
     const { themeId } = useParams()
@@ -34,14 +35,31 @@ const ThemeEdit = () => {
         }
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
+    const subjectRefMap = useMemo(() => {
+        console.log('itemRef')
+        console.log(itemsRef.current)
+        console.log(Object.entries(itemsRef.current))
+        return [...itemsRef.current].reduce((acc, [classId, ref]) => {
+            const targetClass = timetable.getClass(classId)
+
+            console.log(targetClass)
+
+            if (targetClass && targetClass.subject) {
+                acc.set(targetClass.subject, ref)
+            }
+
+            return acc;
+        }, new Map<string, any>());
+    }, [itemsRef.current, timetableData])
+
     useEffect(() => {
-        if (!focus || !itemsRef.current.get(focus) || !wrapperRef.current) {
+        if (!focus || !subjectRefMap.get(focus) || !wrapperRef.current) {
             setTransform({ x: 0, y: 0, scale: 1 });
             return;
         }
 
         const wrapper = wrapperRef.current;
-        const target = itemsRef.current.get(focus);
+        const target = subjectRefMap.get(focus);
 
         const wrapperW = wrapper.offsetWidth;
         const wrapperH = wrapper.offsetHeight;
@@ -60,7 +78,7 @@ const ThemeEdit = () => {
         const moveY = (wrapperH / 2) - (targetCenterY * scale);
 
         setTransform({ x: moveX, y: moveY, scale: scale });
-    }, [focus, itemsRef, wrapperRef]);
+    }, [focus, subjectRefMap, wrapperRef]);
 
     const getTransformStyle = useCallback(() => {
         return {
@@ -71,19 +89,22 @@ const ThemeEdit = () => {
     }, [transform])
 
     const handleFocus = useCallback((subject: string | null) => {
-        itemsRef.current.forEach((element) => {
+        console.log(subjectRefMap)
+
+        subjectRefMap.forEach((element) => {
             element?.classList.remove('focus');
         })
 
         if(subject) {
-            const current = itemsRef.current.get(subject)
+            const current = subjectRefMap.get(subject)
             if (current) {
                 current.classList.add('focus')
+                wrapperRef.current?.classList?.add('focus')
             }
         }
 
         setFocus(subject)
-    }, [itemsRef])
+    }, [subjectRefMap])
 
     const handleClickSave = async () => {
         await update(() => {

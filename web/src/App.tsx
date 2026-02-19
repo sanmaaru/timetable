@@ -9,49 +9,55 @@ import ThemeView from './pages/theme/ThemeView';
 import ThemeEdit from './pages/theme/ThemeEdit';
 import Account from './pages/Account';
 import ProtectedRoute from './auth/ProtectedRoute';
-import Layout from './pages/Layout';
-import {recentUsedColor} from "./util/cookies"; // Layout 컴포넌트
+import Layout from './layouts/Layout';
+import {recentUsedColor} from "./util/storage";
+import {ToastProvider} from "./components/alert/toast/ToastContext";
+import ContextProvidingLayout from "./layouts/ContextProvidingLayout"; // Layout 컴포넌트
 
 const router = createBrowserRouter([
     {
-        path: "/login",
-        element: <Login />,
-    },
-    {
-        path: "/signup",
-        element: <SignUp />,
-    },
-
-    {
-        element: <ProtectedRoute />,
+        element: <ContextProvidingLayout/>,
         children: [
             {
-                element: <Layout />,
+                path: "/login",
+                element: <Login />,
+            },
+            {
+                path: "/signup",
+                element: <SignUp />,
+            },
+            {
+                element: <ProtectedRoute />,
                 children: [
                     {
-                        path: "/",
-                        element: <Home />,
-                    },
-                    {
-                        path: "/theme",
-                        element: <Theme />,
-                    },
-                    {
-                        path: "/theme/:themeId",
-                        element: <ThemeView />,
-                    },
-                    {
-                        path: "/theme/:themeId/edit",
-                        element: <ThemeEdit />,
-                    },
-                    {
-                        path: "/account",
-                        element: <Account />,
+                        element: <Layout/>,
+                        children: [
+                            {
+                                path: "/",
+                                element: <Home />,
+                            },
+                            {
+                                path: "/theme",
+                                element: <Theme />,
+                            },
+                            {
+                                path: "/theme/:themeId",
+                                element: <ThemeView />,
+                            },
+                            {
+                                path: "/theme/:themeId/edit",
+                                element: <ThemeEdit />,
+                            },
+                            {
+                                path: "/account",
+                                element: <Account />,
+                            },
+                        ],
                     },
                 ],
-            },
-        ],
-    },
+            }
+        ]
+    }
 ]);
 
 function App() {

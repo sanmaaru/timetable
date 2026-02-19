@@ -1,23 +1,22 @@
 import React from "react";
 import './DetailBar.css';
-import {Class, ClassDetail} from "../../types/class";
 import DefaultDetailContent from "./DefaultDetail";
 import ClassDetailContent from './ClassDetail';
+import {Schedule} from "../../types/schedule";
 
 interface DetailBarProps {
-    classInfo?: Class
-    detail?: ClassDetail;
+    schedule?: Schedule | null
     quote: string;
     source: string;
     image: string;
 }
 
-const DetailBar = ({classInfo, detail, quote, source, image}: DetailBarProps) => {
+const DetailBar = ({schedule, quote, source, image}: DetailBarProps) => {
     const detailContent = (() => {
-        if(classInfo == null || detail == null) {
+        if(schedule == null) {
             return <DefaultDetailContent quote={quote} source={source} image={image}/>
         } else {
-            return <ClassDetailContent classInfo={classInfo} detail={detail}/>
+            return <ClassDetailContent schedule={schedule}/>
         }
     })()
 

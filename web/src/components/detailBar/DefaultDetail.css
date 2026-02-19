@@ -26,6 +26,8 @@
     color: #c2c2c2;
     padding-left: 12%;
     padding-right: 12%;
+    margin-top: auto;
+    margin-bottom: 64px;
     display: flex;
     flex-direction: column;
     gap: 20px;

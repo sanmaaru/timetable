@@ -47,7 +47,7 @@ export const useLogin = () => {
                 return
             }
 
-            const invalid = error.response.data.detail.invalid;
+            const invalid = error.response.data.invalid;
             const { object, message } = handleLoginError(invalid);
             if (object == null) {
                 setGlobalErrorMessage(LOGIN_ERROR_MESSAGES.GENERAL);

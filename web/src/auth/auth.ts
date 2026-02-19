@@ -1,16 +1,17 @@
 import Cookies from "js-cookie";
+import {getJsonCookie, removeCookie, setJsonCookie} from "../util/storage";
 
-export const getToken = (): string | undefined => {
-    return Cookies.get("access-token");
+export const getToken = (): string | null => {
+    return getJsonCookie<string>('access-token')
 }
 
 export const getRefresh = () => {
-    return Cookies.get("refresh-token");
+    return getJsonCookie<string>("refresh-token");
 }
 
 export const removeTokens = () => {
-    Cookies.remove("access-token", { path: '/' });
-    Cookies.remove("refresh-token", { path: '/' });
+    removeCookie("access-token");
+    removeCookie("refresh-token");
 }
 
 export const setTokens = (access: string, refresh: string) => {
@@ -20,9 +21,8 @@ export const setTokens = (access: string, refresh: string) => {
     if (!refresh)
         throw new Error('Refresh token must not be null');
 
-
-    Cookies.set("access-token", access, { path: '/', expires: 14 });
-    Cookies.set("refresh-token", refresh, { path: '/', expires: 14 });
+    setJsonCookie("access-token", access, {expires: 14});
+    setJsonCookie("refresh-token", refresh, {expires: 14});
 }
 
 export const isAuthenticated = () => (

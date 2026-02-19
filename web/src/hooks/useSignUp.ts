@@ -55,7 +55,7 @@ export const useSignUp = () => {
                 return
             }
 
-            const invalid = error.response.data.detail.invalid;
+            const invalid = error.response.data.invalid;
             const { object, message } = handleSignUpError(invalid);
             if (object == null)
                 setGlobalErrorMessage(SIGN_UP_ERROR_MESSAGES.GENERAL);

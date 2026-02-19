@@ -10,7 +10,7 @@ import {
     useDismiss,
     useFloating, useInteractions
 } from "@floating-ui/react";
-import {recentUsedColor} from "../../util/cookies";
+import {recentUsedColor} from "../../util/storage";
 import {shade} from "../../util/color";
 import {defaultColors} from "../../constants/colors";
 import Close from '../../resources/icon/icn_close.svg?react';

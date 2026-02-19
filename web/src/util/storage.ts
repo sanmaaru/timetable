@@ -1,4 +1,6 @@
 import Cookies from "js-cookie";
+import {TimetableData} from "../types/timetable";
+import {Theme} from "../types/theme";
 
 export interface CookieOptions {
     expires?: number | Date;
@@ -51,4 +53,34 @@ export const recentUsedColor= {
         if(!getJsonCookie('color-recently-used'))
             setJsonCookie('color-recently-used', ['#000000', '#ffffff']);
     }
+}
+
+export const timetable = {
+    get: (): TimetableData | null => {
+        if (typeof window === 'undefined') return null;
+
+        const value = localStorage.getItem('timetable-data');
+        return value ? JSON.parse(value) : null;
+    },
+
+    set: (data: TimetableData) => {
+        if (typeof window === 'undefined') return;
+
+        localStorage.setItem('timetable-data', JSON.stringify(data));
+    },
+
+    getClass: (classId: string) => {
+        const classes = timetable.get()?.classes
+        if (!classes) return null;
+
+        for (const clazz of classes) {
+            if (clazz.classId === classId)
+                return clazz;
+        }
+
+        return null;
+    }
+}
+
+export const theme = {
 }
