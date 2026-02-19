@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
+import app.sync.hooks
 from app.auth.router import router as auth_router
 from app.core.config import configs
 from app.core.database import engine, Base

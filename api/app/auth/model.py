@@ -23,6 +23,7 @@ class User(Base):
     owning_themes = relationship('Theme', back_populates='owner', cascade='all, delete-orphan',
                                  foreign_keys='[Theme.owner_id]')
     selected_theme = relationship('Theme', back_populates='selectors', foreign_keys=[selected_theme_id], post_update=True)
+    sync_status = relationship("SyncStatus", back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         return (f'<User(user_id={self.user_id}, username={self.username}, '
