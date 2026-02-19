@@ -14,6 +14,7 @@ function Home() {
 
     useEffect(() => {
         if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
+            console.log(themeData, timetableData)
             toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
         }
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast])

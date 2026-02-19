@@ -74,7 +74,6 @@ privateAxiosClient.interceptors.response.use(
         try {
             const { data } = await publicAxiosClient.post('/auth/refresh', {
                 refresh_token: getRefresh(),
-                access_token: getToken()
             });
 
             const newAccessToken = data.access_token;

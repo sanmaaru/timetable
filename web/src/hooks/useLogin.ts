@@ -35,7 +35,9 @@ export const useLogin = () => {
                 password: data.password,
             });
 
-            const {access_token, refresh_token} = response.data
+            console.log(response);
+
+            const {access_token, refresh_token} = response.data.data
 
             setTokens(access_token, refresh_token)
             navigate('/', {replace: true});
