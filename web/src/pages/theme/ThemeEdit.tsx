@@ -36,13 +36,8 @@ const ThemeEdit = () => {
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
     const subjectRefMap = useMemo(() => {
-        console.log('itemRef')
-        console.log(itemsRef.current)
-        console.log(Object.entries(itemsRef.current))
         return [...itemsRef.current].reduce((acc, [classId, ref]) => {
             const targetClass = timetable.getClass(classId)
-
-            console.log(targetClass)
 
             if (targetClass && targetClass.subject) {
                 acc.set(targetClass.subject, ref)

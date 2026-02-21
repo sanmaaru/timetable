@@ -10,6 +10,7 @@ export interface SignUpInput {
     email: string;
     password: string;
     identifyToken: string;
+    passwordConfirm: string;
 }
 
 const INVALID_TOKEN = {
@@ -28,7 +29,7 @@ export const useSignUp = () => {
         watch,
         setError,
         formState: { errors, isValid }
-    } = useForm({
+    } = useForm<SignUpInput>({
         mode: 'onBlur',
         reValidateMode: 'onChange',
     });
@@ -60,7 +61,7 @@ export const useSignUp = () => {
             if (object == null)
                 setGlobalErrorMessage(SIGN_UP_ERROR_MESSAGES.GENERAL);
             else
-                setError(object, {
+                setError(object as keyof SignUpInput, {
                     type: 'server',
                     message: message
                 })

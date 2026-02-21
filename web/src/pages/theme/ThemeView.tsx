@@ -27,16 +27,18 @@ const ThemeView = () => {
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
     const subjectRefMap = useMemo(() => {
-        return Object.entries(itemsRef).reduce((acc, [classId, ref]) => {
+        return [...itemsRef.current].reduce((acc, [classId, ref]) => {
             const targetClass = timetable.getClass(classId)
+
+            console.log(targetClass)
 
             if (targetClass && targetClass.subject) {
                 acc.set(targetClass.subject, ref)
             }
 
             return acc;
-        }, {} as Map<string, any>);
-    }, [itemsRef])
+        }, new Map<string, any>());
+    }, [itemsRef.current, timetableData])
 
     useEffect(() => {
         if (!focus || !subjectRefMap.get(focus) || !wrapperRef.current) {

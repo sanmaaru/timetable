@@ -1,7 +1,7 @@
 .theme-preview-dialog {
     position: relative;
-    width: max(40%, 800px);
-    height: max(52%, 600px);
+    width: 800px;
+    height: 600px;
     border-radius: 12px;
     background-color: #f6f6f6;
     box-shadow: 0 0 4px #ededed;
@@ -13,8 +13,8 @@
 
 .theme-preview-dialog > span {
     font-family: NixgonFont, serif;
-    font-size: 18px;
-    margin-bottom: 12px;
+    font-size: 14px;
+    margin-bottom: 4px;
 }
 
 .theme-preview-dialog > div {
@@ -27,7 +27,7 @@
 
 .theme-preview-dialog > button {
     position: absolute;
-    top: 16px;
+    top: 12px;
     right: 28px;
     width: 24px;
     height: 24px;

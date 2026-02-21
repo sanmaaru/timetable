@@ -53,8 +53,8 @@ const drawSchedule = (
                 className="timetable-info"
             >
                 <span className='subject'>{schedule.clazz.subject}</span>
-                <span className='division'>{schedule.clazz.division}반</span>
                 {detail && [
+                    <span className='division'>{schedule.clazz.division}반</span>,
                     <span className='teacher'>{schedule.clazz.teacher}T</span>,
                 ]}
             </div>

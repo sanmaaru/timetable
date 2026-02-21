@@ -1,4 +1,5 @@
 import React from 'react';
+import './StandardInput.css';
 import './PasswordInput.css';
 import {UseFormRegisterReturn} from "react-hook-form";
 
@@ -20,7 +21,7 @@ const PasswordInput = ({placeHolder, registration, errorMessage}: PasswordInputP
     }
 
     return (
-        <div className={`password-input ${errorMessage? 'invalid' : ''}`}>
+        <div className={`password-input standard-input ${errorMessage? 'invalid' : ''}`}>
             <input
                 type={visibleTag}
                 autoComplete='off'

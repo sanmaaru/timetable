@@ -24,7 +24,6 @@ export const getJsonCookie = <T>(key: string): T | null => {
     try {
         return JSON.parse(value) as T;
     } catch (e) {
-        console.error(e);
         return null;
     }
 }
@@ -43,8 +42,6 @@ export const recentUsedColor= {
         const colors: string[] = getJsonCookie('color-recently-used') || []
         const filtered = colors.filter(v => v != color)
         const value = [color, ...filtered].slice(0, maxLength);
-
-        console.log(value)
 
         setJsonCookie('color-recently-used', value)
     },

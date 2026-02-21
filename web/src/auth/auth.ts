@@ -2,11 +2,13 @@ import Cookies from "js-cookie";
 import {getJsonCookie, removeCookie, setJsonCookie} from "../util/storage";
 
 export const getToken = (): string | null => {
-    return getJsonCookie<string>('access-token')
+    const token = getJsonCookie<string>('access-token')
+    return token ? token.replace(/"/g, '') : null;
 }
 
 export const getRefresh = () => {
-    return getJsonCookie<string>("refresh-token");
+    const token = getJsonCookie<string>("refresh-token");
+    return token ? token.replace(/"/g, '') : null;
 }
 
 export const removeTokens = () => {

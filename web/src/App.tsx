@@ -27,7 +27,7 @@ const router = createBrowserRouter([
                 element: <SignUp />,
             },
             {
-                element: <ProtectedRoute />,
+                element: <ProtectedRoute/>,
                 children: [
                     {
                         element: <Layout/>,

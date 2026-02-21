@@ -10,7 +10,6 @@ export const usePreventLeave = (isDirty: boolean, message: string) => {
 
             if(isDirty) {
                 e.preventDefault()
-                e.returnValue = ''
             }
         }
 

@@ -1,0 +1,52 @@
+.AccountDeleteConfirmDialog {
+    width: 480px;
+    height: 280px;
+    background-color: #fff;
+    border: 1px solid #ededed;
+    border-radius: 12px;
+    padding: 24px 28px 24px 28px;
+    display: flex;
+    flex-direction: column;
+}
+
+.AccountDeleteConfirmDialog > span:first-child {
+    font-family: NixgonFont, serif;
+    font-size: 16px;
+    font-weight: 500;
+    color: #ff0000;
+    margin-bottom: 24px;
+    margin-left: -4px;
+}
+
+.AccountDeleteConfirmDialog > span {
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    white-space: pre-wrap;
+    margin-bottom: 36px;
+}
+
+.AccountDeleteConfirmDialog > form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.AccountDeleteConfirmDialog > form > span:first-child {
+    font-family: NixgonFont, serif;
+    font-size: 13px;
+    white-space: pre-wrap;
+    margin-bottom: 12px;
+    color: #373737;
+}
+
+.AccountDeleteConfirmDialog > form > .btn-area {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: auto;
+}
+
+.AccountDeleteConfirmDialog > form > .btn-area > button:first-child {
+    background-color: #dbdbdb;
+    color: #000000;
+}

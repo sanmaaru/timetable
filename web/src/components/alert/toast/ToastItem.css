@@ -1,6 +1,6 @@
 .toast-item {
-    width: 420px;
-    height: 50px;
+    width: 480px;
+    height: 36px;
     display: flex;
     align-items: center;
     border-radius: 12px;
@@ -11,7 +11,7 @@
 
 .toast-item > span {
     font-family: NixgonFont, serif;
-    font-size: 14px;
+    font-size: 12px;
     margin-left: 24px;
 }
 

@@ -12,7 +12,7 @@ from app.core.config import configs
 
 engine = create_async_engine(
     configs.DATABASE_URL,
-    echo=configs.DEBUG, # 디버그 모드일 때 SQL 로그 출력
+    echo=False, # 디버그 모드일 때 SQL 로그 출력
     pool_pre_ping=True,
     pool_size=20,
     max_overflow=10

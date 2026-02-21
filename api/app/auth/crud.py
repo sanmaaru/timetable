@@ -9,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import with_expression, joinedload
 from ulid import ULID
 
-from app.auth.exceptions import AuthorizationError, RefreshTokenError
+from app.auth.exceptions import AuthorizationError, RefreshTokenError, UnknownUserError
 from app.auth.model import User, UserInfo, IdentifyToken, RefreshToken
 from app.core.config import configs
 from app.core.exceptions import ConflictError
@@ -79,7 +79,7 @@ async def grant_authority(user_id: str, role: int, session: AsyncSession):
     user = (await session.execute(stmt)).scalars().one_or_none()
 
     if user is None:
-        raise AuthorizationError(message='User not found', payload={'user_id': user_id})
+        raise UnknownUserError(message='User not found', payload={'user_id': user_id})
 
     user_info = user.user_info
     user_info.role = user_info.role | role
@@ -208,6 +208,8 @@ async def service_signup(
     # 회원가입 완료시 identifer 삭제
     await session.delete(token)
     await session.flush()
+
+    await session.refresh(user, attribute_names=['user_info'])
 
     return user
 

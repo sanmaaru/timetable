@@ -8,7 +8,6 @@ const useTimetable = () => {
     const [timetableData, setTimetableData] = useState<TimetableData | null>();
     const [isLoading, setIsLoading] = useState(true);
 
-    // TODO: Store timetable data in cookie
     useEffect(() => {
         const loadData = async () => {
             try {

@@ -33,13 +33,13 @@
     margin-top: 30px;
     flex-direction: column;
     width: 300px;
-    gap: 15px;
+    gap: 20px;
 }
 
 #signup .input-area .subarea {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
 }
 
 #signup .container .title {
@@ -51,7 +51,7 @@
 
 #signup .welcome {
     font-family: "Pretendard", serif;
-    font-size: 36px;
+    font-size: 30px;
     font-weight: 900;
 }
 
@@ -82,11 +82,16 @@
     font-size: 13px;
 }
 
+#signup > .panel > .container > .input-area > button {
+    margin-top: 8px;
+}
+
 #signup .divider {
     width: 200px;
     height: 1px;
     border-radius: 1px;
     margin-top: 20px;
+    margin-bottom: 12px;
     background: #ededed;
     margin-left: 50px;
 }
@@ -124,7 +129,7 @@
 #signup .global-error-message {
     width: 300px;
     font-family: "NixgonFont", serif;
-    font-size: 13px;
+    font-size: 12px;
     margin-top: 12px;
     padding-left: 12px;
     padding-right: 12px;

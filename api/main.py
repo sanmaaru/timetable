@@ -15,6 +15,7 @@ from app.core.middleware import RequestLogMiddleware
 from app.theme.router import router as theme_router
 from app.timetable.router import router as timetable_router
 from app.upload.router import router as upload_router
+from app.account.router import router as account_router
 from app.util.logger import configure_logger
 
 @asynccontextmanager
@@ -31,6 +32,7 @@ app.include_router(auth_router)
 app.include_router(theme_router)
 app.include_router(timetable_router)
 app.include_router(upload_router)
+app.include_router(account_router)
 
 app.add_middleware(
     CORSMiddleware,

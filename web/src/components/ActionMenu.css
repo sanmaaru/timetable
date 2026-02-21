@@ -10,12 +10,12 @@
     border-radius: 8px;
     padding-top: 12px;
     padding-bottom: 12px;
-    gap: 4px;
+    gap: 8px;
 }
 
 .action-menu > button {
     width: 94%;
-    height: 30px;
+    height: 24px;
     background: none;
     border: none;
     border-radius: 8px;
@@ -37,7 +37,7 @@
 }
 
 .action-menu > button > svg {
-    width: 16px;
-    height: 16px;
+    width: 12px;
+    height: 12px;
     margin-left: 12px;
 }

@@ -39,10 +39,8 @@ const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach((prom) => {
         if (error)
             prom.reject(error)
-        else {
+        else
             prom.resolve(token)
-            isRefreshing = false
-        }
     })
 
     failedQueue = []
@@ -76,12 +74,12 @@ privateAxiosClient.interceptors.response.use(
                 refresh_token: getRefresh(),
             });
 
-            const newAccessToken = data.access_token;
-            const newRefreshToken = data.refresh_token;
+            const newAccessToken = data.data.access_token;
+            const newRefreshToken = data.data.refresh_token;
 
             setTokens(newAccessToken, newRefreshToken);
 
-            processQueue(null, newRefreshToken);
+            processQueue(null, newAccessToken);
 
             originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
             return privateAxiosClient(originalRequest);
@@ -90,6 +88,8 @@ privateAxiosClient.interceptors.response.use(
 
             removeTokens()
             return Promise.reject(error);
+        } finally {
+            isRefreshing = false;
         }
     }
 );

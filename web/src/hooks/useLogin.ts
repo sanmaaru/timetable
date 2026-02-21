@@ -20,7 +20,7 @@ export const useLogin = () => {
         handleSubmit,
         formState: { errors, isValid },
         setError
-    } = useForm({
+    } = useForm<LoginInput>({
         mode: 'onBlur',
         reValidateMode: 'onChange',
     });
@@ -52,7 +52,7 @@ export const useLogin = () => {
             if (object == null) {
                 setGlobalErrorMessage(LOGIN_ERROR_MESSAGES.GENERAL);
             } else {
-                setError(object, {
+                setError(object as keyof LoginInput, {
                     type: 'server',
                     message: message,
                 })

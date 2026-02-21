@@ -37,11 +37,11 @@
 
 .Palette > .content {
     scrollbar-width: thin;
-    height: 360px;
+    height: 240px;
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
-    padding: 20px 30px 20px 24px;
+    padding: 16px 30px 20px 20px;
 }
 
 .Palette > .content > span {
@@ -54,14 +54,15 @@
 .Palette > .content > div {
     display:grid;
     grid-template-columns: repeat(7, minmax(32px, 1fr));
-    gap: 8px;
+    column-gap: 4px;
+    row-gap: 8px;
     margin-bottom: 20px;
 }
 
 .Palette > .content > div > .color-box {
     border-radius: 4px;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     transition: scale 0.1s ease-in, outline-offset 0.1s ease-in;
 }
 
@@ -94,13 +95,13 @@
 }
 
 .Palette > .footer > div {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 4px;
 }
 
 .Palette > .footer > span {
     font-family: NixgonFont, serif;
-    font-size: 14px;
+    font-size: 13px;
     margin-left: auto;
 }

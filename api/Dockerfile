@@ -1,23 +1,28 @@
 FROM ubuntu:22.04
 
-# ===== Environment Setting =====
-RUN apt update && apt install -y wget ca-certificates tar \
-     && rm -rf /var/lib/apt/lists/*
+# ===== 1. 시스템 설정 =====
+RUN apt-get update && apt-get install -y ca-certificates tar \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY uv-x86_64-unknown-linux-gnu.tar.gz /tmp/uv.tar.gz
-RUN mkdir -p /tmp/uv-extract \
-    && tar -xzf /tmp/uv.tar.gz -C /tmp/uv-extract \
-    && mv /tmp/uv-extract/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv \
-    && chmod 777 /usr/local/bin/uv \
-    && rm -rf /tmp/uv.tar.gz /tmp/uv-extract
-
-RUN uv --version
-
-# ===== Project Settings =====
-WORKDIR /app
-COPY ./ /app
+# ===== 2. UV 설치 (사내망 우회) =====
+COPY uv-x86_64-unknown-linux-gnu.tar.gz /tmp/
+RUN tar -xzf /tmp/uv-x86_64-unknown-linux-gnu.tar.gz -C /tmp \
+    && mv /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv \
+    && chmod +x /usr/local/bin/uv \
+    && rm -rf /tmp/*
 RUN rm -f uv-x86_64-unknown-linux-gnu.tar.gz
 
-RUN uv sync
+# ===== 3. 프로젝트 설정 및 패키지 설치 =====
+WORKDIR /app
+
+COPY pyproject.toml uv.lock* ./
+
+RUN uv sync --no-dev
+
+COPY . .
+
+ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 5000
+
+CMD ["uv", "run", "uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "5000"]

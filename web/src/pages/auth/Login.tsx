@@ -8,10 +8,6 @@ import {Link, useNavigate} from "react-router-dom";
 import {useLogin} from "../../hooks/useLogin";
 import {isAuthenticated} from "../../auth/auth";
 
-interface ApiErrorResponse {
-
-}
-
 function Login() {
     const navigate= useNavigate();
     if (isAuthenticated())

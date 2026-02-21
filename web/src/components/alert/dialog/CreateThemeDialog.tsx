@@ -1,8 +1,8 @@
-import React, {useCallback, useEffect, useState} from "react";
+import React from "react";
 import './CreateThemeDialog.css'
 import {DialogContextType} from "./DialogProvider";
 import StandardInput from "../../Input/StandardInput";
-import {SubmitHandler, useForm, UseFormSetError} from "react-hook-form";
+import {SubmitHandler, useForm} from "react-hook-form";
 import StandardButton from "../../button/StandardButton";
 import {useCreateTheme} from "../../../hooks/theme/useThemeActions";
 import {useToast} from "../toast/ToastContext";
@@ -28,15 +28,13 @@ const CreateThemeDialog = ({context, onSuccess}: CreateThemeDialogProps) => {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm({
+    } = useForm<CreateThemeInput>({
         mode: "onBlur",
         reValidateMode: 'onChange',
     })
 
     const onSubmit: SubmitHandler<CreateThemeInput> = async (data: CreateThemeInput) => {
         const {data: themeData, error } = await createThemeHandler(data.title)
-
-        console.log(error, themeData)
 
         if(error || !themeData) {
             addToast(getThemeErrorMessage(error ? error : 'UNKNOWN_ERROR'), 'error')

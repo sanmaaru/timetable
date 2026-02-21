@@ -1,3 +1,4 @@
+import structlog
 from fastapi import Header, Depends, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,7 @@ from app.auth.model import User
 from app.core.database import conn
 
 
+logger = structlog.get_logger()
 async def get_current_user(
         auth: str = Header(default=None, alias="Authorization"),
         session: AsyncSession = Depends(conn)

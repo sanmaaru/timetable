@@ -1,6 +1,6 @@
 import {privateAxiosClient} from "./axiosClient";
 import {Class, Student} from "../types/class";
-import {Schedule} from "../types/schedule";
+import {Day, Period, Schedule} from "../types/schedule";
 
 const parseStudents = (students: any): Student[] => {
     return students.map((entry: any): Student => {
@@ -56,9 +56,9 @@ const parseTimetableData = (timetable: any) => {
                 }
 
                 schedules.push({
-                    day: day,
-                    period_from: start,
-                    period_to: prev,
+                    day: day as Day,
+                    period_from: start as Period,
+                    period_to: prev as Period,
                     clazz: newClass
                 });
                 start = current;
@@ -66,9 +66,9 @@ const parseTimetableData = (timetable: any) => {
             }
 
             schedules.push({
-                day: day,
-                period_from: start,
-                period_to: prev,
+                day: day as Day,
+                period_from: start as Period,
+                period_to: prev as Period,
                 clazz: newClass
             })
         })

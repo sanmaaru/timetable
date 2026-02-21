@@ -34,7 +34,7 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
 
     const cardNumbers = theme.colorSchemes.length
     const cards = theme.colorSchemes.map((colorSchema, index) => {
-        const cardWidth = 160
+        const cardWidth = 140
         const gap = Math.min(width * 0.15, (width-cardWidth) / cardNumbers)
         const leftPos = gap * index
 

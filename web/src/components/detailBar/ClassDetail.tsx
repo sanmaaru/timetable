@@ -10,7 +10,7 @@ interface ClassDetailProps {
 const ClassDetail = ({schedule}: ClassDetailProps) => {
     const drawClassmates = (classmates: Student[]) => {
         return classmates.map((classmate) => {
-            var info = `${getGrade(classmate.generation)}${classmate.clazz}`
+            let info = `${getGrade(classmate.generation)}${classmate.clazz}`
             if (classmate.number < 10)
                 info += `0${classmate.number}`;
             else
