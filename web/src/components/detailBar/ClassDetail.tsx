@@ -41,10 +41,6 @@ const ClassDetail = ({schedule}: ClassDetailProps) => {
                     <span>강의실</span>
                     <span>{schedule.clazz.room}</span>
                 </div>
-                <div>
-                    <span>수업 시간</span>
-                    <span>{scheduleToString(schedule.day, schedule.period_from, schedule.period_to)}</span>
-                </div>
             </div>
             <div className='divider'/>
             <div className='classmates'>
