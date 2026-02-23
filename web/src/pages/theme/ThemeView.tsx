@@ -26,36 +26,35 @@ const ThemeView = () => {
         }
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId])
 
-    const subjectRefMap = useMemo(() => {
-        return [...itemsRef.current].reduce((acc, [classId, ref]) => {
-            const targetClass = timetable.getClass(classId)
-
-            console.log(targetClass)
-
-            if (targetClass && targetClass.subject) {
-                acc.set(targetClass.subject, ref)
-            }
-
-            return acc;
-        }, new Map<string, any>());
-    }, [itemsRef.current, timetableData])
-
     useEffect(() => {
-        if (!focus || !subjectRefMap.get(focus) || !wrapperRef.current) {
+        if (!focus || !wrapperRef.current) {
             setTransform({ x: 0, y: 0, scale: 1 });
             return;
         }
 
         const wrapper = wrapperRef.current;
-        const target = subjectRefMap.get(focus);
+        let targetRef = null;
+
+        for (const [classId, ref] of itemsRef.current) {
+            const targetClass = timetable.getClass(classId);
+            if (targetClass && targetClass.subject === focus) {
+                targetRef = ref;
+                break;
+            }
+        }
+
+        if (!targetRef) {
+            setTransform({ x: 0, y: 0, scale: 1 });
+            return;
+        }
 
         const wrapperW = wrapper.offsetWidth;
         const wrapperH = wrapper.offsetHeight;
 
-        const targetLeft= target.offsetLeft;
-        const targetTop = target.offsetTop;
-        const targetW = target.offsetWidth;
-        const targetH = target.offsetHeight;
+        const targetLeft= targetRef.offsetLeft;
+        const targetTop = targetRef.offsetTop;
+        const targetW = targetRef.offsetWidth;
+        const targetH = targetRef.offsetHeight;
 
         const targetCenterX = targetLeft + targetW/2;
         const targetCenterY = targetTop + targetH/2;
@@ -66,7 +65,24 @@ const ThemeView = () => {
         const moveY = (wrapperH / 2) - (targetCenterY * scale);
 
         setTransform({ x: moveX, y: moveY, scale: scale });
-    }, [focus, subjectRefMap, wrapperRef]);
+    }, [focus]);
+
+    const handleFocus = useCallback((subject: string | null) => {
+        itemsRef.current.forEach((ref) => {
+            ref?.classList.remove('focus');
+        });
+
+        if(subject) {
+            for (const [classId, ref] of itemsRef.current) {
+                const targetClass = timetable.getClass(classId);
+                if (targetClass && targetClass.subject === subject) {
+                    ref?.classList.add('focus');
+                }
+            }
+        }
+
+        setFocus(subject);
+    }, []);
 
     const getTransformStyle = useCallback(() => {
         return {
@@ -75,21 +91,6 @@ const ThemeView = () => {
             transition: `transform 0.7s cubic-bezier(0.25, 0.8, 0.25, 1)`,
         }
     }, [transform])
-
-    const handleFocus = useCallback((subject: string | null) => {
-        subjectRefMap.forEach((element) => {
-            element?.classList.remove('focus');
-        })
-
-        if(subject) {
-            const current = subjectRefMap.get(subject)
-            if (current) {
-                current.classList.add('focus')
-            }
-        }
-
-        setFocus(subject)
-    }, [subjectRefMap])
 
 
     if (isThemeLoading || isTimetableLoading || !timetableData || !themeData) {

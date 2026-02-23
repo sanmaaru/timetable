@@ -101,7 +101,6 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     const buttons = [
         { icon: Pencil, text: '수정' , onClick: () => navigate(`/theme/${theme.theme_id}/edit`) },
         { icon: Magnifier, text: '자세히 보기', onClick: () => navigate(`/theme/${theme.theme_id}`) },
-        { icon: Share, text: '온라인에 공유' , onClick: () => alert('test - trash') },
         { icon: Trashcan, text: '휴지통으로 이동' , onClick: handleDelete, color: '#ff0000' },
     ]
 
