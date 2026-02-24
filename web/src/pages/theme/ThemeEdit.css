@@ -45,12 +45,18 @@
     width: 24%;
     height: 100dvh;
     border-left: 2px solid #ededed;
-    padding: 1.5% 24px 2%;
+    padding: 1.5% 24px calc(2% + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 56px;
     overflow-y: auto;
     background: #ffffff;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+#ThemeEdit > .content > .detail > * {
+    flex-shrink: 0;
 }
 
 #ThemeEdit > .content > .timetable {
@@ -96,7 +102,7 @@
 
 #ThemeEdit > .content > .detail > .footer {
     margin-top: auto;
-    margin-bottom: 24px;
+    margin-bottom: calc(24px + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: row;
     gap: 8px;
