@@ -1,3 +1,9 @@
+button {
+  --webkit-appearance: none;
+  --webkit-tap-highlight-color: transparent;
+  color: inherit;
+}
+
 :root {
   background-color: #ffffff;
 
@@ -8,7 +14,12 @@
   -webkit-text-size-adjust: 100%;
 }
 
-html, body, #root {
+#root {
+  height: 100dvh;
+  margin: 0;
+}
+
+html, body {
   height: 100%;
   margin: 0;
 }

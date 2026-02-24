@@ -17,7 +17,7 @@
     font-size: 28px;
     font-family: "Pretendard", serif;
     font-weight: 900;
-    color: #000000;
+    color: #ff0000;
 }
 
 #theme-view > .container.title > .name {
@@ -43,14 +43,20 @@
     right: 0;
     top: 0;
     width: 24%;
-    height: 100vh;
+    height: 100dvh;
     border-left: 2px solid #ededed;
-    padding: 1.5% 24px 2%;
+    padding: 1.5% 24px calc(2% + env(safe-area-inset-bottom));
     display: flex;
     flex-direction: column;
     gap: 56px;
     overflow-y: auto;
     background: #ffffff;
+
+    -webkit-overflow-scrolling: touch;
+}
+
+#theme-view > .content > .detail > * {
+    flex-shrink: 0;
 }
 
 #theme-view > .content > .timetable {

@@ -47,7 +47,7 @@ services:
     container_name: timetable-web
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "80:8000"
     depends_on:
       - api
 

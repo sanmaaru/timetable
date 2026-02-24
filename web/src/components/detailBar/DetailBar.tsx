@@ -8,13 +8,13 @@ interface DetailBarProps {
     schedule?: Schedule | null
     quote: string;
     source: string;
-    image: string;
+    // image: string;
 }
 
-const DetailBar = ({schedule, quote, source, image}: DetailBarProps) => {
+const DetailBar = ({schedule, quote, source}: DetailBarProps) => {
     const detailContent = (() => {
         if(schedule == null) {
-            return <DefaultDetailContent quote={quote} source={source} image={image}/>
+            return <DefaultDetailContent quote={quote} source={source}/>
         } else {
             return <ClassDetailContent schedule={schedule}/>
         }

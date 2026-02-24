@@ -29,7 +29,6 @@ function Home() {
         return <DetailBar
             quote="달을 향해 쏴라. 빗나가도 별이 될테니"
             source="레스 브라운"
-            image="/assets/image/detail_image.png"
             schedule={schedule}
         />
 
@@ -39,7 +38,7 @@ function Home() {
         return (
             <div id={'home'}>
                 <Timetable name={''} schedules={[]} theme={{ title: '', theme_id: '', colorSchemes: [], selected: false }} focus={focus} setFocus={setFocus} />
-                <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운" image="/assets/image/detail_image.png"/>
+                <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운"/>
             </div>)
     }
 

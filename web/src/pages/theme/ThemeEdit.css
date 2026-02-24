@@ -43,7 +43,7 @@
     right: 0;
     top: 0;
     width: 24%;
-    height: 100vh;
+    height: 100dvh;
     border-left: 2px solid #ededed;
     padding: 1.5% 24px 2%;
     display: flex;
