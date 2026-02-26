@@ -18,11 +18,12 @@ from app.theme.schemas import ThemeSchema, SelectedThemeChangeInput, ThemeCreate
 router = APIRouter(prefix='/theme', tags=['theme'])
 theme_status_dep = get_status_dependency('theme')
 
-@router.get('/status', response_model=VersionResponse)
+@router.get('/status', response_model=BaseResponse[VersionResponse])
 async def get_theme_status(
+        user: User = Depends(get_current_user),
         theme_status: VersionResponse = Depends(theme_status_dep),
 ):
-    return theme_status
+    return create_response(theme_status, user.user_id)
 
 @router.get('/', response_model=BaseResponse[List[ThemeSchema]])
 async def get_themes(

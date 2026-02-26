@@ -1,5 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import './Timetable.css';
+import style from './Timetable.module.css';
 import {Schedule} from "../../types/schedule";
 import TimetableGrid from "./TimetableGrid";
 import {Theme} from "../../types/theme";
@@ -48,14 +48,16 @@ const Timetable = ({name, schedules, theme, focus, setFocus}: TimetableProps) =>
 
     }, [focus])
 
-    return (<div className="timetable" onClick={handleContainerClick}>
-        <div className='timetable-title'>
-            <span className='title'>시간표</span>
-            <span className='name'> - {name}</span>
+    return (
+        <div className={style.timetable} onClick={handleContainerClick}>
+            <div className={style.title}>
+                <span>시간표</span>
+                <span> - {name}</span>
+            </div>
+            <TimetableHeader/>
+            <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes} detail={true} scheduleRefMap={itemsRef}/>
         </div>
-        <TimetableHeader/>
-        <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes} detail={true} scheduleRefMap={itemsRef}/>
-    </div>);
+    );
 }
 
 export default Timetable

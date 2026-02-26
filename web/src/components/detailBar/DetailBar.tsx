@@ -1,5 +1,5 @@
 import React from "react";
-import './DetailBar.css';
+import style from './DetailBar.module.css';
 import DefaultDetailContent from "./DefaultDetail";
 import ClassDetailContent from './ClassDetail';
 import {Schedule} from "../../types/schedule";
@@ -21,11 +21,11 @@ const DetailBar = ({schedule, quote, source}: DetailBarProps) => {
     })()
 
     return (
-        <div className="detail-bar">
-            <div className="title-wrapper">
-                <span className="title">Details</span>
+        <div className={style.detailBar}>
+            <div className={style.titleWrapper}>
+                <span>Details</span>
             </div>
-            <div className="container">
+            <div className={style.container}>
                 {detailContent}
             </div>
         </div>

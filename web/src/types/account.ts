@@ -6,9 +6,9 @@ export interface UserInfo {
     email: string;
     username: string;
     name: string;
-    generation: number;
-    clazz: number;
-    number: number;
-    credit: number;
+    generation: number | null;
+    clazz: number | null;
+    number: number | null;
+    credit: number | null;
     role: Role;
 }

@@ -1,6 +1,6 @@
 import Timetable from "../components/timetable/Timetable";
 import DetailBar from "../components/detailBar/DetailBar";
-import './Home.css';
+import style from './Home.module.css';
 import useTimetable from "../hooks/useTimetable";
 import {useToast} from "../components/alert/toast/ToastContext";
 import {useCallback, useEffect, useState} from "react";
@@ -36,15 +36,15 @@ function Home() {
 
     if (isThemeLoading || isTimetableLoading || (!timetableData || !themeData)) {
         return (
-            <div id={'home'}>
-                <Timetable name={''} schedules={[]} theme={{ title: '', theme_id: '', colorSchemes: [], selected: false }} focus={focus} setFocus={setFocus} />
+            <div className={style.home}>
+                <Timetable name={''} schedules={[]} theme={{ title: '', themeId: '', colorSchemes: [], selected: false }} focus={focus} setFocus={setFocus} />
                 <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운"/>
             </div>)
     }
 
     const { name, schedules } = timetableData;
     return (
-        <div id="home">
+        <div className={style.home}>
             <Timetable name={name} schedules={schedules} theme={themeData} focus={focus} setFocus={setFocus}/>
             {drawDetail()}
         </div>

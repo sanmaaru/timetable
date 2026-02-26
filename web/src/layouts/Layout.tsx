@@ -1,14 +1,12 @@
 import React from 'react';
 import SideBar from "../components/sidebar/SideBar";
-import './Layout.css'
+import style from './Layout.module.css'
 import {Outlet} from "react-router-dom";
-import {ToastProvider} from "../components/alert/toast/ToastContext";
-import {DialogProvider} from "../components/alert/dialog/DialogProvider";
 
 
 const Layout = () => {
     return (
-        <div id={'layout'}>
+        <div className={style.layout}>
             <SideBar/>
             <Outlet/>
         </div>

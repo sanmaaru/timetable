@@ -1,5 +1,5 @@
 import React, {useCallback, useState} from "react";
-import './ThemeElement.css'
+import style from './ThemeElement.module.css'
 import {Theme} from "../../types/theme";
 import useContainerSize from "../../hooks/useContainerSize";
 import View from '../../resources/icon/icn_eye.svg?react';
@@ -13,10 +13,12 @@ import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
 
 import Trashcan from '../../resources/icon/icn_trashcan.svg?react'
 import Pencil from '../../resources/icon/icn_pencil.svg?react'
-import Share from '../../resources/icon/icn_share.svg?react'
+// import Share from '../../resources/icon/icn_share.svg?react'
 import Magnifier from '../../resources/icon/icn_magnifier.svg?react'
 import Sparkle from '../../resources/icon/icn_sparkle.svg?react'
 import DefaultDialog from "../alert/dialog/DefaultDialog";
+import IconButton from "../button/IconButton";
+import useFloatingMenu from "../../hooks/useFloatingMenu";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -25,10 +27,10 @@ interface ThemeElementProps {
 
 const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     const { ref: containerRef, width } = useContainerSize();
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [isMenuOpen, setMenuOpen] = useState(false);
     const { open, close, isOpen }  = useDialog()
     const navigate = useNavigate();
-    const { handleDeleteTheme, handlePutSelectedTheme } = useThemeActions(theme.theme_id)
+    const { handleDeleteTheme, handlePutSelectedTheme } = useThemeActions(theme.themeId)
 
     const selected = theme.selected
 
@@ -40,7 +42,7 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
 
         return (
             <div
-                className='card'
+                className={style.card}
                 key={`card-${index}`}
                 style={{
                     zIndex: cardNumbers-index,
@@ -74,7 +76,7 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     const handleView = useCallback(() => {
         open(<ThemePreviewDialog
             context={{ open, close, isOpen }}
-            themeId={theme.theme_id}
+            themeId={theme.themeId}
             title={theme.title}
         />)
     }, [open, close, isOpen]);
@@ -95,72 +97,44 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     }, [handleDeleteTheme, close])
 
 
-
-
+    const { menuContext, getReferenceProps, ref } = useFloatingMenu(isMenuOpen, setMenuOpen)
 
     const buttons = [
-        { icon: Pencil, text: '수정' , onClick: () => navigate(`/theme/${theme.theme_id}/edit`) },
-        { icon: Magnifier, text: '자세히 보기', onClick: () => navigate(`/theme/${theme.theme_id}`) },
+        { icon: Pencil, text: '수정' , onClick: () => navigate(`/theme/${theme.themeId}/edit`) },
+        { icon: Magnifier, text: '자세히 보기', onClick: () => navigate(`/theme/${theme.themeId}`) },
         { icon: Trashcan, text: '휴지통으로 이동' , onClick: handleDelete, color: '#ff0000' },
     ]
 
-    const { refs, floatingStyles, context } = useFloating({
-        open: isMenuOpen,
-        onOpenChange: setIsMenuOpen,
-        placement: 'bottom-start',
-        whileElementsMounted: (reference, floating, update) =>
-            autoUpdate(reference, floating, update, {
-                layoutShift: false
-            }),
-        middleware: [
-            offset(5),
-            flip(),
-            shift(),
-        ]
-    })
-
-    const click = useClick(context)
-    const dismiss = useDismiss(context)
-
-    const { getReferenceProps, getFloatingProps } = useInteractions([
-        click,
-        dismiss
-    ])
-
     return (
-        <div className="theme-element">
-            <div className="cards" ref={containerRef}>
+        <div className={style.themeElement}>
+            <div className={style.cards} ref={containerRef}>
                 {width > 0 && cards}
             </div>
-            <div className='descriptions'>
-                <span className='title' title={theme.title}>{theme.title}</span>
-                <button
+            <div className={style.descriptions}>
+                <span title={theme.title}>{theme.title}</span>
+                <IconButton
                     onClick={handleChange}
                     title={selected ? '사용 중인 테마' : '테마 사용하기'}
-                    className={selected ? 'selected' : ''}
+                    className={`${style.button} ${selected ? style.selected : ''}`}
                 >
                     <Sparkle/>
-                </button>
-                <button onClick={handleView} title={'테마 미리보기'}>
+                </IconButton>
+                <IconButton className={style.button} onClick={handleView} title={'테마 미리보기'}>
                     <View/>
-                </button>
-                <button
-                    className={`menu ${isMenuOpen ? 'clicked' : ''}`}
+                </IconButton>
+                <IconButton
+                    className={`${style.button} ${style.menu} ${isMenuOpen ? style.clicked : ''}`}
                     title={'옵션 더보기'}
-                    ref={refs.setReference}
-                    {...getReferenceProps()}
+                    props={{
+                        ref: ref,
+                        ...getReferenceProps()
+                    }}
                 >
                     <Options/>
-                </button>
+                </IconButton>
             </div>
 
-            {isMenuOpen && <ActionMenu
-                context={context}
-                setFloating={refs.setFloating}
-                floatingMenuProps={getFloatingProps()}
-                floatingStyles={floatingStyles}
-                buttons={buttons}
-            />}
+            <ActionMenu context={menuContext} buttons={buttons}/>
         </div>
     )
 }

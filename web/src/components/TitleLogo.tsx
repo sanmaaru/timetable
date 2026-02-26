@@ -1,13 +1,17 @@
 import React from 'react';
-import './TitleLogo.css';
-import logo from '../resources/logo.svg'
+import style from './TitleLogo.module.css';
+import Logo from '../resources/logo.svg?react'
 
-const TitleLogo = () => {
+interface TitleLogoProps {
+    className?: string;
+}
+
+const TitleLogo = ({className}: TitleLogoProps) => {
     return (
-        <div className="title-logo">
-            <span className="app-name">Timetable</span>
-            <img className="logo" src={logo} alt=''/>
-            <span className="subtitle">for Gwangju Science Academy</span>
+        <div className={`${className} ${style.logo}`}>
+            <span>Timetable</span>
+            <Logo/>
+            <span>for Gwangju Science Academy</span>
         </div>
     )
 }

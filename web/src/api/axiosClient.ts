@@ -1,6 +1,7 @@
 import axios, {AxiosError, InternalAxiosRequestConfig} from "axios";
 import {getRefresh, getToken, removeTokens, setTokens} from "../auth/auth";
-import {renderToReadableStream} from "react-dom/server";
+import {BaseResponseDto} from "./dto/response.dto";
+import {TokenPairDto} from "./dto/dto";
 
 const baseUrl = '/api'
 
@@ -32,8 +33,13 @@ privateAxiosClient.interceptors.request.use(
     (error) => Promise.reject(error)
 );
 
+interface PromiseResolver {
+    resolve: (value: string | null) => void,
+    reject: (error: AxiosError | Error | any) => void
+}
+
 let isRefreshing = false
-let failedQueue: any[] = []
+let failedQueue: PromiseResolver[] = []
 
 const processQueue = (error: any, token: string | null = null) => {
     failedQueue.forEach((prom) => {
@@ -70,7 +76,7 @@ privateAxiosClient.interceptors.response.use(
         isRefreshing = true;
 
         try {
-            const { data } = await publicAxiosClient.post('/auth/refresh', {
+            const { data } = await publicAxiosClient.post<BaseResponseDto<TokenPairDto>>('/auth/refresh', {
                 refresh_token: getRefresh(),
             });
 

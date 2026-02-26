@@ -1,6 +1,8 @@
-import React, {FC, SVGProps, useTransition} from "react";
-import './ActionMenu.css'
+import React, {FC, SVGProps} from "react";
+import style from './ActionMenu.module.css'
 import {FloatingContext, FloatingFocusManager, FloatingPortal, useTransitionStyles} from "@floating-ui/react";
+import {FloatingMenuContext} from "../hooks/useFloatingMenu";
+import FloatingMenu from "./menu/FloatingMenu";
 
 export interface ActionMenuButton {
     icon: FC<SVGProps<SVGSVGElement>>;
@@ -10,22 +12,16 @@ export interface ActionMenuButton {
 }
 
 interface ActionMenuProps {
-    context: FloatingContext;
-    setFloating: any;
-    floatingMenuProps: Record<string, unknown>;
-    floatingStyles: React.CSSProperties;
     buttons: ActionMenuButton[];
+    context: FloatingMenuContext;
 }
 
 const ActionMenu = ({
-                        context,
-                        setFloating,
-                        floatingMenuProps,
-                        floatingStyles,
-                        buttons,
+                        buttons, context
 }: ActionMenuProps) => {
     const menuButtons = buttons.map((value, index) => {
         return <button
+            className={style.button}
             key={index}
             onClick={value.onClick}
         >
@@ -34,41 +30,15 @@ const ActionMenu = ({
         </button>
     })
 
-    const { styles } = useTransitionStyles(context, {
-        duration: 100,
-        initial: {
-            transform: 'scale(0.9)',
-            transformOrigin: 'top left',
-            opacity: 0
-        },
-        open: {
-            transform: 'scale(1)',
-            transformOrigin: 'top left',
-            opacity: 1,
-        },
-        close: {
-            transform: 'scale(0.9)',
-            transformOrigin: 'top left',
-            opacity: 0,
-        }
-    })
+    if(!context.isMounted) return null;
 
-    return (<FloatingPortal>
-        <FloatingFocusManager context={context} modal={false}>
-            <div
-                className={'action-menu'}
-                ref={setFloating}
-                style={{
-                    ...floatingStyles,
-                    ...styles,
-                    transform: `${floatingStyles.transform || ''} ${styles.transform || ''}`
-                }}
-                {...floatingMenuProps}
-            >
+    return (
+        <FloatingMenu context={context}>
+            <div className={style.actionMenu}>
                 {menuButtons}
             </div>
-        </FloatingFocusManager>
-    </FloatingPortal>)
+        </FloatingMenu>
+    )
 }
 
 export default ActionMenu;

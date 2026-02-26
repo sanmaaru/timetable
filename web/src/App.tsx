@@ -4,7 +4,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
 import Home from './pages/Home';
-import Theme from './pages/theme/Theme';
+import Themes from './pages/theme/Themes';
 import ThemeView from './pages/theme/ThemeView';
 import ThemeEdit from './pages/theme/ThemeEdit';
 import Account from './pages/Account';
@@ -38,7 +38,7 @@ const router = createBrowserRouter([
                             },
                             {
                                 path: "/theme",
-                                element: <Theme />,
+                                element: <Themes />,
                             },
                             {
                                 path: "/theme/:themeId",

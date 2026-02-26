@@ -1,14 +1,15 @@
 import React from 'react';
-import './SimpleButton.css';
+import style from './SimpleButton.module.css';
 
 interface SimpleButtonProps {
     children: string;
     onClick?: () => void;
+    className?: string;
 }
 
-const SimpleButton = ({children, onClick}: SimpleButtonProps) => {
+const SimpleButton = ({children, onClick, className}: SimpleButtonProps) => {
     return (
-        <button className="SimpleButton" onClick={onClick}>
+        <button className={`${className} ${style.simpleButton}`} onClick={onClick}>
             {children}
         </button>
     )

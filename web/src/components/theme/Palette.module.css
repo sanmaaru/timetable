@@ -1,0 +1,102 @@
+.palette {
+    background-color: #ededed;
+    border-radius: 8px;
+    border: 1px solid #ededed;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    overflow: hidden;
+}
+
+.palette > div {
+    width: 100%;
+    background: #ffffff;
+}
+
+.header {
+    height: 48px;
+    padding: 12px 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.header > span {
+    font-family: Pretendard, serif;
+    font-weight: 700;
+    font-size: 16px;
+    margin-right: auto;
+}
+
+.header > button {
+    height: 24px;
+    width: 24px;
+    margin-left: auto;
+}
+
+.content {
+    scrollbar-width: thin;
+    height: 240px;
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 30px 20px 20px;
+}
+
+.content > span {
+    font-family: Pretendard, serif;
+    font-weight: 500;
+    font-size: 14px;
+    margin-bottom: 8px;
+}
+
+.content > div {
+    display:grid;
+    grid-template-columns: repeat(7, minmax(32px, 1fr));
+    column-gap: 4px;
+    row-gap: 8px;
+    margin-bottom: 20px;
+}
+
+.color-box {
+    border-radius: 4px;
+    width: 28px;
+    height: 28px;
+    transition: scale 0.1s ease-in, outline-offset 0.1s ease-in;
+}
+
+.color-box:hover {
+    scale: 0.9;
+    outline: 2px solid #ededed;
+    outline-offset: 4px;
+}
+
+.color-box.selected {
+    outline: 2px solid #ededed;
+    outline-offset: 4px;
+}
+
+.color-picker {
+    width: 32px;
+    height: 32px;
+}
+
+.footer {
+    height: 60px;
+    display: flex;
+    padding: 12px 24px;
+    align-items: center;
+}
+
+.footer > div {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+}
+
+.footer > span {
+    font-family: NixgonFont, serif;
+    font-size: 13px;
+    margin-left: auto;
+}

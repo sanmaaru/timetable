@@ -1,9 +1,8 @@
 import React from 'react';
-import './SideBar.css';
+import style from './SideBar.module.css';
 import SideBarButton from './SideBarButton';
-import logo from '../../resources/logo.svg';
-import {useNavigate} from "react-router-dom";
-
+import {useLocation, useNavigate} from "react-router-dom";
+import Logo from '../../resources/logo.svg?react'
 
 const locations = {
     account: '/account',
@@ -19,17 +18,23 @@ interface SideBarButton {
 
 const SideBar = () => {
     // this state saves which button is clicked
-    const [activeButton, setActiveButton] = React.useState<string>('null'); // null state mean client do not select any menu --> main menu
+    const location = useLocation();
     const navigate = useNavigate();
+
+    const getActiveId = () => {
+        for (const [key, path] of Object.entries(locations)) {
+            if (location.pathname.startsWith(path))
+                return key as LocationKey;
+        }
+        return 'null';
+    }
 
     const handleButtonClick = (id: LocationKey | null) => {
         if (id === null) {
-            setActiveButton('null');
             navigate('/');
             return;
         }
 
-        setActiveButton(id);
         navigate(locations[id]);
     };
 
@@ -39,17 +44,17 @@ const SideBar = () => {
     ];
 
     return (
-        <aside className="sidebar">
-            <div className="logo-circle" onClick={() => handleButtonClick(null)}>
-                <img className="logo" src={logo}  alt="시간표 홈" />
+        <aside className={style.sidebar}>
+            <div className={style.logo} onClick={() => handleButtonClick(null)} title={'시간표 홈'}>
+                <Logo/>
             </div>
-            <nav className="sidbar-menu">
+            <nav>
                 {buttonList.map((button) => (
                     <SideBarButton
                         id={button.id}
                         icon={'/assets/icon/' + button.icon}
                         label={button.label}
-                        isActive={activeButton === button.id}
+                        isActive={getActiveId() === button.id}
                         onClick={() => handleButtonClick(button.id)}
                     />
                 ))}

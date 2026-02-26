@@ -1,9 +1,11 @@
 import {UserInfo} from "../types/account";
-import {AxiosError} from "axios";
 import {privateAxiosClient} from "./axiosClient";
 import {getRole} from "../util/common";
+import {BaseResponseDto} from "./dto/response.dto";
+import {UserDto} from "./dto/user.dto";
+import {withApi} from "./api";
 
-const parseUser = (data: any): UserInfo => {
+const parseUser = (data: UserDto): UserInfo => {
     return {
         userId: data.user_id,
         username: data.username,
@@ -18,55 +20,24 @@ const parseUser = (data: any): UserInfo => {
 }
 
 export const fetchCurrentUser= async () => {
-    try {
-        const response = await privateAxiosClient.get('/account/', {})
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<UserDto>>('/account/', {})
 
-        return { data: parseUser(response.data.data), error: null }
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return { data: null, error: 'UNKNOWN_ERROR' };
-
-        const code= error.response?.data?.code
-
-        if (code)
-            return { data: null, error: code }
-        else
-            return { data: null, error: 'UNKNOWN_ERROR' }
-    }
+        return parseUser(response.data.data)
+    })
 }
 
 export const fetchUser= async (userId: string) => {
-    try {
-        const response = await privateAxiosClient.get(`/account/${userId}`, {})
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<UserDto>>(`/account/${userId}`, {})
 
-        return { data: parseUser(response.data.data), error: null }
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return { data: null, error: 'UNKNOWN_ERROR' };
-
-        const code= error.response?.data?.code
-
-        if (code)
-            return { data: null, error: code }
-        else
-            return { data: null, error: 'UNKNOWN_ERROR' }
-    }
+        return parseUser(response.data.data)
+    })
 }
 
-export const deleteUser= async () => {
-    try {
-        const response = await privateAxiosClient.delete('/account/', {})
-
+export const deleteUser= () => {
+    return withApi(async () => {
+        await privateAxiosClient.delete('/account/', {})
         return null
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return 'UNKNOWN_ERROR';
-
-        const code = error.response?.data?.code
-
-        if (code)
-            return code
-        else
-            return 'UNKNOWN_ERROR'
-    }
+    })
 }

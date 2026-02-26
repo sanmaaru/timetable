@@ -1,10 +1,12 @@
 import {privateAxiosClient} from "./axiosClient";
 import {ColorScheme, Theme} from "../types/theme";
-import {AxiosError} from "axios";
+import {BaseResponseDto} from "./dto/response.dto";
+import {ColorSchemeDto, ThemeDto} from "./dto/theme.dto";
+import {withApi} from './api'
 
-const parseThemeData = (theme: any) => {
+const parseThemeData = (theme: ThemeDto) => {
     const colorSchemes: ColorScheme[] = [];
-    theme.color_schemes.forEach((item: any) => {
+    theme.color_schemes.forEach((item: ColorSchemeDto) => {
         colorSchemes.push({
             subject: item.subject,
             color: '#' + item.color,
@@ -14,100 +16,73 @@ const parseThemeData = (theme: any) => {
 
     return {
         title: theme.title,
-        theme_id: theme.theme_id,
+        themeId: theme.theme_id,
         colorSchemes: colorSchemes,
         selected: theme.selected,
     }
 }
 
-export const fetchThemes = async () => {
-    const response = await privateAxiosClient.get('/theme/', {});
+export const fetchThemes = () => {
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<ThemeDto[]>>('/theme/', {});
 
-    const rawData = response.data.data;
-    const themes: Theme[] = [];
-    rawData.forEach((item: any) => {
-        themes.push(parseThemeData(item));
+        const rawData = response.data.data;
+        const themes: Theme[] = [];
+        rawData.forEach((item: ThemeDto) => {
+            themes.push(parseThemeData(item));
+        })
+
+        return themes;
+    });
+}
+
+export const fetchTheme = (themeId: string) => {
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<ThemeDto>>(`/theme/${themeId}`, {});
+        const rawData = response.data.data;
+        return parseThemeData(rawData);
     })
-
-    return themes;
 }
 
-export const fetchTheme = async (themeId: string) => {
-    const response = await privateAxiosClient.get(`/theme/${themeId}`, {});
+export const fetchSelectedTheme = () => {
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<ThemeDto>>('/theme/selected', {});
 
-    const rawData = response.data.data;
-    return parseThemeData(rawData);
+        const rawData = response.data.data;
+        return parseThemeData(rawData)
+    });
 }
 
-export const fetchSelectedTheme = async () => {
-    const response = await privateAxiosClient.get('/theme/selected', {});
-
-    const rawData = response.data.data;
-    return parseThemeData(rawData)
-}
-
-export const deleteTheme = async (themeId: string) => {
-    try {
+export const deleteTheme = (themeId: string) => {
+    return withApi(async () => {
         await privateAxiosClient.delete(`/theme/${themeId}`);
         return null;
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return 'UNKNOWN_ERROR';
-
-        const code= error.response?.data?.code
-
-        if (code)
-            return code
-        else
-            return 'UNKNOWN_ERROR';
-    }
+    })
 }
 
-export const putSelectedTheme = async (themeId: string) => {
-    try {
+export const putSelectedTheme = (themeId: string) => {
+    return withApi(async () => {
         await privateAxiosClient.put(`/theme/selected`, {
             theme_id: themeId,
         });
         return null;
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return 'UNKNOWN_ERROR';
-
-        const code = error.response?.data?.code
-        if (code)
-            return code
-        else
-            return 'UNKNOWN_ERROR';
-    }
+    })
 }
 
-export const createTheme = async (title: string) => {
-    try {
+export const createTheme = (title: string) => {
+    return withApi(async () => {
         const response = await privateAxiosClient.post(`/theme/`, {
             title: title
         })
 
         const rawData = response.data.data;
-        console.log(rawData);
-        return {
-            data: parseThemeData(rawData),
-            error: null
-        };
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return {
-                data: null,
-                error: 'UNKNOWN_ERROR'
-            };
-
-        const code = error.response?.data?.code
-        return { data: null, error: code ? code : 'UNKNOWN_ERROR' };
-    }
+        return parseThemeData(rawData)
+    })
 }
 
-export const putTheme = async (themeId: string, theme: Theme) => {
-    try {
-        const response = await privateAxiosClient.put(`/theme/${themeId}`, {
+export const putTheme = (themeId: string, theme: Theme) => {
+    return withApi(async () => {
+        await privateAxiosClient.put(`/theme/${themeId}`, {
             title: theme.title,
             color_schemes: theme.colorSchemes.map((item: ColorScheme) => ({
                 subject: item.subject,
@@ -115,14 +90,6 @@ export const putTheme = async (themeId: string, theme: Theme) => {
                 text_color: item.textColor.replace('#', '') ,
             })),
         })
-    } catch (error) {
-        if (!(error instanceof AxiosError))
-            return 'UNKNOWN_ERROR'
-
-        const code = error.response?.data?.code
-        if (code)
-            return code
-        else
-            return 'UNKNOWN_ERROR';
-    }
+        return null
+    })
 }

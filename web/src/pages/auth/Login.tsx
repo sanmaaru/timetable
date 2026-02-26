@@ -1,6 +1,6 @@
 import React from 'react';
 import StandardInput from "../../components/Input/StandardInput";
-import './Login.css'
+import style from './Login.module.css'
 import StandardButton from "../../components/button/StandardButton";
 import TitleLogo from "../../components/TitleLogo";
 import PasswordInput from "../../components/Input/PasswordInput";
@@ -25,19 +25,19 @@ function Login() {
         if(!globalErrorMessage)
             return
 
-        return <span className='global-error-message'>{globalErrorMessage}</span>
+        return <span className={style.globalErrorMessage}>{globalErrorMessage}</span>
     }
 
     return (
-        <div id="login">
-            <TitleLogo/>
-            <div className='panel'>
-                <div className="container">
-                    <div className='title'>
-                        <span className='welcome'>반갑습니다!</span>
-                        <span className='login-alert'>로그인을 위해서 아이디와 패스워드를 입력해 주세요</span>
+        <div className={style.loginPage}>
+            <TitleLogo className={style.titleLogo} />
+            <div className={style.panel}>
+                <div className={style.container}>
+                    <div className={style.title}>
+                        <span>반갑습니다!</span>
+                        <span>로그인을 위해서 아이디와 패스워드를 입력해 주세요</span>
                     </div>
-                    <form className='input-area' onSubmit={onSubmit} noValidate={true}>
+                    <form className={style.inputArea} onSubmit={onSubmit} noValidate={true}>
                         <StandardInput
                             placeHolder={'username'}
                             registration={ register('username', {
@@ -59,15 +59,15 @@ function Login() {
                         />
                     </form>
                     {createGlobalErrorMessage()}
-                    <div className='divider'/>
-                    <div className='additional'>
-                        <Link to='' className='text-link'>아이디 혹은 비밀번호를 잊어버렸습니다</Link>
-                        <span className='sign-up'>계정이 아직 없으신가요?</span>
-                        <Link to='/signup' className={`text-link sign-up`}>회원가입</Link>
+                    <div className={style.divider}/>
+                    <div className={style.footer}>
+                        <Link to='' className={style.textLink}>아이디 혹은 비밀번호를 잊어버렸습니다</Link>
+                        <span className={style.signUp}>계정이 아직 없으신가요?</span>
+                        <Link to='/signup' className={`${style.textLink} ${style.signUp}`}>회원가입</Link>
                     </div>
                 </div>
             </div>
-            <img className='background' src={'/assets/image/background_login.png'} alt=''/>
+            <img src={'/assets/image/background_login.png'} alt=''/>
         </div>
     );
 }

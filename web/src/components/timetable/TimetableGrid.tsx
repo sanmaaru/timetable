@@ -1,5 +1,5 @@
 import React, {MutableRefObject} from 'react';
-import './TimetableGrid.css'
+import style from './TimetableGrid.module.css'
 import {DAY_LIST, PERIOD_LIST, Schedule} from "../../types/schedule";
 import {ColorScheme} from "../../types/theme";
 
@@ -10,14 +10,17 @@ interface TimetableGridProps {
     schedules: Schedule[];
     colorSchemes: ColorScheme[];
     detail: boolean;
-    scheduleRefMap?: MutableRefObject<Map<string, HTMLDivElement>>
+    scheduleRefMap?: MutableRefObject<Map<string, HTMLElement>>
+    className?: string
+    scheduleClassName?: (classId: string) => string;
 }
 
 const drawSchedule = (
     schedules: Schedule[],
     colorSchemes: ColorScheme[],
     detail: boolean,
-    scheduleRefMap?: MutableRefObject<Map<string, HTMLDivElement>>,
+    scheduleRefMap?: MutableRefObject<Map<string, HTMLElement>>,
+    scheduleClassName?: (classId: string) => string,
 ) => {
     const subjectColorMap = colorSchemes.reduce((acc, { subject, color, textColor}) => {
         acc[subject] = { color, textColor };
@@ -36,9 +39,9 @@ const drawSchedule = (
 
         return [<div
             ref = {setRef}
-            key={`timetable-class-${classId}`}
+            key={`${classId}-${columnIdx}`}
             data-id={classId}
-            className="timetable-class"
+            className={`${style.wrapper} ${scheduleClassName ? scheduleClassName(classId) : ''}`}
             style={{
                 backgroundColor: color.color,
                 gridRowStart: schedule.period_from,
@@ -49,27 +52,26 @@ const drawSchedule = (
             }}
         >
             <div
-                key={`timetable-class-info-${columnIdx}-${schedule.period_from}`}
-                className="timetable-info"
+                key={`=${columnIdx}-${schedule.period_from}`}
+                className={style.content}
             >
-                <span className='subject'>{schedule.clazz.subject}</span>
+                <span className={style.subject}>{schedule.clazz.subject}</span>
                 {detail && [
-                    <span className='division'>{schedule.clazz.division}반</span>,
-                    <span className='teacher'>{schedule.clazz.teacher}T</span>,
+                    <span className={style.division}>{schedule.clazz.division}반</span>,
+                    <span className={style.teacher}>{schedule.clazz.teacher}T</span>,
                 ]}
             </div>
         </div>]
     });
 };
 
-const TimetableGrid = ({schedules, colorSchemes, detail = false, scheduleRefMap}: TimetableGridProps) => {
+const TimetableGrid = ({schedules, colorSchemes, detail = false, scheduleRefMap, className, scheduleClassName}: TimetableGridProps) => {
     return (
-        <div className="timetable-grid-column timetable-grid-row timetable-grid">
-            {drawSchedule(schedules, colorSchemes, detail, scheduleRefMap)}
+        <div className={`${style.timetableGridColumn} ${style.timetableGridRow} ${style.timetableGrid} ${className}`}>
             {periods.map(period => ( // create cell of period
                 <div
-                    key={`timetable-grid-${period}`}
-                    className="timetable-grid-cell"
+                    key={`header-${period}`}
+                    className={style.cell}
                     style={{
                         gridRow: period,
                         gridColumn: 1,
@@ -84,8 +86,8 @@ const TimetableGrid = ({schedules, colorSchemes, detail = false, scheduleRefMap}
                     const columnIdx = dayIdx + 2
 
                     return <div
-                        key={`timetable-grid-${day}-${period}`}
-                        className="timetable-grid-cell"
+                        key={`=${day}-${period}`}
+                        className={style.cell}
                         style={{
                             gridRow: period,
                             gridColumn: columnIdx,
@@ -93,6 +95,7 @@ const TimetableGrid = ({schedules, colorSchemes, detail = false, scheduleRefMap}
                     ></div>
                 })
             })}
+            {drawSchedule(schedules, colorSchemes, detail, scheduleRefMap, scheduleClassName)}
         </div>
     )
 }

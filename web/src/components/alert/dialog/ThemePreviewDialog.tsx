@@ -1,4 +1,4 @@
-import './ThemePreviewDialog.css';
+import style from './ThemePreviewDialog.module.css';
 import {DialogContextType} from "./DialogProvider";
 import TimetableHeader from "../../timetable/TimetableHeader";
 import TimetableGrid from "../../timetable/TimetableGrid";
@@ -31,12 +31,12 @@ const ThemePreviewDialog = ({context: dialogContext, themeId, title} : ThemePrev
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast, themeId, close])
 
     if (isTimetableLoading || isTimetableLoading) {
-        return (<div id='theme-preview-dialog'>
+        return (<div className={style.themePreviewDialog}>
         </div>)
     }
 
     if (!timetableData || !themeData) {
-        return (<div id='theme-preview-dialog'>
+        return (<div className={style.themePreviewDialog}>
         </div>)
     }
 
@@ -44,14 +44,14 @@ const ThemePreviewDialog = ({context: dialogContext, themeId, title} : ThemePrev
 
     return (
         <div
-            className="theme-preview-dialog"
+            className={style.themePreviewDialog}
         >
-            <span>{title}</span>
-            <div>
+            <span className={style.title}>{title}</span>
+            <div className={style.timetableArea}>
                 <TimetableHeader/>
                 <TimetableGrid schedules={schedules} colorSchemes={themeData.colorSchemes} detail={false}/>
             </div>
-            <IconButton onClick={() => close()}>
+            <IconButton className={style.button} onClick={() => close()}>
                 <Close/>
             </IconButton>
         </div>

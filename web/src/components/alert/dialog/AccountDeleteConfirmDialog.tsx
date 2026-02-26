@@ -1,5 +1,5 @@
 import React from "react";
-import './AccountDeleteConfirmDialog.css';
+import style from './AccountDeleteConfirmDialog.module.css';
 import {DialogContextType} from "./DialogProvider";
 import {useForm} from "react-hook-form";
 import {useUserAction} from "../../../hooks/useUser";
@@ -50,11 +50,11 @@ const AccountDeleteConfirmDialog = ({ context, username }: AccountDeleteConfirmD
     }
 
     return (
-        <div className={'AccountDeleteConfirmDialog'} role='dialog' aria-modal='true'>
-            <span>! 정말로 계정을 삭제하시겠습니까?</span>
-            <span>{'계정 삭제 시 모든 사용자 데이터가 사라지며, 영원이 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}</span>
-            <form onSubmit={handleSubmit(onSubmit)} noValidate={true}>
-                <span>{`삭제를 원하신다면 '${username}'을(를) 입력해 주세요`}</span>
+        <div className={style.accountDeleteConfirmDialog} role='dialog' aria-modal='true'>
+            <span className={style.title}>! 정말로 계정을 삭제하시겠습니까?</span>
+            <span className={style.content}>{'계정 삭제 시 모든 사용자 데이터가 사라지며, 영원이 복구할 수 없습니다. \n그래도 삭제하시겠습니까?'}</span>
+            <form className={style.form} onSubmit={handleSubmit(onSubmit)} noValidate={true} >
+                <span className={style.notify}>{`삭제를 원하신다면 '${username}'을(를) 입력해 주세요`}</span>
                 <StandardInput
                     placeHolder={'username'}
                     registration={register(
@@ -64,8 +64,8 @@ const AccountDeleteConfirmDialog = ({ context, username }: AccountDeleteConfirmD
                     )}
                     errorMessage={errors.username?.message}
                 />
-                <div className='btn-area'>
-                    <StandardButton label={'취소'} loading={false} type={'button'} onClick={close}/>
+                <div className={style.btnArea}>
+                    <StandardButton className={style.cancelButton} label={'취소'} loading={false} type={'button'} onClick={close}/>
                     <StandardButton label={'삭제'} loading={false} type={'submit'}/>
                 </div>
             </form>

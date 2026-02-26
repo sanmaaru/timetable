@@ -8,29 +8,29 @@ const useThemeActions= (theme_id: string) => {
     const toast = useToast();
 
     const handleDeleteTheme = useCallback(async (onSuccess?: () => void) => {
-        const errorCode = await deleteTheme(theme_id);
+        const response = await deleteTheme(theme_id);
 
-        if (!errorCode) {
+        if (!response.error) {
             toast.addToast('테마가 삭제되었습니다', 'success')
             onSuccess?.()
             return true;
         }
 
-        const message = getThemeErrorMessage(errorCode);
+        const message = getThemeErrorMessage(response.error);
         toast.addToast(message, 'error')
         return false;
     }, [theme_id, toast]);
 
     const handlePutSelectedTheme = useCallback(async (onSuccess?: () => void) => {
-        const errorCode = await putSelectedTheme(theme_id);
+        const response = await putSelectedTheme(theme_id);
 
-        if (!errorCode) {
+        if (!response.error) {
             toast.addToast('사용 중인 테마가 변경되었습니다', 'success')
             onSuccess?.()
             return true;
         }
 
-        const message = getThemeErrorMessage(errorCode);
+        const message = getThemeErrorMessage(response.error);
         toast.addToast(message, 'error')
         return false;
     }, [theme_id, toast])

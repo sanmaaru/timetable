@@ -1,5 +1,5 @@
 import React from "react";
-import './ColorSchemeElement.css';
+import style from './ColorSchemeElement.module.css';
 import {ColorScheme} from "../../types/theme";
 
 interface ColorSchemeElementProps {
@@ -20,7 +20,7 @@ const ColorSchemeElement = ({colorScheme, onClick, focus}: ColorSchemeElementPro
 
     return (
         <div
-            className={`ColorSchemeElement ${focus === subject ? 'focus' : ''}`}
+            className={`${style.colorSchemeElement} ${focus === subject ? style.focus : ''}`}
             onClick={() => {handleClick()}}
         >
             <span>{subject}</span>

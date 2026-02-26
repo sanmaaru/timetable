@@ -3,7 +3,7 @@ import {createContext, ReactNode, useCallback, useContext, useState} from "react
 import {Toast, ToastContextType, ToastType} from "./types";
 import {FloatingPortal} from "@floating-ui/react";
 import ToastItem from "./ToastItem";
-import './ToastContainer.css'
+import style from './ToastContainer.module.css'
 
 
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -37,7 +37,7 @@ const ToastProvider = ({ children }: ToastProviderProps) => {
             {children}
 
             <FloatingPortal>
-                <div className='toast-container'>
+                <div className={style.toastContainer}>
                     {toasts.map((toast) => (
                         <ToastItem key={toast.id.toString()} toast={toast} onRemove={removeToast}/>
                     ))}

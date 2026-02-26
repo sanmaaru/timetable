@@ -1,8 +1,14 @@
 import {privateAxiosClient} from "./axiosClient";
 import {Class, Student} from "../types/class";
 import {Day, Period, Schedule} from "../types/schedule";
+import {BaseResponseDto} from "./dto/response.dto";
+import {ClassDto, TimetableDto} from "./dto/timetable.dto";
+import {UserInfoDto} from "./dto/user.dto";
+import {withApi} from "./api";
 
-const parseStudents = (students: any): Student[] => {
+
+
+const parseStudents = (students: UserInfoDto[]): Student[] => {
     return students.map((entry: any): Student => {
         return {
             studentId: entry.user_info_id,
@@ -14,7 +20,7 @@ const parseStudents = (students: any): Student[] => {
     })
 }
 
-const parseClass = (clazz: any): Class => {
+const parseClass = (clazz: ClassDto): Class => {
     return {
         classId: clazz.class_id,
         subject: clazz.subject,
@@ -25,10 +31,10 @@ const parseClass = (clazz: any): Class => {
     }
 }
 
-const parseTimetableData = (timetable: any) => {
+const parseTimetableData = (timetable: TimetableDto) => {
     const classes: Class[] = [];
     const schedules: Schedule[] = [];
-    timetable.forEach((entry: any) => {
+    timetable.timetable.forEach((entry: any) => {
         const newClass = parseClass(entry);
         classes.push(newClass);
 
@@ -74,21 +80,16 @@ const parseTimetableData = (timetable: any) => {
         })
     })
 
-    return {classes, schedules};
+    const name = timetable.name;
+    return { name, classes, schedules};
 }
 
-export const fetchTimetable = async () => {
-    const response = await privateAxiosClient.get('/timetable', {});
+export const fetchTimetable = () => {
+    return withApi(async () => {
+        const response = await privateAxiosClient.get<BaseResponseDto<TimetableDto>>('/timetable', {});
 
-    const {name, timetable} = response.data.data
-    const {classes, schedules} = parseTimetableData(timetable);
-
-    return { name, classes, schedules }
-}
-
-export const fetchClass = async (classId: string) => {
-    const response = await privateAxiosClient.get(`/class/${classId}`, {});
-
-    const classInfo = response.data.data
+        const { name, classes, schedules} = parseTimetableData(response.data.data);
+        return { name, classes, schedules }
+    })
 
 }

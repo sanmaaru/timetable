@@ -1,6 +1,7 @@
 import React from 'react';
 import StandardInput from "../../components/Input/StandardInput";
-import './Signup.css'
+import style from './Signup.module.css'
+import loginStyle from './Login.module.css'
 import StandardButton from "../../components/button/StandardButton";
 import TitleLogo from "../../components/TitleLogo";
 import PasswordInput from "../../components/Input/PasswordInput";
@@ -18,16 +19,16 @@ function SignUp() {
     }
 
     return (
-        <div id="signup">
-            <TitleLogo/>
-            <div className='panel'>
-                <div className="container">
-                    <div className='title'>
-                        <span className='welcome'>환영합니다</span>
-                        <span className='alert'>더 이상 시간표를 만드는데 시간을 허비하지 마세요</span>
+        <div className={loginStyle.loginPage}>
+            <TitleLogo className={loginStyle.titleLogo}/>
+            <div className={loginStyle.panel}>
+                <div className={loginStyle.container}>
+                    <div className={loginStyle.title}>
+                        <span>환영합니다</span>
+                        <span>더 이상 시간표를 만드는데 시간을 허비하지 마세요</span>
                     </div>
-                    <form className='input-area' onSubmit={onSubmit} noValidate={true}>
-                        <div className='subarea'>
+                    <form className={`${loginStyle.inputArea} ${style.inputArea}`} onSubmit={onSubmit} noValidate={true}>
+                        <div className={style.subarea}>
                             <StandardInput
                                 placeHolder={'username'}
                                 registration={register('username', {
@@ -49,7 +50,7 @@ function SignUp() {
                                 errorMessage={errors.email?.message}
                             />
                         </div>
-                        <div className='subarea'>
+                        <div className={style.subarea}>
                             <PasswordInput
                                 placeHolder={'password'}
                                 registration={register('password', {
@@ -82,14 +83,14 @@ function SignUp() {
                         />
                     </form>
                     {createGlobalErrorMessage()}
-                    <div className='divider'/>
-                    <div className='additional'>
+                    <div className={loginStyle.divider}/>
+                    <div className={`${loginStyle.footer} ${style.footer}`}>
                         <span>계정이 이미 존재하나요?</span>
-                        <Link to='/login' className='text-link'>로그인</Link>
+                        <Link to='/login' className={loginStyle.textLink}>로그인</Link>
                     </div>
                 </div>
             </div>
-            <img className='background' src={'/assets/image/background_signup.png'} alt=''/>
+            <img src={'/assets/image/background_signup.png'} alt=''/>
         </div>
     );
 }

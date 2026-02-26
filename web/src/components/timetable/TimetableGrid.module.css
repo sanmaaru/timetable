@@ -1,0 +1,102 @@
+.timetableGridColumn {
+    display: grid;
+    grid-template-columns: 0.34fr repeat(5, minmax(0, 1fr));
+
+    background-color: #eeeeee;
+    column-gap: 1px;
+    overflow: hidden;
+
+    border-radius: 12px;
+}
+
+.timetableGridRow {
+    display: grid;
+    grid-template-rows: repeat(9, minmax(0, 1fr));
+    background-color: #eeeeee;
+    row-gap: 1px;
+    overflow: hidden;
+    border-radius: 12px;
+}
+
+.timetableGrid {
+    border: 1px solid #fafafa;
+    margin-top: 12px;
+    box-shadow: 3px 3px 4px #ededed;
+    flex: 1;
+}
+
+.cell {
+    background-color: #ffffff;
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 600;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cell > span {
+    font-family: "Pretendard", serif;
+    font-weight: 500;
+    font-size: 14px;
+}
+
+.wrapper {
+    z-index: 10;
+    margin: 4px ;
+    border-radius: 6px;
+    display: grid;
+    grid-template-rows: subgrid;
+    grid-gap: 10%;
+    animation: fadeInUp 0.5s ease-out forwards;
+    opacity: 1 !important;
+}
+
+.wrapper:hover {
+    transform: translateY(-3px);
+}
+
+.content {
+    grid-column: 1;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
+    padding: 10px 12px 12px;
+}
+
+.subject {
+    font-size: 14px;
+    font-family: "Pretendard", serif;
+    font-weight: 900;
+    grid-row: 1;
+    grid-column: 1 / span 2;
+}
+
+.teacher {
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 1;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
+}
+
+.division {
+    font-size: 12px;
+    grid-row: 2;
+    grid-column: 2;
+    justify-self: end;
+    align-self: end;
+    font-family: "NixgonFont", serif;
+    font-weight: 500;
+}
+
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

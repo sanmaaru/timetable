@@ -1,6 +1,6 @@
 import {DialogContextType} from "./DialogProvider";
 import React from "react";
-import './DefaultDialog.css'
+import style from './DefaultDialog.module.css'
 
 interface DefaultDialogProps {
     context: DialogContextType
@@ -28,15 +28,15 @@ const SaveDialog = ({context, color, children, onSuccess, onConfirm}: DefaultDia
 
     return (
         <div
-            className="DefaultDialog SaveDialog"
+            className={style.defaultDialog}
             role="dialog"
             aria-modal='true'
         >
-            <span style={{ color: color }}>! 저장하시겠습니까?</span>
-            <span>{formattedChildren}</span>
-            <div>
-                <button onClick={handleQuit}>저장하지 않기</button>
-                <button onClick={handleConfirm}>저장하기</button>
+            <span className={`${style.span} ${style.title}`} style={{ color: color }}>! 저장하시겠습니까?</span>
+            <span className={`${style.span} ${style.title}`}> {formattedChildren}</span>
+            <div className={`${style.btnArea}`}>
+                <button className={`${style.button}`} onClick={handleQuit}>저장하지 않기</button>
+                <button className={`${style.button}`} onClick={handleConfirm}>저장하기</button>
             </div>
         </div>
     )

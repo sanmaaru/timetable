@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {UserInfo} from "../types/account";
 import {deleteUser, fetchCurrentUser, fetchUser} from "../api/fetchUser";
 import {useToast} from "../components/alert/toast/ToastContext";
@@ -7,8 +7,9 @@ import {useNavigate} from "react-router-dom";
 
 const useUser = (userId?: string | null) => {
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+    const [error, setError] = useState<string | null>(null);
     const [userData, setUserData] = useState<UserInfo | null>(null);
+    const isMounted = useRef<boolean>(true);
 
     const loadData = useCallback(async () => {
         let data, err
@@ -23,13 +24,20 @@ const useUser = (userId?: string | null) => {
             err = response.error
         }
 
-        setUserData(data);
-        setError(err)
-        setLoading(false);
+        if (isMounted.current) {
+            setUserData(data);
+            setError(err)
+            setLoading(false);
+        }
     }, [userId, setLoading, setError]);
 
     useEffect(() => {
+        isMounted.current = true;
         loadData()
+
+        return () => {
+            isMounted.current = false;
+        }
     }, [])
 
     return { loadData, loading, error, userData };
@@ -40,8 +48,8 @@ export const useUserAction = () => {
     const navigate = useNavigate();
 
     const handleDeleteUser = useCallback(async (onSuccess?: () => void) => {
-        const error = await deleteUser();
-        if (error) {
+        const data = await deleteUser();
+        if (data.error) {
             addToast('계정을 삭제하는 도중 에러가 발생하였습니다. 관리자에게 문의해주세요', 'error')
             return
         }

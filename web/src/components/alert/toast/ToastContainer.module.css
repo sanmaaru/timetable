@@ -1,0 +1,13 @@
+.toastContainer {
+    width: max-content;
+    height: max-content;
+
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    inset: 0;
+    margin: auto auto 72px;
+    z-index: 2048;
+}

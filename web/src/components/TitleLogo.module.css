@@ -1,0 +1,32 @@
+.logo {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    grid-template-rows: max-content 1fr;
+    container-type: inline-size;
+}
+
+.logo > span:first-child {
+    font-family: "Pretendard", serif;
+    font-size: 21px;
+    font-weight: 900;
+    color: #000000;
+    grid-row: 1;
+    grid-column: 1;
+}
+
+.logo > svg {
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    grid-row: 1;
+    grid-column: 2;
+    align-self: center;
+}
+
+.logo > span:last-child {
+    font-family: "NixgonFont", serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: #000000;
+    grid-area: 2 / 1 / 2 / 3;
+}

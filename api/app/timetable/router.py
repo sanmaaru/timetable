@@ -14,11 +14,12 @@ from app.timetable.schemas import TimetableSchema, ClassSchema
 router = APIRouter()
 theme_status_dep = get_status_dependency('timetable')
 
-@router.get('/timetable/status', response_model=VersionResponse)
+@router.get('/timetable/status', response_model=BaseResponse[VersionResponse])
 async def get_theme_status(
+        user: User = Depends(get_current_user),
         timetable_status: VersionResponse = Depends(theme_status_dep),
 ):
-    return timetable_status
+    return create_response(timetable_status, user.user_id)
 
 @router.get('/timetable', response_model=BaseResponse[TimetableSchema])
 async def get_timetable(

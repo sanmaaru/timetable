@@ -1,16 +1,17 @@
 import React from "react";
-import './StandardButton.css'
+import style from './StandardButton.module.css'
 
 interface StandardButtonProps {
     label: string;
     loading: boolean;
     type: 'submit' | 'reset' | 'button' | undefined;
     onClick?: () => void;
+    className?: string;
 }
 
-const StandardButton = ({label, type, loading, onClick}: StandardButtonProps) => (
+const StandardButton = ({label, type, loading, onClick, className}: StandardButtonProps) => (
     <button
-        className={`standard-button ${loading? 'loading' : ''}`}
+        className={`${style.standardButton} ${loading? style.loading : ''} ${className}`}
         type={type}
         onClick={onClick}
     >

@@ -1,6 +1,6 @@
 import {DialogContextType} from "./DialogProvider";
 import React from "react";
-import './DefaultDialog.css'
+import style from './DefaultDialog.module.css'
 
 interface DefaultDialogProps {
     context: DialogContextType
@@ -22,15 +22,15 @@ const DefaultDialog = ({context, title, color, children, onConfirm, confirm}: De
 
     return (
         <div
-            className="DefaultDialog"
+            className={style.defaultDialog}
             role="dialog"
             aria-modal='true'
         >
-            <span style={{ color: color }}>{title}</span>
-            <span>{formattedChildren}</span>
-            <div>
-                <button onClick={close}>취소</button>
-                <button style={{color: color}} onClick={handleConfirm}>{confirm}</button>
+            <span className={`${style.span} ${style.title}`} style={{ color: color }}>{title}</span>
+            <span className={`${style.span} ${style.content}`}>{formattedChildren}</span>
+            <div className={style.btnArea}>
+                <button className={`${style.button}`} onClick={close}>취소</button>
+                <button className={`${style.button}`} style={{color: color}} onClick={handleConfirm}>{confirm}</button>
             </div>
         </div>
     )

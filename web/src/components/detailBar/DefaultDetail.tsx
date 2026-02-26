@@ -1,5 +1,5 @@
 import React from "react";
-import './DefaultDetail.css'
+import style from './DefaultDetail.module.css'
 
 interface DefaultDetailContentProps {
     quote: string;
@@ -7,17 +7,17 @@ interface DefaultDetailContentProps {
     // image: string;
 }
 
-const DefaultDetailContent= ({quote, source}: DefaultDetailContentProps) => {
+const DefaultDetail= ({quote, source}: DefaultDetailContentProps) => {
     return (
-        <div className='detail-wrapper'>
-            <span className='detail-alert'>세부 내용을 볼 과목을 <br/> 선택해 주세요</span>
+        <div className={style.defaultDetail}>
+            <span className={style.alert}>세부 내용을 볼 과목을 <br/> 선택해 주세요</span>
             {/*<img className='detail-image' src={image} alt=''/>*/}
-            <div className='quote-container'>
-                <span className='detail-quote'>{quote}</span>
-                <span className='detail-source'>- {source}</span>
+            <div className={style.quoteContainer}>
+                <span>{quote}</span>
+                <span>- {source}</span>
             </div>
         </div>
     );
 }
 
-export default DefaultDetailContent;
+export default DefaultDetail;

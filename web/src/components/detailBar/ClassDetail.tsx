@@ -1,6 +1,6 @@
-import {Period, Schedule} from "../../types/schedule";
-import './ClassDetail.css';
-import {getGrade, scheduleToString} from "../../util/common";
+import {Schedule} from "../../types/schedule";
+import style from './ClassDetail.module.css';
+import {getGrade} from "../../util/common";
 import {Student} from "../../types/class";
 
 interface ClassDetailProps {
@@ -16,7 +16,7 @@ const ClassDetail = ({schedule}: ClassDetailProps) => {
             else
                 info += `${classmate.number}`;
 
-            return (<div>
+            return (<div className={style.classmateElement}>
                 <span>{classmate.name}</span>
                 <span>{info}</span>
             </div>)
@@ -24,26 +24,26 @@ const ClassDetail = ({schedule}: ClassDetailProps) => {
     }
 
     return (
-        <div className='ClassDetail'>
-            <header>
+        <div className={style.classDetail}>
+            <header className={style.header}>
                 <span>{schedule.clazz.subject}</span>
             </header>
-            <div className='detail'>
-                <div>
+            <div className={style.detail}>
+                <div className={style.content}>
                     <span>분반</span>
                     <span>{schedule.clazz.division}반</span>
                 </div>
-                <div>
+                <div className={style.content}>
                     <span>선생님</span>
                     <span>{schedule.clazz.teacher}Tr</span>
                 </div>
-                <div>
+                <div className={style.content}>
                     <span>강의실</span>
                     <span>{schedule.clazz.room}</span>
                 </div>
             </div>
-            <div className='divider'/>
-            <div className='classmates'>
+            <div className={style.divider}/>
+            <div className={style.classmates}>
                 <span>같이 듣는 학생</span>
                 {drawClassmates(schedule.clazz.classmates)}
             </div>

@@ -3,34 +3,53 @@ import {TimetableData} from "../types/timetable";
 import {fetchTimetable} from "../api/fetchTimetable";
 import {fetchTimetableStatus} from "../api/fetchStatus";
 import {getJsonCookie, setJsonCookie, timetable} from "../util/storage";
+import {storageKeys} from "../constants/storageKeys";
 
 const useTimetable = () => {
     const [timetableData, setTimetableData] = useState<TimetableData | null>();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        let isMounted = true;
+
         const loadData = async () => {
-            try {
-                const version = await fetchTimetableStatus();
-                const cookie = getJsonCookie<string>(`timetable-version`)
-                if (cookie && cookie == version) {
-                    console.log(cookie);
-                    setTimetableData(timetable.get())
+            let response= await fetchTimetableStatus()
+            const cookie = getJsonCookie<string>(storageKeys.TIMETABLE_VERSION)
+
+            if(response.error) {
+                if (isMounted)
+                    setIsLoading(false);
+                return
+            }
+
+            const version = response.data
+            let data = null
+            if (cookie && cookie === version)
+                data = timetable.get()
+
+            if(!data) {
+                const response = await fetchTimetable();
+                if (response.error) {
+                    if(isMounted)
+                        setIsLoading(false);
                     return
                 }
 
-                const data = await fetchTimetable();
                 timetable.set(data)
-                setJsonCookie('timetable-version', version);
-                setTimetableData(data)
-            } catch (error: any) {
-                setTimetableData(null)
-            } finally {
+                setJsonCookie(storageKeys.TIMETABLE_VERSION, version);
+            }
+
+            if(isMounted) {
+                setTimetableData(data || null)
                 setIsLoading(false);
             }
         };
 
         loadData();
+
+        return () => {
+            isMounted = false
+        }
     }, []);
 
     const getSchedule = useCallback((classId: string) => {

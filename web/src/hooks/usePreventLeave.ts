@@ -24,16 +24,19 @@ export const usePreventLeave = (isDirty: boolean, message: string) => {
     const shouldBlock = useCallback(({ currentLocation, nextLocation }: any) => {
         if (bypassRef.current) return false
 
-        if (isDirty && currentLocation.pathname !== nextLocation.pathname) {
-            const confirmLeave = window.confirm(message)
+        return (isDirty && currentLocation.pathname !== nextLocation.pathname)
+    }, [isDirty]);
 
-            return !confirmLeave
+    const blocker = useBlocker(shouldBlock);
+    useEffect(() => {
+        if (blocker.state == "blocked") {
+            const confirmLeave = window.confirm(message);
+            if(confirmLeave)
+                blocker.proceed()
+            else
+                blocker.reset()
         }
-
-        return false
-    }, [isDirty, message]);
-
-    useBlocker(shouldBlock);
+    }, [blocker, message]);
 
     const bypass = useCallback(() => {
         bypassRef.current = true

@@ -1,5 +1,5 @@
 import React from "react";
-import './SideBarButton.css';
+import style from './SideBarButton.module.css';
 
 interface SideBarButtonProps {
     id: string;
@@ -11,16 +11,16 @@ interface SideBarButtonProps {
 }
 
 const SideBarButton = ({id, icon, label, isActive, onClick}: SideBarButtonProps) => {
-    const active = isActive ? 'active' : ''
+    const active = isActive ? style.active : ''
 
     return (
         <button
             key={`sidebar-button-${id}`}
             type="button"
-            className={`sidebar-button ${id} ${active}`}
-            onClick={onClick} // TODO: we need to add common action on the button
+            className={`${style.sidebarButton} ${id} ${active}`}
+            onClick={onClick}
         >
-            <img className={`sidebar-button-icon ${id} ${active}`} alt={label} src={icon} />
+            <img className={`${style.sidebarButtonIcon} ${id}`} alt={label} src={icon} />
             {label}
         </button>
     );

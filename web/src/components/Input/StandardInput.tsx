@@ -1,5 +1,5 @@
 import React from 'react';
-import './StandardInput.css';
+import style from './StandardInput.module.css';
 import {UseFormRegisterReturn} from "react-hook-form";
 
 interface StandardInputProps {
@@ -11,18 +11,19 @@ interface StandardInputProps {
 const StandardInput = ({placeHolder, errorMessage, registration}: StandardInputProps) => {
     const errorMessageBox = () => {
         if (errorMessage)
-            return <span className='error-message'>{errorMessage}</span>
+            return <span className={style.errorMessage}>{errorMessage}</span>
     }
 
     return (
-        <div className={`standard-input ${errorMessage? 'invalid' : ''}`}>
+        <div className={`${style.standardInput} ${errorMessage? style.invalid : ''}`}>
             <input
                 type='text'
                 autoComplete='off'
                 {...registration}
                 required
+                className={style.input}
             />
-            <span className='placeholder'>{placeHolder}</span>
+            <span className={style.placeholder}>{placeHolder}</span>
             {errorMessageBox()}
         </div>
     )

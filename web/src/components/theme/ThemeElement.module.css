@@ -1,0 +1,105 @@
+.themeElement {
+    height: auto;
+    width: 320px;
+    display: flex;
+    flex-direction: column;
+    margin-top: 40px;
+}
+
+.descriptions {
+    height: 28px;
+    margin-top: 12px;
+    margin-left: 8px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 4px;
+}
+
+.descriptions > span:first-child {
+    margin-top: 2px;
+    font-family: NixgonFont, serif;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.descriptions > *:nth-child(2) {
+    margin-left: auto;
+}
+
+.menu > svg {
+    rotate: 90deg;
+}
+
+
+.button {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+}
+
+.button:hover::after {
+    background-color: transparent;
+}
+
+.clicked {
+    background-color: #caf0f8;
+}
+
+.clicked > svg{
+    fill: #0077b6;
+}
+
+
+.button:not(.clicked):hover {
+    background-color: #ededed;
+}
+
+.button:not(.clicked):hover > svg {
+    fill: #121212;
+}
+.selected:hover {
+    background-color: #fffaf2 !important;
+}
+
+.selected > svg {
+    fill: #ed9200;
+}
+
+.selected:hover > svg {
+    fill: #ffbc42 !important;
+}
+
+.cards {
+    width: 100%;
+    height: 200px;
+    position: relative;
+}
+
+.card {
+    position: absolute;
+    height: 100%;
+    box-shadow: 2px 0 4px #858585;
+    display: flex;
+    flex-direction: column;
+    padding-top: 8px;
+    padding-left: 8px;
+    gap: 3px;
+    transition: transform .15s ease-out;
+    border-radius: 8px
+}
+
+.card > span {
+    font-size: 12px;
+    margin-left: 3px;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-44px);
+}
+
+.card:hover > span {
+    opacity: 1;
+}

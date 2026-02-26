@@ -1,6 +1,6 @@
 import React from 'react';
-import './StandardInput.css';
-import './PasswordInput.css';
+import style from './StandardInput.module.css';
+import passwordStyle from './PasswordInput.module.css';
 import {UseFormRegisterReturn} from "react-hook-form";
 
 interface PasswordInputProps {
@@ -17,18 +17,19 @@ const PasswordInput = ({placeHolder, registration, errorMessage}: PasswordInputP
     const visibleTag = visible ? 'text' : 'password';
     const errorMessageBox = () => {
         if (errorMessage)
-            return <span className='error-message'>{errorMessage}</span>
+            return <span className={style.errorMessage}>{errorMessage}</span>
     }
 
     return (
-        <div className={`password-input standard-input ${errorMessage? 'invalid' : ''}`}>
+        <div className={`${passwordStyle.passwordInput} ${style.standardInput} ${errorMessage? style.invalid : ''}`}>
             <input
                 type={visibleTag}
                 autoComplete='off'
                 {...registration}
                 required
+                className={style.input}
             />
-            <span className='placeholder'>{placeHolder}</span>
+            <span className={style.placeholder}>{placeHolder}</span>
             <img src={
                 visible ? 'assets/icon/icn_invisible.png' : '/assets/icon/icn_visible.png'
             } alt='' onClick={toggleVisible}/>

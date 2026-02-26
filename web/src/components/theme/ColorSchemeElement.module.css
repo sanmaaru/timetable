@@ -1,0 +1,49 @@
+.colorSchemeElement {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+    row-gap: 12px;
+    cursor: pointer;
+}
+
+.colorSchemeElement:hover {
+    row-gap: 16px;
+}
+
+.colorSchemeElement:hover > span {
+    color: #000000;
+    font-size: 15px;
+}
+
+.colorSchemeElement > span {
+    font-family: 'NixgonFont', serif;
+    font-size: 14px;
+    color: #6d6d6d;
+    grid-row: 1;
+    font-weight: bold;
+}
+
+.colorSchemeElement.focus > span {
+    color: #000000;
+    font-size: 16px;
+}
+
+.colorSchemeElement.focus {
+    row-gap: 16px;
+}
+
+.colorSchemeElement.focus > div {
+    height: 3px;
+}
+
+
+.colorSchemeElement > span:nth-child(2) {
+    margin-left: auto;
+}
+
+.colorSchemeElement > div {
+    width: 100%;
+    height: 2px;
+    grid-column: 1/-1;
+}

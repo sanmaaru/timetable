@@ -1,0 +1,26 @@
+.themeEdit {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+
+.footer {
+    margin-top: auto;
+    margin-bottom: calc(24px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+}
+
+.footer > button {
+    width: min(180px, 40%);
+}
+
+.footer > button:first-child {
+    margin-left: auto;
+    background-color: #e0e0e0;
+    color: #000000;
+}

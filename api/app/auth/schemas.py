@@ -49,21 +49,12 @@ class TokenPair(BaseModel):
 
 # === schemas ===
 class UserInfoSchema(BaseModel):
-    user_info_id: str
     name: str
     generation: int | None
     clazz: int | None
     number: int | None
     credit: int | None
     role: int
-
-    @field_validator('user_info_id', mode='before')
-    @classmethod
-    def serialize_ulid(cls, v: Any):
-        if isinstance(v, ULID):
-            return str(v)
-
-        return v
 
     model_config = ConfigDict(from_attributes=True)
 
