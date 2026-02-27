@@ -1,27 +1,39 @@
 .sidebarButton {
     width: 44px;
-    height: 60px;
+    height: auto;
     border: none;
     background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-bottom: 24px;
     font-size: 12px;
     border-radius: 8px;
     padding-top: 6px;
 }
 
 .sidebarButtonIcon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     margin-bottom: 6px;
     display: inline-block;
     transition: transform 0.08s ease-in-out;
+    background: #ffffff;
 }
 
 .active {
     opacity: 1;
     box-shadow: inset 1px 1px 5px 2px #e6e6e6;
     transition: box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+@media(max-width: 768px) {
+    .sidebarButton {
+        width: 32px;
+        height: 32px;
+    }
+
+    .sidebarButtonIcon {
+        width: 20px;
+        height: 20px;
+    }
 }

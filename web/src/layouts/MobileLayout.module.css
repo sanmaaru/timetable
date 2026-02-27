@@ -1,0 +1,10 @@
+.mobileLayout {
+    position: relative;
+    padding: 2% 3%;
+    width: 100dvw;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}

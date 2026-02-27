@@ -9,10 +9,6 @@
 }
 
 .loginPage > img {
-    display: flex;
-    height: 100%;
-    width: 40%;
-    flex: 1;
 }
 
 .panel {
@@ -49,8 +45,8 @@
 
 .titleLogo {
     position: absolute;
-    top: 50px;
-    left: 50px;
+    top: 24px;
+    left: 24px;
     width: 300px;
 }
 
@@ -115,3 +111,29 @@
     margin-bottom: -8px;
     color: #ff6969;
 }
+
+.backgroundBox {
+    height: 100%;
+    width: 60%;
+    position: relative;
+    margin-bottom: 20px;
+    overflow: hidden; /* 노이즈가 박스를 벗어나지 않도록 */
+}
+
+.backgroundBox::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    opacity: 0.15; /* 노이즈 강도 조절 (0.1 ~ 0.3 추천) */
+    mix-blend-mode: overlay; /* 그라데이션과 자연스럽게 섞이게 함 */
+    pointer-events: none; /* 클릭 등 마우스 이벤트를 방해하지 않음 */
+    z-index: 1;
+}
+
+.loginBg {
+    background: linear-gradient(135deg, #1742b6 0%, #aa5db2 100%);
+}
+
+
+

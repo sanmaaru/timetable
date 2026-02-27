@@ -1,5 +1,5 @@
 .toastItem {
-    width: 480px;
+    width: min(480px, 60dvw);
     height: 36px;
     display: flex;
     align-items: center;

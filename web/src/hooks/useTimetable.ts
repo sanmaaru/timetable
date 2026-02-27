@@ -35,6 +35,7 @@ const useTimetable = () => {
                     return
                 }
 
+                data = response.data
                 timetable.set(data)
                 setJsonCookie(storageKeys.TIMETABLE_VERSION, version);
             }

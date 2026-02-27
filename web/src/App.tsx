@@ -1,5 +1,5 @@
 import React from 'react';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 
 import Login from './pages/auth/Login';
 import SignUp from './pages/auth/SignUp';
@@ -11,8 +11,7 @@ import Account from './pages/Account';
 import ProtectedRoute from './auth/ProtectedRoute';
 import Layout from './layouts/Layout';
 import {recentUsedColor} from "./util/storage";
-import {ToastProvider} from "./components/alert/toast/ToastContext";
-import ContextProvidingLayout from "./layouts/ContextProvidingLayout"; // Layout 컴포넌트
+import ContextProvidingLayout from "./layouts/ContextProvidingLayout";
 
 const router = createBrowserRouter([
     {

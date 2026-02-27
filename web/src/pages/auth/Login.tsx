@@ -7,9 +7,11 @@ import PasswordInput from "../../components/Input/PasswordInput";
 import {Link, useNavigate} from "react-router-dom";
 import {useLogin} from "../../hooks/useLogin";
 import {isAuthenticated} from "../../auth/auth";
+import {useIsMobile} from "../../hooks/useMediaQuery";
 
 function Login() {
     const navigate= useNavigate();
+    const isMobile = useIsMobile();
     if (isAuthenticated())
         navigate("/", { replace: true });
 
@@ -67,7 +69,7 @@ function Login() {
                     </div>
                 </div>
             </div>
-            <img src={'/assets/image/background_login.png'} alt=''/>
+            {!isMobile && <div className={`${style.backgroundBox} ${style.loginBg}`}/>}
         </div>
     );
 }

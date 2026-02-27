@@ -9,21 +9,22 @@
 .title {
     margin-top: 8px;
     display: flex;
-    height: 32px;
+    height: clamp(20px, 3.2%, 32px);
+    align-items: center;
 }
 
 .title > span:first-child {
-    font-size: 28px;
+    font-size: clamp(18px, 3.64vw, 28px);
     font-family: "Pretendard", serif;
     font-weight: 900;
     color: #000000;
 }
 
 .title > span:last-child {
-    font-size: 20px;
+    font-size: clamp(12px, 2.6vw, 20px);
     font-family: "NixgonFont", serif;
     font-weight: 500;
     color: #595959;
-    margin-left: 20px;
-    margin-top: 7px;
+    margin-left: 16px;
+    margin-top: clamp(2px, 0.26vw, 1px);
 }

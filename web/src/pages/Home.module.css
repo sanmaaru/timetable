@@ -4,4 +4,5 @@
     display: flex;
     column-gap: 27px;
     flex-direction: row;
+    min-height: 0;
 }

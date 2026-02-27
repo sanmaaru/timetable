@@ -5,6 +5,7 @@ import useTimetable from "../hooks/useTimetable";
 import {useToast} from "../components/alert/toast/ToastContext";
 import {useCallback, useEffect, useState} from "react";
 import {useTheme} from "../hooks/theme/useThemes";
+import {useIsMobile} from "../hooks/useMediaQuery";
 
 
 function Home() {
@@ -12,6 +13,7 @@ function Home() {
     const { timetableData, isLoading: isTimetableLoading, getSchedule } = useTimetable();
     const { themeData, isLoading: isThemeLoading } = useTheme();
     const toast = useToast()
+    const isMobile = useIsMobile()
 
     useEffect(() => {
         if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
@@ -21,6 +23,8 @@ function Home() {
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast])
 
     const drawDetail = useCallback(() => {
+        if(isMobile) return;
+
         var schedule
         if (!focus) schedule = null
         else
@@ -32,13 +36,13 @@ function Home() {
             schedule={schedule}
         />
 
-    }, [focus])
+    }, [focus, isMobile])
 
     if (isThemeLoading || isTimetableLoading || (!timetableData || !themeData)) {
         return (
             <div className={style.home}>
                 <Timetable name={''} schedules={[]} theme={{ title: '', themeId: '', colorSchemes: [], selected: false }} focus={focus} setFocus={setFocus} />
-                <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운"/>
+                {!isMobile && <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운"/>}
             </div>)
     }
 

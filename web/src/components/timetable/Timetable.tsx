@@ -4,6 +4,7 @@ import {Schedule} from "../../types/schedule";
 import TimetableGrid from "./TimetableGrid";
 import {Theme} from "../../types/theme";
 import TimetableHeader from "./TimetableHeader";
+import {useIsMobile} from "../../hooks/useMediaQuery";
 
 interface TimetableProps {
     name: string
@@ -15,6 +16,7 @@ interface TimetableProps {
 
 const Timetable = ({name, schedules, theme, focus, setFocus}: TimetableProps) => {
     const itemsRef = useRef(new Map());
+    const isMobile = useIsMobile();
 
     const handleContainerClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
         const target = (e.target as HTMLElement).closest('[data-id]');
@@ -55,7 +57,7 @@ const Timetable = ({name, schedules, theme, focus, setFocus}: TimetableProps) =>
                 <span> - {name}</span>
             </div>
             <TimetableHeader/>
-            <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes} detail={true} scheduleRefMap={itemsRef}/>
+            <TimetableGrid schedules={schedules} colorSchemes={theme.colorSchemes} detail={!isMobile} scheduleRefMap={itemsRef}/>
         </div>
     );
 }

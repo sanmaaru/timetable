@@ -4,7 +4,7 @@ import style from './SideBarButton.module.css';
 interface SideBarButtonProps {
     id: string;
     icon: string;
-    label: string;
+    label?: string;
     isActive: boolean;
     onClick: () => void;
 

@@ -56,10 +56,8 @@ const drawSchedule = (
                 className={style.content}
             >
                 <span className={style.subject}>{schedule.clazz.subject}</span>
-                {detail && [
-                    <span className={style.division}>{schedule.clazz.division}반</span>,
-                    <span className={style.teacher}>{schedule.clazz.teacher}T</span>,
-                ]}
+                <span className={style.division}>{schedule.clazz.division}반</span>
+                {detail && <span className={style.teacher}>{schedule.clazz.teacher}T</span>}
             </div>
         </div>]
     });

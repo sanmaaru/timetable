@@ -16,3 +16,6 @@
     grid-column: 1;
 }
 
+.signupBg {
+    background: linear-gradient(135deg, #44637a 0%, #e1dfd4 100%);
+}

@@ -7,9 +7,11 @@ import TitleLogo from "../../components/TitleLogo";
 import PasswordInput from "../../components/Input/PasswordInput";
 import {Link} from "react-router-dom";
 import {useSignUp} from "../../hooks/useSignUp";
+import {useIsMobile} from "../../hooks/useMediaQuery";
 
 function SignUp() {
     const { register, errors, password, loading, globalErrorMessage, onSubmit } = useSignUp()
+    const isMobile = useIsMobile();
 
     const createGlobalErrorMessage = () => {
         if(!globalErrorMessage)
@@ -25,7 +27,7 @@ function SignUp() {
                 <div className={loginStyle.container}>
                     <div className={loginStyle.title}>
                         <span>환영합니다</span>
-                        <span>더 이상 시간표를 만드는데 시간을 허비하지 마세요</span>
+                        {!isMobile && <span>더 이상 시간표를 만드는데 시간을 허비하지 마세요</span>}
                     </div>
                     <form className={`${loginStyle.inputArea} ${style.inputArea}`} onSubmit={onSubmit} noValidate={true}>
                         <div className={style.subarea}>
@@ -90,7 +92,7 @@ function SignUp() {
                     </div>
                 </div>
             </div>
-            <img src={'/assets/image/background_signup.png'} alt=''/>
+            {!isMobile && <div className={`${loginStyle.backgroundBox} ${style.signupBg}`}/>}
         </div>
     );
 }

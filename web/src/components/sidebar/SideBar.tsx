@@ -3,12 +3,7 @@ import style from './SideBar.module.css';
 import SideBarButton from './SideBarButton';
 import {useLocation, useNavigate} from "react-router-dom";
 import Logo from '../../resources/logo.svg?react'
-
-const locations = {
-    account: '/account',
-    theme: '/theme',
-} as const;
-type LocationKey = keyof typeof locations;
+import {getActiveId, LocationKey, locations} from "../../constants/location";
 
 interface SideBarButton {
     id: LocationKey;
@@ -20,14 +15,6 @@ const SideBar = () => {
     // this state saves which button is clicked
     const location = useLocation();
     const navigate = useNavigate();
-
-    const getActiveId = () => {
-        for (const [key, path] of Object.entries(locations)) {
-            if (location.pathname.startsWith(path))
-                return key as LocationKey;
-        }
-        return 'null';
-    }
 
     const handleButtonClick = (id: LocationKey | null) => {
         if (id === null) {
@@ -48,13 +35,13 @@ const SideBar = () => {
             <div className={style.logo} onClick={() => handleButtonClick(null)} title={'시간표 홈'}>
                 <Logo/>
             </div>
-            <nav>
+            <nav className={style.btnArea}>
                 {buttonList.map((button) => (
                     <SideBarButton
                         id={button.id}
                         icon={'/assets/icon/' + button.icon}
                         label={button.label}
-                        isActive={getActiveId() === button.id}
+                        isActive={getActiveId(location.pathname) === button.id}
                         onClick={() => handleButtonClick(button.id)}
                     />
                 ))}
