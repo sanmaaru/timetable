@@ -4,7 +4,9 @@ interface ZoomOptions {
     scale?: number;
 }
 
-const useZoom = <T = string> (targetKey: T | null, {scale}?: ZoomOptions = {scale: 2}) => {
+const DEFAULT_SCALE = 2;
+
+const useZoom = <T = string> (targetKey: T | null, {scale}: ZoomOptions) => {
     const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 });
 
     const itemsRef = useRef<Map<T, HTMLElement>>(new Map());
@@ -35,10 +37,10 @@ const useZoom = <T = string> (targetKey: T | null, {scale}?: ZoomOptions = {scal
         const targetCenterX = targetLeft + targetW/2;
         const targetCenterY = targetTop + targetH/2;
 
-        const moveX = (wrapperW / 2) - (targetCenterX * scale);
-        const moveY = (wrapperH / 2) - (targetCenterY * scale);
+        const moveX = (wrapperW / 2) - (targetCenterX * (scale ?? DEFAULT_SCALE));
+        const moveY = (wrapperH / 2) - (targetCenterY * (scale ?? DEFAULT_SCALE));
 
-        setTransform({ x: moveX, y: moveY, scale: scale });
+        setTransform({ x: moveX, y: moveY, scale: scale ?? DEFAULT_SCALE });
     }, [targetKey, scale]);
 
     const transformStyle = useMemo(() => {

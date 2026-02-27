@@ -23,7 +23,7 @@ const ThemeView = () => {
         const targetSchedule = timetableData.schedules.find(s => s.clazz.subject == focus)
         return targetSchedule ? targetSchedule.clazz.classId : null;
     }, [focus, timetableData])
-    const { itemsRef, wrapperRef, transformStyle } = useZoom(targetClassId)
+    const { itemsRef, wrapperRef, transformStyle } = useZoom(targetClassId, {})
 
     const getScheduleClassName = useCallback((classId: string) => {
         if(targetClassId === null) return ''
