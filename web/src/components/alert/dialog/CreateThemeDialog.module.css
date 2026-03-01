@@ -1,6 +1,5 @@
 .createThemeDialog {
-    width: 450px;
-    height: 240px;
+    width: clamp(320px, 64.68vw, 420px);
     box-shadow: 0 0 4px #ededed;
     background-color: #ffffff;
     border-radius: 12px;
@@ -10,10 +9,10 @@
 }
 
 .title {
-    font-family: 'Pretendard', serif;
-    font-size: 18px;
+    font-family: 'NixgonFont', serif;
+    font-size: 16px;
     font-weight: bold;
-    margin-bottom: 40px;
+    margin-bottom: 32px;
     margin-left: 4px;
 }
 
@@ -28,7 +27,7 @@
     width: 100%;
     display: flex;
     gap: 12px;
-    margin-top: auto;
+    margin-top: 12px;
     margin-left: auto;
 }
 

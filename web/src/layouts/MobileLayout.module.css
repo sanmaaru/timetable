@@ -1,8 +1,8 @@
 .mobileLayout {
     position: relative;
-    padding: 2% 3%;
+    padding: 2% 3% calc(2% + 48px + env(safe-area-inset-bottom)) 3%;
     width: 100dvw;
-    height: 100vh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;

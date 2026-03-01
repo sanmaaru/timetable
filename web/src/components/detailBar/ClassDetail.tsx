@@ -5,9 +5,10 @@ import {Student} from "../../types/class";
 
 interface ClassDetailProps {
     schedule: Schedule
+    classname?: string
 }
 
-const ClassDetail = ({schedule}: ClassDetailProps) => {
+const ClassDetail = ({schedule, classname}: ClassDetailProps) => {
     const drawClassmates = (classmates: Student[]) => {
         return classmates.map((classmate) => {
             let info = `${getGrade(classmate.generation)}${classmate.clazz}`

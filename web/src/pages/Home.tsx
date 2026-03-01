@@ -6,6 +6,8 @@ import {useToast} from "../components/alert/toast/ToastContext";
 import {useCallback, useEffect, useState} from "react";
 import {useTheme} from "../hooks/theme/useThemes";
 import {useIsMobile} from "../hooks/useMediaQuery";
+import {useDialog} from "../components/alert/dialog/DialogProvider";
+import MobileDetailDialog from "../components/alert/dialog/MobileDetailDialog";
 
 
 function Home() {
@@ -14,6 +16,7 @@ function Home() {
     const { themeData, isLoading: isThemeLoading } = useTheme();
     const toast = useToast()
     const isMobile = useIsMobile()
+    const dialog = useDialog();
 
     useEffect(() => {
         if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
@@ -25,7 +28,7 @@ function Home() {
     const drawDetail = useCallback(() => {
         if(isMobile) return;
 
-        var schedule
+        let schedule
         if (!focus) schedule = null
         else
             schedule = getSchedule(focus)
@@ -37,6 +40,27 @@ function Home() {
         />
 
     }, [focus, isMobile])
+
+    useEffect(() => {
+        if (!isMobile) return
+
+        if(!focus) {
+            dialog.close();
+            return
+        }
+
+        const schedule = getSchedule(focus)
+        if (!schedule)
+            return
+
+        dialog.open(
+            <MobileDetailDialog
+                context={dialog}
+                schedule={schedule}
+                setFocus={setFocus}
+            />
+        )
+    }, [isMobile, focus]);
 
     if (isThemeLoading || isTimetableLoading || (!timetableData || !themeData)) {
         return (

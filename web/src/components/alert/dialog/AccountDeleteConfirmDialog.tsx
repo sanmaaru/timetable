@@ -7,6 +7,8 @@ import {useToast} from "../toast/ToastContext";
 import {useNavigate} from "react-router-dom";
 import StandardButton from "../../button/StandardButton";
 import StandardInput from "../../Input/StandardInput";
+import IconButton from "../../button/IconButton";
+import Close from '../../../resources/icon/icn_close.svg?react';
 
 interface AccountDeleteInput {
     username: string
@@ -68,6 +70,9 @@ const AccountDeleteConfirmDialog = ({ context, username }: AccountDeleteConfirmD
                     <StandardButton className={style.cancelButton} label={'취소'} loading={false} type={'button'} onClick={close}/>
                     <StandardButton label={'삭제'} loading={false} type={'submit'}/>
                 </div>
+                <IconButton className={style.button} onClick={() => close()}>
+                    <Close/>
+                </IconButton>
             </form>
         </div>
     )

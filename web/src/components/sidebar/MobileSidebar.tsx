@@ -35,7 +35,6 @@ const MobileSidebar = () => {
                 <SideBarButton
                     id={button.id}
                     icon={"/assets/icon/" + button.icon}
-                    label={'테스트'}
                     isActive={getActiveId(location.pathname) == button.id}
                     onClick={() => handleButtonClick(button.id)}
                 />

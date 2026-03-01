@@ -43,7 +43,7 @@
 
 .wrapper {
     z-index: 10;
-    margin: 4px ;
+    margin: clamp(2px, 0.52vw, 4px);
     border-radius: 6px;
     display: grid;
     grid-template-rows: subgrid;
@@ -61,7 +61,7 @@
     display: grid;
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
-    padding: clamp(6px, 1.04vw, 8px);
+    padding: 6px clamp(6px, 1.04vw, 8px) clamp(6px, 1.04vw, 8px);
 }
 
 .subject {

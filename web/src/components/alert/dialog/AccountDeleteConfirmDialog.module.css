@@ -1,6 +1,6 @@
 .accountDeleteConfirmDialog {
-    width: 480px;
-    height: 280px;
+    position: relative;
+    width: clamp(340px, 62.55vw, 480px);
     background-color: #fff;
     border: 1px solid #ededed;
     border-radius: 12px;
@@ -43,10 +43,19 @@
     display: flex;
     flex-direction: row;
     gap: 8px;
-    margin-top: auto;
+    margin-top: 32px;
 }
 
 .cancelButton {
     background-color: #dbdbdb;
     color: #000000;
+}
+
+.button{
+    position: absolute;
+    top: 20px;
+    right: 28px;
+    width: 24px;
+    height: 24px;
+    margin-left: auto;
 }

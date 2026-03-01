@@ -19,6 +19,7 @@ import Sparkle from '../../resources/icon/icn_sparkle.svg?react'
 import DefaultDialog from "../alert/dialog/DefaultDialog";
 import IconButton from "../button/IconButton";
 import useFloatingMenu from "../../hooks/useFloatingMenu";
+import {useIsMobile} from "../../hooks/useMediaQuery";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -31,12 +32,13 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
     const { open, close, isOpen }  = useDialog()
     const navigate = useNavigate();
     const { handleDeleteTheme, handlePutSelectedTheme } = useThemeActions(theme.themeId)
+    const isMobile = useIsMobile();
 
     const selected = theme.selected
 
     const cardNumbers = theme.colorSchemes.length
     const cards = theme.colorSchemes.map((colorSchema, index) => {
-        const cardWidth = 140
+        const cardWidth = 120;
         const gap = Math.min(width * 0.15, (width-cardWidth) / cardNumbers)
         const leftPos = gap * index
 
@@ -119,9 +121,9 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
                 >
                     <Sparkle/>
                 </IconButton>
-                <IconButton className={style.button} onClick={handleView} title={'테마 미리보기'}>
+                {!isMobile && <IconButton className={style.button} onClick={handleView} title={'테마 미리보기'}>
                     <View/>
-                </IconButton>
+                </IconButton>}
                 <IconButton
                     className={`${style.button} ${style.menu} ${isMenuOpen ? style.clicked : ''}`}
                     title={'옵션 더보기'}

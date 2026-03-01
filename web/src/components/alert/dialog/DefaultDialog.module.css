@@ -2,7 +2,7 @@
     border-radius: 12px;
     background-color: #ffffff;
     box-shadow: 0 0 4px #ededed;
-    width: 400px;
+    width: clamp(320px, 52.08vw, 400px);
     display: flex;
     flex-direction: column;
     overflow: hidden;

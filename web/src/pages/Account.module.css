@@ -11,25 +11,25 @@
 .accountPage > span {
     margin-top: 12px;
     font-family: Pretendard, serif;
-    font-size: 28px;
+    font-size: clamp(24px, 3.64vw, 28px);
     font-weight: 900;
 }
 
 .accountPage > div {
-    display: grid;
     background-color: #ffffff;
     border-radius: 12px;
     border: 1px solid #ededed;
     box-shadow: 4px 2px 3px #ededed;
     padding: 32px 40px 32px 40px;
-    column-gap: 32px;
 }
 
 
 
 
 .profile {
+    display: grid;
     grid-template-columns: 1fr 1fr 1fr;
+    column-gap: 32px;
 }
 
 .profile > div:first-child {
@@ -67,7 +67,7 @@
 }
 
 .personnel > span:first-child {
-    font-size: 18px;
+    font-size: 16px;
     color: #000000;
     margin-bottom: 2px;
 }
@@ -75,8 +75,8 @@
 
 
 .content {
-    grid-row: 4;
-    margin-top: 36px;
+    grid-row: 2;
+    margin-top: 32px;
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -123,4 +123,12 @@
 .account > div > button {
     color: red;
     margin-left: auto;
+}
+
+@media (max-width: 768px) {
+    .profile {
+        display: flex;
+        flex-direction: column;
+        /*gap: px;*/
+    }
 }

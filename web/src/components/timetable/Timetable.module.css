@@ -14,14 +14,14 @@
 }
 
 .title > span:first-child {
-    font-size: clamp(18px, 3.64vw, 28px);
+    font-size: clamp(24px, 3.64vw, 28px);
     font-family: "Pretendard", serif;
     font-weight: 900;
     color: #000000;
 }
 
 .title > span:last-child {
-    font-size: clamp(12px, 2.6vw, 20px);
+    font-size: clamp(16px, 2.6vw, 20px);
     font-family: "NixgonFont", serif;
     font-weight: 500;
     color: #595959;
