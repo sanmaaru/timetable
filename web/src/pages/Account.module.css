@@ -131,4 +131,8 @@
         flex-direction: column;
         /*gap: px;*/
     }
+
+    .content {
+        margin-left: 8px;        
+    } 
 }

@@ -111,4 +111,12 @@
         margin-left: 12px;
         width: 96.5%;
     }
+    
+    .card:hover {
+        transform: none;
+    }
+
+    .card:hover > span {
+        opacity: 0;
+    }
 }
