@@ -1,6 +1,5 @@
 import React from 'react';
 import style from './Palette.module.css';
-import {FloatingFocusManager, FloatingPortal} from "@floating-ui/react";
 import {recentUsedColor} from "../../util/storage";
 import {shade} from "../../util/color";
 import {defaultColors} from "../../constants/colors";
@@ -70,7 +69,7 @@ const Palette = ({ color, setColor, context }: PaletteProps) => {
     return (
         <FloatingMenu context={context}>
             <div className={style.palette} onClick={closeColorPicker}>
-                <div className={style.palette}>
+                <div className={style.header}>
                     <span>색상</span>
                     <IconButton onClick={() => context.setOpen(false)}>
                         <Close/>

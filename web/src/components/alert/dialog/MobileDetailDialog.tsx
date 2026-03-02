@@ -8,13 +8,11 @@ import {DialogContextType} from "./DialogProvider";
 
 interface MobileDetailDialogProps {
     context: DialogContextType
-    setFocus: (value: string | null) => void
     schedule: Schedule;
 }
 
-const MobileDetailDialog = ({schedule, context, setFocus}: MobileDetailDialogProps) => {
+const MobileDetailDialog = ({schedule, context}: MobileDetailDialogProps) => {
     const handleClickClose = () => {
-        setFocus(null);
         context.close()
     }
 

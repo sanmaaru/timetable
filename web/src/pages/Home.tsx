@@ -53,11 +53,18 @@ function Home() {
         if (!schedule)
             return
 
+        const dialogContext = {
+            ...dialog,
+            close: () => {
+                dialog.close()
+                setFocus(null)
+            }
+        }
+
         dialog.open(
             <MobileDetailDialog
-                context={dialog}
+                context={dialogContext}
                 schedule={schedule}
-                setFocus={setFocus}
             />
         )
     }, [isMobile, focus]);

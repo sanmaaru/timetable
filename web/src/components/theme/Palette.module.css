@@ -1,4 +1,6 @@
 .palette {
+    width: auto;
+    height: auto;
     background-color: #ededed;
     border-radius: 8px;
     border: 1px solid #ededed;
@@ -59,20 +61,20 @@
     margin-bottom: 20px;
 }
 
-.color-box {
+.colorBox {
     border-radius: 4px;
     width: 28px;
     height: 28px;
     transition: scale 0.1s ease-in, outline-offset 0.1s ease-in;
 }
 
-.color-box:hover {
+.colorBox:hover {
     scale: 0.9;
     outline: 2px solid #ededed;
     outline-offset: 4px;
 }
 
-.color-box.selected {
+.colorBox.selected {
     outline: 2px solid #ededed;
     outline-offset: 4px;
 }
@@ -99,4 +101,8 @@
     font-family: NixgonFont, serif;
     font-size: 13px;
     margin-left: auto;
+}
+
+@media (max-width: 768px) {
+
 }

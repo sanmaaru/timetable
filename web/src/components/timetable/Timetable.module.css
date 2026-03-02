@@ -25,6 +25,6 @@
     font-family: "NixgonFont", serif;
     font-weight: 500;
     color: #595959;
-    margin-left: 16px;
+    margin-left: 8px;
     margin-top: clamp(2px, 0.26vw, 1px);
 }

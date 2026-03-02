@@ -8,12 +8,14 @@ interface FloatingMenuProps {
 }
 
 const FloatingMenu = ({ children, context }: FloatingMenuProps) => {
-   return (<FloatingPortal>
-       <FloatingFocusManager context={context.context} modal={false}>
-           <div
-               ref={context.ref}
-               style={context.styles}
-               {...context.floatingProps()}
+    if (!context.isMounted)
+        return
+
+     return (<FloatingPortal>
+           <FloatingFocusManager context={context.context} modal={false}>
+               <div ref={context.ref}
+                style={context.styles}
+                {...context.floatingProps()}
            >
                {children}
            </div>

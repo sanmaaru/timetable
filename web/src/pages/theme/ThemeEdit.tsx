@@ -14,17 +14,22 @@ import {DialogProvider, useDialog} from "../../components/alert/dialog/DialogPro
 import SaveDialog from "../../components/alert/dialog/SaveDialog";
 import {usePreventLeave} from "../../hooks/usePreventLeave";
 import useZoom from "../../hooks/useZoom";
+import mobileViewStyle from "./MobileThemeView.module.css";
+import IconButton from "../../components/button/IconButton";
+import {useIsMobile} from "../../hooks/useMediaQuery";
+import More from '../../resources/icon/icn_more.svg?react';
+import ColorSchemeEditDialog from "../../components/alert/dialog/ColorSchemeEditDialog";
 
 const ThemeEdit = () => {
     const { themeId } = useParams()
-    const { timetableData, isLoading: isTimetableLoading } =  useTimetable()
+    const { timetableData, isLoading: isTimetableLoading, getSchedule } =  useTimetable()
     const { themeData, isLoading: isThemeLoading, loadData, setColorScheme, update, isSaved, setIsSaved } = useMutableTheme(themeId ?? '')
     const [focus, setFocus] = useState<string | null>(null);
 
     const toast = useToast()
     const { open, close, isOpen } = useDialog()
     const navigate = useNavigate();
-
+    const isMobile = useIsMobile();
 
 
     const targetClassId = useMemo(() => {
@@ -78,6 +83,40 @@ const ThemeEdit = () => {
         </SaveDialog>)
     }, [isSaved, setIsSaved])
 
+    useEffect(() => {
+        if (!isMobile || !themeData) return
+
+        if(!focus) {
+            close();
+            return
+        }
+
+        const schedule = getSchedule(focus)
+        if (!schedule)
+            return
+
+        const dialogContext = {
+            open, isOpen,
+            close: () => {
+                close()
+                setFocus(null)
+            }
+        }
+
+        const colorScheme = themeData.colorSchemes.find((value) => value.subject == schedule.clazz.subject)
+        if (!colorScheme) {
+            return;
+        }
+
+        open(
+            <ColorSchemeEditDialog
+                context={dialogContext}
+                colorScheme={colorScheme}
+                setColorScheme={setColorScheme}
+            />
+        )
+    }, [focus]);
+
     if (isThemeLoading || isTimetableLoading) {
         return (<div className={style.themeEdit}>
         </div>)
@@ -89,6 +128,48 @@ const ThemeEdit = () => {
     }
 
     const { schedules } = timetableData;
+
+
+    if (isMobile) {
+        const handleContainerClick = (e: React.MouseEvent<HTMLDivElement>) => {
+            const target = (e.target as HTMLElement).closest('[data-id]');
+
+            if (!target) {
+                setFocus(null)
+                return;
+            }
+
+            const classId = target.getAttribute('data-id')
+            if (!classId) {
+                setFocus(null)
+                return;
+            }
+
+            const ref = itemsRef.current.get(classId);
+            if (ref)
+                setFocus(classId)
+        }
+
+        return <div className={mobileViewStyle.mobileThemeView}>
+            <div className={mobileViewStyle.container}>
+                <IconButton className={mobileViewStyle.back} onClick={handleClickQuit}>
+                    <More/>
+                </IconButton>
+                <span className={mobileViewStyle.title}>{'테마 수정하기'}</span>
+                <span className={mobileViewStyle.name}> - {themeData.title}</span>
+            </div>
+            <div className={mobileViewStyle.wrapper} onClick={handleContainerClick}>
+                <TimetableHeader/>
+                <TimetableGrid
+                    schedules={schedules}
+                    colorSchemes={themeData.colorSchemes}
+                    detail={false}
+                    scheduleRefMap={itemsRef}
+                />
+            </div>
+        </div>
+    }
+
 
     return (
         <DialogProvider>

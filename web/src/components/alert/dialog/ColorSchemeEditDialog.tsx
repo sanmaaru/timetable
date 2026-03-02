@@ -1,19 +1,20 @@
 import React, {useEffect} from "react";
-import style from './EditableColorSchemeElement.module.css';
-import colorSchemeStyle from './ColorSchemeElement.module.css';
-import {ColorScheme} from "../../types/theme";
-import Palette from "./Palette";
-import {shade} from "../../util/color";
-import useFloatingMenu from "../../hooks/useFloatingMenu";
+import style from './ColorSchemeEditDialog.module.css';
+import useFloatingMenu from "../../../hooks/useFloatingMenu";
+import {DialogContextType} from "./DialogProvider";
+import {ColorScheme} from "../../../types/theme";
+import {shade} from "../../../util/color";
+import Palette from "../../theme/Palette";
+import IconButton from "../../button/IconButton";
+import Close from '../../../resources/icon/icn_close.svg?react';
 
-interface ColorSchemeElementProps {
-    colorScheme: ColorScheme;
+interface ColorSchemeEditDialogProps {
+    context: DialogContextType
+    colorScheme: ColorScheme
     setColorScheme: (subject: string, color?: string, textColor?: string) => void;
-    onClick: (subject: string | null) => void;
-    focus: string | null;
 }
 
-const ColorSchemeElement = ({colorScheme, setColorScheme, onClick, focus}: ColorSchemeElementProps) => {
+const ColorSchemeEditDialog = ({context, colorScheme, setColorScheme}: ColorSchemeEditDialogProps) => {
     const { subject } = colorScheme;
     const [color, setColor] = React.useState<string>(colorScheme.color);
     const [textColor, setTextColor] = React.useState<string>(colorScheme.textColor);
@@ -28,27 +29,15 @@ const ColorSchemeElement = ({colorScheme, setColorScheme, onClick, focus}: Color
         setColorScheme(colorScheme.subject, color, textColor);
     }, [color, textColor, colorScheme.subject, setColorScheme]);
 
-    const handleClick = () => {
-        if (focus === subject)
-            onClick(null);
-        else
-            onClick(subject);
-    }
-
     return (
-        <div
-            className={`${colorSchemeStyle.colorSchemeElement} ${focus === subject ? colorSchemeStyle.focus : ''}`}
-            onClick={() => {handleClick()}}
-        >
-            <span>{subject}</span>
-            <span>{color}</span>
-            <div style={{ backgroundColor: color }}></div>
-            {focus === subject && <div
-                className={style.selector}
-                onClick={(e) => {
-                    e.stopPropagation();
-                }}
-            >
+        <div className={style.colorSchemeEditDialog}>
+            <div className={style.title}>
+                <span>{`${subject}`}</span>
+                <IconButton className={style.button} onClick={context.close}>
+                    <Close/>
+                </IconButton>
+            </div>
+            <div className={style.container}>
                 <div className={style.content}>
                     <span>배경 색상</span>
                     <button
@@ -65,19 +54,20 @@ const ColorSchemeElement = ({colorScheme, setColorScheme, onClick, focus}: Color
                         {...textColorPalette.getReferenceProps()}
                     />
                 </div>
-                <Palette
-                    context={colorPalette.menuContext}
-                    color={color}
-                    setColor={setColor}
-                />
-                <Palette
-                    context={textColorPalette.menuContext}
-                    color={textColor}
-                    setColor={setTextColor}
-                />
-            </div>}
+            </div>
+            <Palette
+                context={colorPalette.menuContext}
+                color={color}
+                setColor={setColor}
+            />
+            <Palette
+
+                context={textColorPalette.menuContext}
+                color={textColor}
+                setColor={setTextColor}
+            />
         </div>
     )
 }
 
-export default ColorSchemeElement;
+export default ColorSchemeEditDialog;

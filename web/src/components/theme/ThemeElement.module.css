@@ -108,8 +108,8 @@
 
 @media (max-width: 768px) {
     .themeElement {
-        margin-left: 12px;
-        width: 96.5%;
+        margin-left: 28px;
+        width: 84%;
     }
     
     .card:hover {

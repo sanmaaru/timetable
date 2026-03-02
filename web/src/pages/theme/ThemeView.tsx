@@ -1,6 +1,7 @@
 import React, {useEffect, useMemo, useState, useCallback} from "react";
 import style from './ThemeView.module.css';
-import {useParams} from "react-router-dom";
+import mobileStyle from './MobileThemeView.module.css';
+import {useNavigate, useParams} from "react-router-dom";
 import useTimetable from "../../hooks/useTimetable";
 import TimetableGrid from "../../components/timetable/TimetableGrid";
 import TimetableHeader from "../../components/timetable/TimetableHeader";
@@ -9,6 +10,8 @@ import ColorSchemaElement from "../../components/theme/ColorSchemaElement";
 import {useTheme} from "../../hooks/theme/useThemes";
 import useZoom from "../../hooks/useZoom";
 import { useIsMobile } from "../../hooks/useMediaQuery";
+import IconButton from "../../components/button/IconButton";
+import More from "../../resources/icon/icn_more.svg?react"
 
 const ThemeView = () => {
     const { themeId } = useParams()
@@ -16,6 +19,7 @@ const ThemeView = () => {
     const { themeData, isLoading: isThemeLoading } = useTheme(themeId)
     const [focus, setFocus] = useState<string | null>(null)
     const isMobile = useIsMobile()
+    const navigate = useNavigate()
 
     const toast = useToast()
 
@@ -33,6 +37,7 @@ const ThemeView = () => {
         return classId == targetClassId ? '' : style.hide
     }, [targetClassId])
 
+
     useEffect(() => {
         if(!isThemeLoading && !isTimetableLoading && (!timetableData || !themeData)) {
             toast.addToast('알 수 없는 오류가 발생하였습니다. 관리자에게 문의해주세요!', 'error')
@@ -41,12 +46,34 @@ const ThemeView = () => {
 
 
     if (isThemeLoading || isTimetableLoading || !timetableData || !themeData) {
+        if(isMobile)
+            return <div className={mobileStyle.mobileThemeView}/>
+
         return (<div className={style.themeView}>
         </div>)
     }
 
     const { schedules } = timetableData;
 
+    if (isMobile) {
+        return <div className={mobileStyle.mobileThemeView}>
+            <div className={mobileStyle.container}>
+                <IconButton className={mobileStyle.back} onClick={() => navigate(-1)}>
+                    <More/>
+                </IconButton>
+                <span className={mobileStyle.title}>{'테마 미리보기'}</span>
+                <span className={mobileStyle.name}> - {themeData.title}</span>
+            </div>
+            <div className={mobileStyle.wrapper}>
+                <TimetableHeader/>
+                <TimetableGrid
+                    schedules={schedules}
+                    colorSchemes={themeData.colorSchemes}
+                    detail={false}
+                />
+            </div>
+        </div>
+    }
 
     return (<div className={style.themeView}>
         <div className={style.container}>

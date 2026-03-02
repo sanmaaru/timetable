@@ -30,10 +30,11 @@ const useFloatingMenu = (open: boolean, setOpen: (value: boolean) => void) => {
         open: open,
         onOpenChange: setOpen,
         placement: 'bottom-start',
+        strategy: 'fixed',
         middleware: [
             offset(10),
-            flip(),
-            shift()
+            flip({ padding: 8 }),
+            shift({ padding: 8 })
         ],
         whileElementsMounted: autoUpdate
     })
