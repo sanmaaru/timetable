@@ -67,7 +67,7 @@ const ThemeEdit = () => {
         await loadData()
     }
 
-    const handleClickQuit = useCallback(async () => {
+    const handleClickQuit = async () => {
         if (isSaved) {
             navigate(-1)
             return
@@ -81,7 +81,7 @@ const ThemeEdit = () => {
         >
             저장하지 않으면 변경 내용이 손실됩니다.
         </SaveDialog>)
-    }, [isSaved, setIsSaved])
+    }
 
     useEffect(() => {
         if (!isMobile || !themeData) return
