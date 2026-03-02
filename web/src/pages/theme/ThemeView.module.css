@@ -79,15 +79,10 @@
     flex: 1;
 }
 
-#theme-view > .content > .detail > .title {
-    display: inline-block;
-    height: 32px;
-    font-family: "Pretendard", serif;
-    font-weight: 900;
-    font-size: 24px;
-    margin-bottom: 32px;
-}
-
 .hide {
     opacity: 0.3 !important;
+}
+
+@media (max-width: 768px) {
+    
 }

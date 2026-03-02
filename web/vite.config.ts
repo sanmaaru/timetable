@@ -10,6 +10,7 @@ export default defineConfig({
     }
   })],
   server: {
+    allowedHosts: ['dev.gsa.hs.kr'],
     watch: {
       usePolling: true
     },

@@ -8,12 +8,14 @@ import {useToast} from "../../components/alert/toast/ToastContext";
 import ColorSchemaElement from "../../components/theme/ColorSchemaElement";
 import {useTheme} from "../../hooks/theme/useThemes";
 import useZoom from "../../hooks/useZoom";
+import { useIsMobile } from "../../hooks/useMediaQuery";
 
 const ThemeView = () => {
     const { themeId } = useParams()
     const { timetableData, isLoading: isTimetableLoading} =  useTimetable()
     const { themeData, isLoading: isThemeLoading } = useTheme(themeId)
     const [focus, setFocus] = useState<string | null>(null)
+    const isMobile = useIsMobile()
 
     const toast = useToast()
 
