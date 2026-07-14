@@ -3,6 +3,7 @@ from pathlib import Path
 from app.core.database import conn
 from app.upload.upload import *
 
+# Temporary Files, Make Upload Logic for Later
 session = next(conn())
 
 resources = Path(__file__).parent / 'resources'
@@ -22,6 +23,7 @@ upload_lectures(lectures, session)
 upload_periods(periods, session)
 upload_enrollments(enrollments, session)
 
-create_user_info(session, UserInfoData('admin'), role=Role.ADMINISTRATOR)
+# admin_info = create_admin_info(session)
+# upload_sample_timetable(admin_info, session)
 
 session.commit()

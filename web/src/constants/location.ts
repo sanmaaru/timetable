@@ -1,7 +1,10 @@
 export const locations = {
     account: '/account',
     theme: '/theme',
-    home: '/'
+    upload: '/upload',
+    users: '/users',
+    home: '/',
+
 } as const; // home이 항상 마지막이여야 하는거 주의!
 export type LocationKey = keyof typeof locations;
 

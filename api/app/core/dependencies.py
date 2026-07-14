@@ -22,7 +22,7 @@ async def get_current_user(
         )
 
     scheme, _, token = auth.partition(" ")
-    if scheme.lower() != 'bearer' or scheme is None:
+    if scheme.lower() != 'bearer':
         raise AuthorizationError(message="Infelicitous token type")
 
     jwt = decode_access(token)

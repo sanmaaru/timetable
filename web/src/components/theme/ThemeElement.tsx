@@ -5,8 +5,6 @@ import useContainerSize from "../../hooks/useContainerSize";
 import View from '../../resources/icon/icn_eye.svg?react';
 import Options from '../../resources/icon/icn_options.svg?react'
 import {useNavigate} from "react-router-dom";
-import {autoUpdate, flip, offset, shift, useClick, useDismiss, useFloating, useInteractions} from "@floating-ui/react";
-import ActionMenu from "../ActionMenu";
 import {useDialog} from "../alert/dialog/DialogProvider";
 import useThemeActions from "../../hooks/theme/useThemeActions";
 import ThemePreviewDialog from "../alert/dialog/ThemePreviewDialog";
@@ -20,6 +18,8 @@ import DefaultDialog from "../alert/dialog/DefaultDialog";
 import IconButton from "../button/IconButton";
 import useFloatingMenu from "../../hooks/useFloatingMenu";
 import {useIsMobile} from "../../hooks/useMediaQuery";
+import FloatingMenu from "../menu/FloatingMenu";
+import {IconTextButton} from "../button/IconTextButton";
 
 interface ThemeElementProps {
     theme: Theme;
@@ -136,7 +136,13 @@ const ThemeElement = ({theme, loader}: ThemeElementProps) => {
                 </IconButton>
             </div>
 
-            <ActionMenu context={menuContext} buttons={buttons}/>
+            {menuContext.isMounted && <FloatingMenu context={menuContext}>
+                <div className={style.actionMenu}>
+                    {buttons.map((button) =>
+                        <IconTextButton {...button}/>
+                    )}
+                </div>
+            </FloatingMenu>}
         </div>
     )
 }

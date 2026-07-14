@@ -1,16 +1,11 @@
+from pathlib import Path
 from typing import List
 
 from fastapi import APIRouter
 from fastapi.params import Depends
 from starlette.responses import JSONResponse
 
-from app.auth.exceptions import AuthorizationError
-from app.auth.schemas import IdentifyTokenSchema
-from app.core.config import configs
-from pathlib import Path
-
 from app.core.database import conn
-from app.core.response import create_response, BaseResponse
 from app.upload.upload import *
 
 router = APIRouter(prefix="/upload", tags=["Upload"])
@@ -20,7 +15,7 @@ async def healthy():
     return JSONResponse('healthy: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 # TODO: for the debugging
-@router.post('/init', response_model=BaseResponse[List[IdentifyTokenSchema]])
+@router.post('/init')
 async def initialize(
         session: AsyncSession = Depends(conn)
 ):
@@ -51,4 +46,4 @@ async def initialize(
 
     await session.commit()
 
-    return create_response(await query_token_for('admin', session))
+    # return create_response(await query_token_for('admin', session))

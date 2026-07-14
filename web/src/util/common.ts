@@ -21,6 +21,11 @@ export const getGrade = (generation: number)=> {
     return currentYear - 1982 - generation;
 }
 
+export const getGeneration = (grade: number) => {
+    const currentYear = new Date().getFullYear()
+    return currentYear - 1982 - grade;
+}
+
 export const getRole = (role: number): Role => {
     for (let i = 0; i < ROLE_LIST.length; i++) {
         if ((1 << i) <=  role && role < (1 << (i+1)))
@@ -28,4 +33,8 @@ export const getRole = (role: number): Role => {
     }
 
     return "Student"
+}
+
+export const getRandomInt = (max: number, min: number = 0): number => {
+    return Math.floor(Math.random() * (max - min + 1) + min);
 }

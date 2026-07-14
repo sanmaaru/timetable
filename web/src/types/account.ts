@@ -3,6 +3,7 @@ export type Role = typeof ROLE_LIST[number];
 
 export interface UserInfo {
     userId: string;
+    userInfoId: string;
     email: string;
     username: string;
     name: string;

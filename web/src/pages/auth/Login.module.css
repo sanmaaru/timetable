@@ -89,7 +89,7 @@
     text-decoration: none;
 }
 
-.footer a, span {
+.footer > a, .footer > span {
     grid-column: 1 / span 2;
     font-family: "Pretendard", serif;
     font-size: 12px;

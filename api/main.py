@@ -7,21 +7,33 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.sync.hooks
+from app.account.router import router as account_router
+from app.auth.crud import create_admin_info
 from app.auth.router import router as auth_router
 from app.core.config import configs
-from app.core.database import engine, Base
+from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.exceptions import handle_client_exception, ClientError, global_error_handler, validation_exception_handler
 from app.core.middleware import RequestLogMiddleware
 from app.theme.router import router as theme_router
 from app.timetable.router import router as timetable_router
 from app.upload.router import router as upload_router
-from app.account.router import router as account_router
+from app.upload.upload import upload_sample_timetable
 from app.util.logger import configure_logger
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as e:
         await e.run_sync(Base.metadata.create_all)
+
+    async with AsyncSessionLocal() as session:
+        try:
+            logger.info('[Init] Starting system...')
+            admin_user = await create_admin_info(session)
+            await upload_sample_timetable(admin_user, session)
+            logger.info('[Init] System initialization completed')
+        except Exception as e:
+            logger.error(f'[Init] An error occurred while initializing the system: {e}')
     yield
 
 app = FastAPI(

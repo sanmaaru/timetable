@@ -73,10 +73,10 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     request.state.error = error_details
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-        content={
+        content=jsonable_encoder({
             'detail': error_details,
             'message': 'Invalid payload'
-        }
+        })
     )
 
 async def global_error_handler(request: Request, exc: Exception):

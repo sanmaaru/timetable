@@ -49,6 +49,7 @@ class TokenPair(BaseModel):
 
 # === schemas ===
 class UserInfoSchema(BaseModel):
+    user_info_id: str
     name: str
     generation: int | None
     clazz: int | None
@@ -56,12 +57,20 @@ class UserInfoSchema(BaseModel):
     credit: int | None
     role: int
 
+    @field_validator('user_info_id', mode='before')
+    @classmethod
+    def serialize_ulid(cls, v: Any):
+        if isinstance(v, ULID):
+            return str(v)
+
+        return v
+
     model_config = ConfigDict(from_attributes=True)
 
 class UserSchema(BaseModel):
-    user_id: str
-    email: str
-    username: str
+    user_id: str | None
+    email: str | None
+    username: str | None
     user_info: UserInfoSchema
 
     model_config = ConfigDict(from_attributes=True)
@@ -82,7 +91,7 @@ class IdentifyTokenSchema(BaseModel):
 
     @computed_field
     @property
-    def name(self) -> str:
-        return self.user_info.name
+    def owner_id(self) -> str:
+        return str(self.user_info.user_info_id)
 
     model_config = ConfigDict(from_attributes=True)

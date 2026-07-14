@@ -1,4 +1,3 @@
-import Cookies from "js-cookie";
 import {getJsonCookie, removeCookie, setJsonCookie} from "../util/storage";
 
 export const getToken = (): string | null => {

@@ -27,3 +27,27 @@ class ULIDModel(ulid.ULID):
         except ValueError:
             raise ValueError("Invalid ULID format")
 
+class Role:
+
+    STUDENT=1
+    TEACHER=2
+    MANAGER=4
+    ADMINISTRATOR=8
+
+def get_role(role_str: str | None):
+    if role_str is None:
+        return None
+
+    match role_str.lower():
+        case 'student':
+            return Role.STUDENT
+        case 'teacher':
+            return Role.TEACHER
+        case 'manager':
+            return Role.MANAGER
+        case 'administrator':
+            return Role.ADMINISTRATOR
+        case 'admin':
+            return Role.ADMINISTRATOR
+        case _:
+            return None

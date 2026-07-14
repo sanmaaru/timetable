@@ -6,26 +6,21 @@ from argon2.exceptions import VerifyMismatchError
 from jose import jwt, JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import with_expression, joinedload
+from sqlalchemy.orm import joinedload, selectinload
 from ulid import ULID
 
 from app.auth.exceptions import AuthorizationError, RefreshTokenError, UnknownUserError
 from app.auth.model import User, UserInfo, IdentifyToken, RefreshToken
+from app.auth.schemas import TokenPayload, UserInfoData
 from app.core.config import configs
 from app.core.exceptions import ConflictError
-from app.auth.schemas import TokenPayload, UserInfoData
+from app.core.types import Role
 from app.sync.model import SyncStatus
 from app.theme.crud import service_create_default_theme
 
 hasher = PasswordHasher()
 
-class Role:
-
-    STUDENT=1
-    TEACHER=2
-    MANAGER=4
-    ADMINISTRATOR=8
-
+### === About Creating Users ===
 async def create_user_info(session: AsyncSession, user_info_data: UserInfoData, role: int):
     stmt = select(UserInfo).filter(UserInfo.name == user_info_data.name,
                                    UserInfo.generation == user_info_data.generation,
@@ -51,6 +46,29 @@ async def create_user_info(session: AsyncSession, user_info_data: UserInfoData, 
     id_token = IdentifyToken(user_info_id=user_info.user_info_id)
     session.add(id_token)
 
+ADMINISTRATOR_NAME = '관리자'
+ADMINISTRATOR_TOKEN = 'ADMINTKN'
+async def create_admin_info(session: AsyncSession):
+    stmt = select(UserInfo).filter(UserInfo.name == ADMINISTRATOR_NAME, UserInfo.role == Role.ADMINISTRATOR)
+    user_info = (await session.execute(stmt)).scalars().one_or_none()
+    if user_info is not None:
+        # If an administrator account exists, it returns immediately to prevent the server from crashing at startup.
+        return user_info
+
+    user_info = UserInfo(
+        name=ADMINISTRATOR_NAME,
+        role=Role.ADMINISTRATOR
+    )
+
+    session.add(user_info)
+    await session.flush()
+
+    id_token = IdentifyToken(token_id=ADMINISTRATOR_TOKEN, user_info_id=user_info.user_info_id)
+    session.add(id_token)
+
+    await session.commit()
+    return user_info
+
 ### ==== About Identify Token ====
 async def query_token(identify_token, session):
     stmt = select(IdentifyToken).filter(IdentifyToken.token_id == identify_token)
@@ -65,12 +83,11 @@ async def query_tokens(session):
 
     return tokens
 
-async def query_token_for(name, session):
+async def query_token_for(session, user_info_id):
     stmt = (select(IdentifyToken)
-            .join(IdentifyToken.user_info)
-            .where(UserInfo.name == name)
-            .options(joinedload(IdentifyToken.user_info)))
-    tokens = (await session.execute(stmt)).scalars().all()
+            .where(IdentifyToken.user_info_id == user_info_id)
+            .options(selectinload(IdentifyToken.user_info)))
+    tokens = (await session.execute(stmt)).scalars().one_or_none()
 
     return tokens
 

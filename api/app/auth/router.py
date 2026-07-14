@@ -1,14 +1,15 @@
-from typing import List
+from typing import List, Optional
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, status, Query, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.crud import service_signup, service_login, service_refresh, Role, query_tokens
+from app.auth.crud import service_signup, service_login, service_refresh, Role, query_tokens, query_token_for
 from app.auth.exceptions import NoPermissionError
 from app.auth.schemas import TokenPair, LoginInput, SignUpInput, UserSchema, RefreshTokenInput, IdentifyTokenSchema
 from app.core.database import conn
 from app.core.dependencies import get_current_user
 from app.core.response import create_response, BaseResponse
+from app.core.types import ULIDModel
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -22,8 +23,6 @@ async def login(input: LoginInput, session: AsyncSession = Depends(conn)):
 
 
 # ===== Refresh JWT =====
-
-
 @router.post('/refresh', response_model=BaseResponse[TokenPair])
 async def refresh(input: RefreshTokenInput, session: AsyncSession = Depends(conn)):
     token = input.refresh_token
@@ -43,8 +42,8 @@ async def signup(input: SignUpInput, session: AsyncSession = Depends(conn)):
     return create_response(user, user.user_id, status_code=status.HTTP_201_CREATED)
 
 
-@router.get('/identifiers', response_model=BaseResponse[List[IdentifyTokenSchema]])
-async def identifiers(
+@router.get('/identifier', response_model=BaseResponse[List[IdentifyTokenSchema]])
+async def all_identifiers(
         user=Depends(get_current_user),
         session: AsyncSession = Depends(conn)
 ):
@@ -52,5 +51,19 @@ async def identifiers(
         raise NoPermissionError('No permission')
 
     tokens = await query_tokens(session)
-
     return create_response(tokens, user.user_id)
+
+@router.get('/identifier/batch', response_model=BaseResponse[List[IdentifyTokenSchema]])
+
+
+@router.get('/identifier/{user_info_id}', response_model=BaseResponse[Optional[IdentifyTokenSchema]])
+async def identifier(
+        user = Depends(get_current_user),
+        user_info_id: ULIDModel = Path(description='theme id want to query'),
+        session: AsyncSession = Depends(conn)
+):
+    if user.user_info.role < Role.MANAGER:
+        raise NoPermissionError('No permission')
+
+    token = await query_token_for(session, user_info_id)
+    return create_response(token, user.user_id)

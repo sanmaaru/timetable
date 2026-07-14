@@ -12,6 +12,8 @@ import ProtectedRoute from './auth/ProtectedRoute';
 import Layout from './layouts/Layout';
 import {recentUsedColor} from "./util/storage";
 import ContextProvidingLayout from "./layouts/ContextProvidingLayout";
+import Upload from "./pages/management/Upload";
+import UserManagement from "./pages/management/UserManagement";
 
 const router = createBrowserRouter([
     {
@@ -51,9 +53,22 @@ const router = createBrowserRouter([
                                 path: "/account",
                                 element: <Account />,
                             },
+                            {
+                                element: <ProtectedRoute allowedRoles={['Administrator']}/>,
+                                children: [
+                                    {
+                                        path: "/upload",
+                                        element: <Upload />
+                                    },
+                                    {
+                                        path: "/users",
+                                        element: <UserManagement />
+                                    }
+                                ]
+                            }
                         ],
                     },
-                ],
+                ]
             }
         ]
     }

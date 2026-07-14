@@ -1,4 +1,5 @@
 export interface UserInfoDto {
+    user_info_id: string;
     name: string;
     generation: number | null;
     clazz: number | null;
@@ -12,4 +13,9 @@ export interface UserDto {
     email: string;
     username: string;
     user_info: UserInfoDto;
+}
+
+export interface IdTokenDto {
+    token_id: string | null;
+    owner_id: string;
 }

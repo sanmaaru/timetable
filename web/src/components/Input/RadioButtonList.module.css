@@ -1,0 +1,102 @@
+.radioButtonList {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.circleLabel, .iconLabel {
+    display: flex;
+    gap: 12px;
+    font-family: Pretendard, serif;
+    font-size: 14px;
+    align-items: center;
+    padding: 4px;
+}
+
+/* ===== Hidden Radio Buttons ===== */
+.hiddenRadio {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.icon {
+    display: inline-flex;
+    flex-direction: column;
+    width: 16px;
+    height: 16px;
+    align-items: center;
+    justify-content: center;
+}
+
+.iconLabel {
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: all .2s ease-out;
+    cursor: pointer;
+}
+
+.checkedIconLabel {
+    border-color: #005bd3;
+    color: #005bd3;
+    background-color: #f4f6fd;
+}
+
+.checkedIconLabel .icon > svg {
+    fill: #005bd3;
+}
+
+/* ===== Visible Radio Buttons ===== */
+.visibleRadio {
+    --webkit-appearance: none;
+    appearance: none;
+
+    width: 12px;
+    height: 12px;
+
+    outline: 2px solid #8c9196;
+    border-radius: 50%;
+    cursor: pointer;
+    margin: 0 0 0 3px;
+    display: grid;
+    place-content: center;
+
+    transition: all .2s ease-out;
+}
+
+.visibleRadio::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    transform: scale(0);
+    transition: transform 120ms ease-out;
+    background-color: #005bd3;
+}
+
+.visibleRadio:checked {
+    outline-color: #005bd3;
+}
+
+.visibleRadio:checked::before {
+    transform: scale(1);
+}
+
+.visibleRadio:focus-visible {
+    outline: 2px solid #005bd3;
+    outline-offset: 2px;
+}
+
+.visibleRadio:focus-visible::before {
+    width: 9px;
+    height: 9px;
+}
+
+.circleLabel {
+}

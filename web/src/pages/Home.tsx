@@ -8,6 +8,7 @@ import {useTheme} from "../hooks/theme/useThemes";
 import {useIsMobile} from "../hooks/useMediaQuery";
 import {useDialog} from "../components/alert/dialog/DialogProvider";
 import MobileDetailDialog from "../components/alert/dialog/MobileDetailDialog";
+import {getRandomQuote} from "../util/quote";
 
 
 function Home() {
@@ -25,6 +26,8 @@ function Home() {
         }
     }, [isThemeLoading, isTimetableLoading, timetableData, themeData, toast])
 
+    const quote = getRandomQuote()
+
     const drawDetail = useCallback(() => {
         if(isMobile) return;
 
@@ -34,8 +37,7 @@ function Home() {
             schedule = getSchedule(focus)
 
         return <DetailBar
-            quote="달을 향해 쏴라. 빗나가도 별이 될테니"
-            source="레스 브라운"
+            quote={quote}
             schedule={schedule}
         />
 
@@ -73,7 +75,7 @@ function Home() {
         return (
             <div className={style.home}>
                 <Timetable name={''} schedules={[]} theme={{ title: '', themeId: '', colorSchemes: [], selected: false }} focus={focus} setFocus={setFocus} />
-                {!isMobile && <DetailBar quote="달을 향해 쏴라. 빗나가도 별이 될테니" source="레스 브라운"/>}
+                {!isMobile && <DetailBar quote={quote}/>}
             </div>)
     }
 

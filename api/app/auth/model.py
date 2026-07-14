@@ -2,7 +2,7 @@ from datetime import datetime
 
 import ulid
 from sqlalchemy import String, ForeignKey, SmallInteger, Integer, DateTime
-from sqlalchemy.orm import relationship, Mapped, mapped_column, query_expression
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.core.database import Base, ULID, generate_ulid
 from app.util.common import get_grade, generate_token

@@ -1,5 +1,5 @@
 import structlog
-from sqlalchemy import insert
+from sqlalchemy import insert, or_
 
 from app.auth.crud import *
 from .exceptions import UploadError
@@ -272,5 +272,85 @@ async def upload_periods(periods: list[PeriodInfo], session: AsyncSession):
 
         stmt = insert(Period).values(period_data).prefix_with('IGNORE')
         await session.execute(stmt)
+
+    await session.commit()
+
+SAMPLE_TEACHERS = ['선생님1', '선생님2', '선생님3']
+SAMPLE_LECTURES = [
+    LectureInfo(subject='과목1', teacher=SAMPLE_TEACHERS[0], room='301'),
+    LectureInfo(subject='과목1', teacher=SAMPLE_TEACHERS[1], room='302'),
+    LectureInfo(subject='과목2', teacher=SAMPLE_TEACHERS[2], room='303')
+]
+SAMPLE_PERIODS = [
+    PeriodInfo(subject='과목1', teacher=SAMPLE_TEACHERS[0], division=1, day=1, period=2),
+    PeriodInfo(subject='과목1', teacher=SAMPLE_TEACHERS[0], division=1, day=1, period=3),
+    PeriodInfo(subject='과목1', teacher=SAMPLE_TEACHERS[1], division=1, day=3, period=2),
+    PeriodInfo(subject='과목1', teacher=SAMPLE_TEACHERS[1], division=1, day=3, period=3),
+    PeriodInfo(subject='과목2', teacher=SAMPLE_TEACHERS[2], division=2, day=2, period=5),
+    PeriodInfo(subject='과목2', teacher=SAMPLE_TEACHERS[2], division=2, day=5, period=1),
+    PeriodInfo(subject='과목2', teacher=SAMPLE_TEACHERS[2], division=2, day=5, period=2),
+]
+async def upload_sample_timetable(user_info: UserInfo, session: AsyncSession):
+    teachers = [UserInfoData(t) for t in SAMPLE_TEACHERS]
+    len_teachers = await bulk_create_teachers(session, teachers)
+    logger.info(f'{len_teachers} sample teachers uploaded')
+
+    await upload_lectures(SAMPLE_LECTURES, session)
+    await upload_periods(SAMPLE_PERIODS, session)
+
+    unique_class_targets = set()
+    for p in SAMPLE_PERIODS:
+        unique_class_targets.add((p.subject, p.teacher, p.division))
+
+    if not unique_class_targets:
+        return
+
+    conditions = [
+        (Subject.name == subject) &
+        (UserInfo.name == teacher) &
+        (Class.division == division)
+        for subject, teacher, division in unique_class_targets
+    ]
+
+    stmt_classes = (
+        select(Class)
+        .join(Class.lecture)
+        .join(Lecture.subject)
+        .join(Lecture.teacher_info)
+        .where(or_(*conditions))
+    )
+
+    result_classes = await session.execute(stmt_classes)
+    target_classes = result_classes.scalars().all()
+
+    if len(target_classes) != len(unique_class_targets):
+        raise UploadError("Some requested classes not found")
+
+    target_class_ids = [c.class_id for c in target_classes]
+
+    stmt_existing_enrollments = (
+        select(Enrollment.class_id)
+        .where(
+            Enrollment.user_info_id == user_info.user_info_id,
+            Enrollment.class_id.in_(target_class_ids)
+        )
+    )
+
+    result_existing = await session.execute(stmt_existing_enrollments)
+    existing_class_ids = set(result_existing.scalars().all())
+
+    enrollment_values = [
+        {
+            "class_id": c.class_id,
+            "user_info_id": user_info.user_info_id
+        }
+        for c in target_classes
+        if c.class_id not in existing_class_ids
+    ]
+
+    if enrollment_values:
+        await session.execute(
+            insert(Enrollment).values(enrollment_values)
+        )
 
     await session.commit()

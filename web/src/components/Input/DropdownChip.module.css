@@ -1,0 +1,39 @@
+.dropdownChipContainer {
+    display: inline-block;
+    position: relative;
+}
+
+.dropdownChip {
+    border: 1px solid #e3e3e3;
+    border-radius: 6px;
+    padding: 4px 6px;
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    background-color: #fff;
+}
+
+.dropdownChip:hover, .open {
+    background-color: #f6f6f6;
+}
+
+.label {
+    font-family: Pretendard, serif;
+    font-size: 13px;
+}
+
+.icon {
+    margin-left: 2px;
+    width: 16px;
+    height: 16px;
+    /*font-size: 9px;*/
+}
+
+.optionList {
+    width: max-content;
+    height: max-content;
+    border-radius: 8px;
+    border: 1px solid #ededed;
+    padding: 8px 8px 8px 8px;
+    background-color: #fff;
+}
