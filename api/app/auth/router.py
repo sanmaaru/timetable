@@ -7,9 +7,10 @@ from app.auth.crud import service_signup, service_login, service_refresh, Role, 
 from app.auth.exceptions import NoPermissionError
 from app.auth.schemas import TokenPair, LoginInput, SignUpInput, UserSchema, RefreshTokenInput, IdentifyTokenSchema
 from app.core.database import conn
-from app.core.dependencies import get_current_user
+from app.core.dependencies import get_current_user, get_current_user_with_info, get_current_admin_user
 from app.core.response import create_response, BaseResponse
 from app.core.types import ULIDModel
+from app.upload.schema import IdentityIdStr
 
 router = APIRouter(prefix='/auth', tags=['auth'])
 
@@ -44,26 +45,18 @@ async def signup(input: SignUpInput, session: AsyncSession = Depends(conn)):
 
 @router.get('/identifier', response_model=BaseResponse[List[IdentifyTokenSchema]])
 async def all_identifiers(
-        user=Depends(get_current_user),
+        user=Depends(get_current_admin_user),
         session: AsyncSession = Depends(conn)
 ):
-    if user.user_info.role < Role.MANAGER:
-        raise NoPermissionError('No permission')
-
     tokens = await query_tokens(session)
     return create_response(tokens, user.user_id)
 
-@router.get('/identifier/batch', response_model=BaseResponse[List[IdentifyTokenSchema]])
 
-
-@router.get('/identifier/{user_info_id}', response_model=BaseResponse[Optional[IdentifyTokenSchema]])
+@router.get('/identifier/{identity_id}', response_model=BaseResponse[Optional[IdentifyTokenSchema]])
 async def identifier(
-        user = Depends(get_current_user),
-        user_info_id: ULIDModel = Path(description='theme id want to query'),
+        user = Depends(get_current_admin_user),
+        identity_id: IdentityIdStr = Path(description='identity id of user who want to query'),
         session: AsyncSession = Depends(conn)
 ):
-    if user.user_info.role < Role.MANAGER:
-        raise NoPermissionError('No permission')
-
-    token = await query_token_for(session, user_info_id)
+    token = await query_token_for(session, identity_id)
     return create_response(token, user.user_id)

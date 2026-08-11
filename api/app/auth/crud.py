@@ -6,7 +6,7 @@ from argon2.exceptions import VerifyMismatchError
 from jose import jwt, JWTError
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import joinedload, selectinload
+from sqlalchemy.orm import joinedload
 from ulid import ULID
 
 from app.auth.exceptions import AuthorizationError, RefreshTokenError, UnknownUserError
@@ -43,31 +43,9 @@ async def create_user_info(session: AsyncSession, user_info_data: UserInfoData, 
     session.add(user_info)
     await session.flush()
 
-    id_token = IdentifyToken(user_info_id=user_info.user_info_id)
+    id_token = IdentifyToken(identity_id=user_info.identity_id)
     session.add(id_token)
 
-ADMINISTRATOR_NAME = '관리자'
-ADMINISTRATOR_TOKEN = 'ADMINTKN'
-async def create_admin_info(session: AsyncSession):
-    stmt = select(UserInfo).filter(UserInfo.name == ADMINISTRATOR_NAME, UserInfo.role == Role.ADMINISTRATOR)
-    user_info = (await session.execute(stmt)).scalars().one_or_none()
-    if user_info is not None:
-        # If an administrator account exists, it returns immediately to prevent the server from crashing at startup.
-        return user_info
-
-    user_info = UserInfo(
-        name=ADMINISTRATOR_NAME,
-        role=Role.ADMINISTRATOR
-    )
-
-    session.add(user_info)
-    await session.flush()
-
-    id_token = IdentifyToken(token_id=ADMINISTRATOR_TOKEN, user_info_id=user_info.user_info_id)
-    session.add(id_token)
-
-    await session.commit()
-    return user_info
 
 ### ==== About Identify Token ====
 async def query_token(identify_token, session):
@@ -77,16 +55,15 @@ async def query_token(identify_token, session):
     return token
 
 async def query_tokens(session):
-    stmt = (select(IdentifyToken).options(joinedload(IdentifyToken.user_info)))
+    stmt = select(IdentifyToken)
 
     tokens = (await session.execute(stmt)).scalars().all()
 
     return tokens
 
-async def query_token_for(session, user_info_id):
+async def query_token_for(session, identity_id):
     stmt = (select(IdentifyToken)
-            .where(IdentifyToken.user_info_id == user_info_id)
-            .options(selectinload(IdentifyToken.user_info)))
+            .where(IdentifyToken.identity_id == identity_id))
     tokens = (await session.execute(stmt)).scalars().one_or_none()
 
     return tokens
@@ -103,7 +80,7 @@ async def grant_authority(user_id: str, role: int, session: AsyncSession):
     await session.flush()
 
 ### ==== About Access Token ====
-def issue_access(user_id: ULID, expired_after: timedelta = None):
+def issue_access(user_id: ULID, expired_after: timedelta | None = None):
     issued_at = datetime.now(timezone.utc)
 
     if expired_after is None:
@@ -132,7 +109,7 @@ def decode_access(access: str):
         raise AuthorizationError('Could not validate credentials')
 
 ### ==== About Refresh ====
-async def issue_refresh(session: AsyncSession, owner_id: ULID, expired_after: timedelta = None):
+async def issue_refresh(session: AsyncSession, owner_id: ULID, expired_after: timedelta | None = None):
     stmt = select(RefreshToken).filter(RefreshToken.owner_id == owner_id)
     tokens = (await session.execute(stmt)).scalars().all()
     for token in tokens:
@@ -157,7 +134,7 @@ async def issue_refresh(session: AsyncSession, owner_id: ULID, expired_after: ti
     await session.flush()
     return refresh_token
 
-async def reissue_refresh(session: AsyncSession, user_id: ULID, refresh: ULID, expired_after: timedelta = None):
+async def reissue_refresh(session: AsyncSession, user_id: ULID, refresh: ULID, expired_after: timedelta | None = None):
     stmt = select(RefreshToken).filter(RefreshToken.token_id == refresh)
     refresh_token = (await (session.execute(stmt))).scalars().one_or_none()
 
@@ -200,9 +177,12 @@ async def service_signup(
 ):
     token = await query_token(identify_token, session)
     if token is None:
-        raise AuthorizationError(message='Invalid identify token', payload={'invalid': 'identify_token'})
+        raise AuthorizationError(message='Unknown identify token', payload={'invalid': 'identify_token'})
 
-    # db에서 중복되는 유저가 있는지 확인하기
+    if token.expired:
+        raise AuthorizationError(message='Token already used', payload={'invalid': 'identify_token'})
+
+    # Check duplicated user exists in the database
     email, username, password = email, username, password
 
     stmt = select(User).filter(User.username == username)
@@ -211,9 +191,9 @@ async def service_signup(
 
     # user 등록 로직
     hashed = hasher.hash(password)
-    user_info_id = token.user_info_id
+    identity_id = token.identity_id
 
-    user = User(username=username, password=hashed, email=str(email), user_info_id=user_info_id)
+    user = User(username=username, password=hashed, email=str(email), identity_id=identity_id)
     session.add(user)
     await session.flush()
 
@@ -222,13 +202,12 @@ async def service_signup(
 
     session.add(SyncStatus(user_id=user.user_id))
 
-    # 회원가입 완료시 identifer 삭제
-    await session.delete(token)
+    # Make identify token expired
+    token.expired = True
     await session.flush()
 
-    await session.refresh(user, attribute_names=['user_info'])
-
     return user
+
 
 async def service_login(username: str, password: str, session: AsyncSession):
     stmt = select(User).filter(User.username == username)
@@ -253,6 +232,7 @@ async def service_login(username: str, password: str, session: AsyncSession):
     refresh = refresh.token_id
 
     return access, refresh
+
 
 async def service_refresh(refresh: str, session: AsyncSession):
     try:

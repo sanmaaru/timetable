@@ -1,69 +1,101 @@
 import ulid
-from sqlalchemy import ForeignKey, String, SmallInteger
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import ForeignKey, String, SmallInteger, UniqueConstraint
+from sqlalchemy.orm import Mapped, mapped_column, relationship, declared_attr
 
 from app.core.database import Base, ULID, generate_ulid
 
+class Semester(Base):
+    __tablename__ = 'semesters'
 
-class Lecture(Base):
+    semester_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
+    code: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
+    is_current: Mapped[bool] = mapped_column(default=False)
+
+
+class SemesterMixin:
+    semester_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('semesters.semester_id'), nullable=False)
+
+
+class Lecture(Base, SemesterMixin):
     __tablename__ = 'lectures'
 
     lecture_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
     subject_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('subjects.subject_id'), nullable=False)
     teacher_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'))
     room: Mapped[str] = mapped_column(String(255), nullable=True)
+    division: Mapped[int] = mapped_column(SmallInteger, nullable=False)
 
-    subject = relationship('Subject', back_populates='lectures')
+    subject: Mapped['Subject'] = relationship('Subject', back_populates='lectures')
     teacher_info = relationship('UserInfo', back_populates='taught_lectures')
-    classes = relationship(
-        'Class', back_populates='lecture', cascade='all, delete-orphan'
+    periods: Mapped['Period'] = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
+    enrollments: Mapped['Enrollment'] = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
+    classmates = relationship('UserInfo', secondary='enrollments', back_populates='classes',
+                              overlaps='enrollments, clazz')
+
+    __table_args__ = (
+        UniqueConstraint(
+            "subject_id",
+            "teacher_info_id",
+            "division",
+            "semester_id",
+            name="unique_lecture_semester"
+        ),
     )
 
 
-class Class(Base):
-    __tablename__ = 'classes'
-
-    class_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
-    division: Mapped[int] = mapped_column(SmallInteger, nullable=False)
-    lecture_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('lectures.lecture_id'), nullable=False)
-
-    lecture = relationship('Lecture', back_populates='classes')
-
-    periods = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
-    enrollments = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
-    classmates = relationship('UserInfo', secondary='enrollments', back_populates='classes',
-                                 overlaps='enrollments, clazz')
-
-
-class Subject(Base):
+class Subject(Base, SemesterMixin):
     __tablename__ = 'subjects'
 
     subject_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
-    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     lectures = relationship(
         'Lecture', back_populates='subject', cascade='all, delete-orphan'
     )
 
+    __table_args__ = (
+        UniqueConstraint("name", "semester_id", name="unique_subject_semester"),
+    )
 
-class Enrollment(Base):
+
+class Enrollment(Base, SemesterMixin):
     __tablename__ = 'enrollments'
 
-    class_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('classes.class_id'), primary_key=True)
-    user_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'), primary_key=True,
-                                                    nullable=False)
+    lecture_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('lectures.lecture_id'), nullable=False)
+    user_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'), nullable=False)
 
-    clazz = relationship('Class', back_populates='enrollments')
+    lecture: Mapped[Lecture] = relationship('Lecture', back_populates='enrollments')
     user_info = relationship('UserInfo', back_populates='enrollments')
 
+    __table_args__ = (
+        UniqueConstraint(
+            'lecture_id',
+            'user_info_id',
+            'semester_id',
+            name='unique_enrollment_semester'
+        )
+    )
 
-class Period(Base):
+
+class Period(Base, SemesterMixin):
     DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
     __tablename__ = 'periods'
 
-    class_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('classes.class_id'), primary_key=True)
-    period: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
-    day: Mapped[int] = mapped_column(SmallInteger, primary_key=True)
+    period_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
 
-    clazz = relationship("Class", back_populates='periods')
+    lecture_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('lectures.lecture_id'))
+    period: Mapped[int] = mapped_column(SmallInteger)
+    day: Mapped[int] = mapped_column(SmallInteger)
+
+    lecture: Mapped[Lecture] = relationship("Lecture", back_populates='periods')
+
+    __table_args__ = (
+        UniqueConstraint(
+            'lecture_id',
+            'period',
+            'day',
+            'semester_id',
+            name='unique_period_semester'
+        ),
+    )

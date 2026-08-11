@@ -8,16 +8,16 @@ from fastapi.middleware.cors import CORSMiddleware
 
 import app.sync.hooks
 from app.account.router import router as account_router
-from app.auth.crud import create_admin_info
 from app.auth.router import router as auth_router
 from app.core.config import configs
 from app.core.database import engine, Base, AsyncSessionLocal
+from app.core.dependencies import get_current_semester
 from app.core.exceptions import handle_client_exception, ClientError, global_error_handler, validation_exception_handler
 from app.core.middleware import RequestLogMiddleware
 from app.theme.router import router as theme_router
 from app.timetable.router import router as timetable_router
 from app.upload.router import router as upload_router
-from app.upload.upload import upload_sample_timetable
+from app.upload.crud import upload_sample_timetable, upload_default_semester, upload_admin_user
 from app.util.logger import configure_logger
 
 
@@ -29,8 +29,11 @@ async def lifespan(app: FastAPI):
     async with AsyncSessionLocal() as session:
         try:
             logger.info('[Init] Starting system...')
-            admin_user = await create_admin_info(session)
-            await upload_sample_timetable(admin_user, session)
+            await upload_default_semester(session)
+            current_semester = await get_current_semester(session)
+
+            admin_user = await upload_admin_user(current_semester, session)
+            await upload_sample_timetable(current_semester, admin_user, session)
             logger.info('[Init] System initialization completed')
         except Exception as e:
             logger.error(f'[Init] An error occurred while initializing the system: {e}')

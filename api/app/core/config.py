@@ -6,6 +6,7 @@ class Configs(BaseSettings):
 
     DEBUG: bool
 
+    # Database configs
     SQL_ROOT_PASSWORD: str
     SQL_DATABASE: str
     SQL_USER: str
@@ -18,6 +19,8 @@ class Configs(BaseSettings):
     def DATABASE_URL(self) -> str:
         return f'mariadb+aiomysql://{self.SQL_USER}:{self.SQL_PASSWORD}@{self.SQL_HOST}:{self.SQL_PORT}/{self.SQL_DATABASE}'
 
+
+    # Auth configs
     JWT_SECRET: str
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_MINUTES: int = 10
@@ -26,6 +29,15 @@ class Configs(BaseSettings):
 
     ID_TOKEN_LENGTH: int
 
+    # Administrator configs
+    ADMINISTRATOR_NAME = '관리자'
+    ADMINISTRATOR_TOKEN: str
+    ADMINISTRATOR_IDENTITY_ID: str
+
+    # Semester configs
+    DEFAULT_SEMESTER_CODE: str = 'DEFAULT_SEMESTER'
+
+    # Theme configs
     THEME_DEFAULT_COLOR: str = '#2B2A2A'
     THEME_DEFAULT_TEXT_COLOR: str = '#EEEEEE'
 

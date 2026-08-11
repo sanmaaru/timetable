@@ -27,6 +27,7 @@ class ULIDModel(ulid.ULID):
         except ValueError:
             raise ValueError("Invalid ULID format")
 
+
 class Role:
 
     STUDENT=1

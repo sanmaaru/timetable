@@ -8,20 +8,21 @@ from app.core.response import create_response, BaseResponse
 from app.core.types import ULIDModel
 from app.sync.dependencies import get_status_dependency
 from app.sync.schemas import VersionResponse
-from app.timetable.crud import query_timetable, query_class
-from app.timetable.schemas import TimetableSchema, ClassSchema
+from app.timetable.crud import query_timetable, query_lecture
+from app.timetable.schemas import TimetableSchema, LectureSchema
 
-router = APIRouter()
+router = APIRouter(prefix='/timetable', tags=['Timetable'])
 theme_status_dep = get_status_dependency('timetable')
 
-@router.get('/timetable/status', response_model=BaseResponse[VersionResponse])
+@router.get('/status', response_model=BaseResponse[VersionResponse])
 async def get_theme_status(
         user: User = Depends(get_current_user),
         timetable_status: VersionResponse = Depends(theme_status_dep),
 ):
     return create_response(timetable_status, user.user_id)
 
-@router.get('/timetable', response_model=BaseResponse[TimetableSchema])
+
+@router.get('/', response_model=BaseResponse[TimetableSchema])
 async def get_timetable(
         user: User = Depends(get_current_user),
         session: AsyncSession = Depends(conn)
@@ -30,12 +31,13 @@ async def get_timetable(
 
     return create_response(timetable, user.user_id)
 
-@router.get('/class/{class_id}', response_model=BaseResponse[ClassSchema])
+
+@router.get('/lecture/{lecture_id}', response_model=BaseResponse[LectureSchema])
 async def get_class(
         user: User = Depends(get_current_user),
-        class_id: ULIDModel = Path(description='class id you want to query'),
+        lecture_id: ULIDModel = Path(description='class id you want to query'),
         session: AsyncSession = Depends(conn)
 ):
-    classes = await query_class(class_id, session)
+    classes = await query_lecture(lecture_id, session)
 
     return create_response(classes, user.user_id)

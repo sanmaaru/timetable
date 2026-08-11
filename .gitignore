@@ -1,10 +1,13 @@
 # Python-generated files
-api/__pycache__/
+*/__pycache__/
 *.py[oc]
 build/
 dist/
 wheels/
 *.egg-info
+.idea
+*/.idea
+
 
 # Virtual environments
 api/.venv
@@ -14,16 +17,15 @@ api/uv-x86_64-unknown-linux-gnu.tar.gz
 .env
 api/.env
 
-# Resources
-api/resources
-
 # db
 db_data
 initdb
 
-.idea
-
 # web
 web/node_modules
 web/.idea
->>>>>>> feature/theme
+
+# parser
+parser/__pycache__
+parser/output
+parser/resources

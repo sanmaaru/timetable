@@ -1,14 +1,29 @@
-from typing import List, Any
+from typing import List, Any, Optional
 
 import ulid.ulid
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from pydantic import field_validator
 
-from app.auth.schemas import UserSchema, UserInfoSchema
+from app.auth.schemas import UserInfoSchema
 from app.timetable.model import Period
 
 
-#
+class SubjectSchema(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+    subject_id: str
+    name: str
+
+    lecture_count: int = 0
+
+
+    @field_validator("subject_id", mode="before")
+    @classmethod
+    def serialize_ulid(cls, v: Any):
+        if isinstance(v, ulid.ULID):
+            return str(v)
+
+        return v
+
 
 class PeriodSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -25,31 +40,28 @@ class PeriodSchema(BaseModel):
         return v
 
 
-class ClassSchema(BaseModel):
+class LectureSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
-    class_id: str
+    lecture_id: str
     division: int
     periods: List[PeriodSchema]
+    room: Optional[str]
     classmates: List[UserInfoSchema]
 
-    lecture: Any = Field(exclude=True)
+    subject: Any = Field(exclude=True)
+    teacher_info: Any = Field(exclude=True)
 
     # 중첩된 관계에서 데이터 추출 (Flattening)
     @computed_field
     @property
     def subject(self) -> str:
-        return self.lecture.subject.name
+        return self.subject.name
 
     @computed_field
     @property
     def teacher(self) -> str:
-        return self.lecture.teacher_info.name
-
-    @computed_field
-    @property
-    def room(self) -> str:
-        return self.lecture.room
+        return self.teacher_info.name
 
     @field_validator("class_id", mode="before")
     @classmethod
@@ -65,4 +77,4 @@ class TimetableSchema(BaseModel):
 
     username: str
     name: str
-    timetable: List[ClassSchema]
+    timetable: List[LectureSchema]

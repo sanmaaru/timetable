@@ -5,14 +5,14 @@ from ulid import ULID
 
 from app.auth.model import User, UserInfo
 from app.core.config import configs
-from app.timetable.model import Subject, Lecture, Class, Enrollment
+from app.timetable.model import Subject, Lecture, Enrollment
 from app.theme.exceptions import ThemeNotOwnedByError, ThemeNotFoundError, ThemeInUseError, LastThemeDeleteError, \
     ColorSchemeNotFoundError
 from app.theme.model import Theme, ColorScheme
 from app.theme.schemas import ColorSchemeSchema
 
 
-async def service_create_default_theme(user: User, session: AsyncSession, title: str = None):
+async def service_create_default_theme(user: User, session: AsyncSession, title: str | None = None):
     if title is None:
         title = f'{user.username}님의 테마'
 
@@ -23,10 +23,9 @@ async def service_create_default_theme(user: User, session: AsyncSession, title:
 
     stmt = (select(Subject)
             .join(Lecture, Lecture.subject_id == Subject.subject_id)
-            .join(Class, Class.lecture_id == Lecture.lecture_id)
-            .join(Enrollment, Enrollment.class_id == Class.class_id)
+            .join(Enrollment, Enrollment.lecture_id == Lecture.lecture_id)
             .join(UserInfo, UserInfo.user_info_id == Enrollment.user_info_id)
-            .where(UserInfo.user_info_id == user.user_info_id)
+            .where(UserInfo.identity_id == user.identity_id)
             .distinct())
     result = await session.execute(stmt)
     subjects = set(result.scalars().all())
@@ -44,6 +43,7 @@ async def service_create_default_theme(user: User, session: AsyncSession, title:
 
     return await query_theme(theme.theme_id, user, session)
 
+
 async def service_delete_theme(user: User, theme_id: ULID, session: AsyncSession):
     theme = await query_theme(theme_id, user, session)
 
@@ -57,6 +57,7 @@ async def service_delete_theme(user: User, theme_id: ULID, session: AsyncSession
 
     await session.delete(theme)
 
+
 async def query_selected_theme(user: User, session: AsyncSession):
     stmt = (select(Theme)
             .options(selectinload(Theme.color_schemes).joinedload(ColorScheme.subject),
@@ -66,6 +67,7 @@ async def query_selected_theme(user: User, session: AsyncSession):
     result = await session.execute(stmt)
     return result.scalars().one_or_none()
 
+
 async def query_all_themes(user: User, session: AsyncSession):
     stmt = (select(Theme)
             .options(selectinload(Theme.color_schemes).joinedload(ColorScheme.subject),
@@ -73,6 +75,7 @@ async def query_all_themes(user: User, session: AsyncSession):
             .where(Theme.owner_id == user.user_id))
     result = await session.execute(stmt)
     return result.scalars().all()
+
 
 async def query_theme(theme_id: ULID, user: User, session: AsyncSession):
     stmt = (select(Theme)
@@ -91,12 +94,14 @@ async def query_theme(theme_id: ULID, user: User, session: AsyncSession):
 
     return theme
 
+
 async def service_change_selected_theme(user: User, theme_id: ULID, session: AsyncSession):
     theme = await query_theme(theme_id, user, session)
 
     user.selected_theme_id = theme.theme_id
     await session.flush()
     await session.refresh(user)
+
 
 async def service_change_theme(
         user: User,

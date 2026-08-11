@@ -1,13 +1,15 @@
+import ulid
 from sqlalchemy import select, or_, case
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload, contains_eager
+from sqlalchemy import update
 from ulid import ULID
 
-from app.auth.exceptions import UnknownUserError
+from app.auth.exceptions import UnknownUserError, UnknownUserInfoError
 from app.auth.model import User, IdentifyToken, UserInfo
 
 
-async def query_user(session: AsyncSession, user_id: ULID):
+async def query_user(user_id: ULID, session: AsyncSession):
     stmt = select(User).where(User.user_id == user_id)
     user = (await session.execute(stmt)).scalars().one_or_none()
 
@@ -16,40 +18,27 @@ async def query_user(session: AsyncSession, user_id: ULID):
 
     return user
 
-async def query_user_infos(session, role=None, search=None):
+
+async def query_user_info(identity_id: str, semester_id: ulid.ULID, session: AsyncSession):
     stmt = (select(UserInfo)
-            .outerjoin(UserInfo.user)
-            .options(contains_eager(UserInfo.user)))
+            .where(
+                UserInfo.identity_id == identity_id,
+                UserInfo.semester_id == semester_id
+            ))
 
-    if role is not None:
-        stmt = stmt.where(UserInfo.role == role)
+    user_info = (await session.execute(stmt)).scalars().one_or_none()
 
-    if search:
-        pattern = f'%{search}%'
-        stmt = stmt.where(
-            or_(
-                UserInfo.name.ilike(pattern),
-                User.username.ilike(pattern),
-                User.email.ilike(pattern)
-            )
+    if user_info is None:
+        raise UnknownUserInfoError(
+            'Cannot find user info',
+            payload={'identity_id': identity_id, 'semester_id': semester_id}
         )
 
-        stmt = stmt.order_by(
-            case(
-                (UserInfo.name.ilike(pattern), 1),
-                (User.username.ilike(pattern), 2),
-                else_=3
-            ),
-            UserInfo.name.asc()
-        )
-    else:
-        stmt = stmt.order_by(UserInfo.name.asc())
+    return user_info
 
-    user_infos = (await session.execute(stmt)).scalars().all()
-    return user_infos
 
 async def service_delete_user(session: AsyncSession, user_id: ULID):
-    # 유저 삭제
+    # delete user
     stmt = (select(User)
         .where(User.user_id == user_id)
         .options(
@@ -62,6 +51,6 @@ async def service_delete_user(session: AsyncSession, user_id: ULID):
     user_info = user.user_info
     await session.delete(user)
 
-    # ID Token 생성
-    identify_token = IdentifyToken(user_info_id=user_info.user_info_id)
-    session.add(identify_token)
+    # Reactivate identify token
+    stmt = update(IdentifyToken).where(IdentifyToken.identity_id == user_info.identity_id).values(expired=False)
+    await session.execute(stmt)

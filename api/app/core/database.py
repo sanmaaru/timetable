@@ -1,9 +1,10 @@
 import binascii
+import re
 from typing import Any
 
 import ulid
 from sqlalchemy import (
-    TypeDecorator, BINARY, LargeBinary
+    TypeDecorator, BINARY, LargeBinary, String
 )
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
@@ -37,6 +38,33 @@ class ULID(TypeDecorator):
             return None
 
         return ulid.from_bytes(value)
+
+
+class IdentityId(TypeDecorator):
+
+    impl = String(16)
+    cache_ok = True
+
+    PATTERN = re.compile(r'^[0-9][0-9]{2}-[0-9a-fA-F]{12}$')
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            return None
+
+        if not isinstance(value, str):
+            raise ValueError('Identity id must be a string')
+
+        if len(value) != 16:
+            raise ValueError('Identity id must be a 16 characters long')
+
+        if not self.PATTERN.match(value):
+            raise ValueError('Invalid identity id')
+
+        return value
+
+
+    def process_result_value(self, value, dialect):
+        return value
 
 
 def generate_ulid():

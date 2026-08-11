@@ -2,8 +2,11 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Annotated, Any
 
-from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict, computed_field
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 from ulid import ULID
+
+from app.core.config import configs
+
 
 @dataclass
 class TokenPayload:
@@ -24,7 +27,7 @@ class SignUpInput(BaseModel):
     email: EmailStr
     username: Annotated[str, Field(min_length=3, max_length=20)]
     password: Annotated[str, Field(min_length=8)]
-    identify_token: Annotated[str, Field(min_length=8, max_length=8)]
+    identify_token: Annotated[str, Field(min_length=configs.ID_TOKEN_LENGTH, max_length=configs.ID_TOKEN_LENGTH)]
 
 
 class RefreshTokenInput(BaseModel):
@@ -49,13 +52,13 @@ class TokenPair(BaseModel):
 
 # === schemas ===
 class UserInfoSchema(BaseModel):
-    user_info_id: str
     name: str
     generation: int | None
     clazz: int | None
     number: int | None
     credit: int | None
     role: int
+    identity_id: str
 
     @field_validator('user_info_id', mode='before')
     @classmethod
@@ -67,11 +70,14 @@ class UserInfoSchema(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
 class UserSchema(BaseModel):
     user_id: str | None
     email: str | None
     username: str | None
-    user_info: UserInfoSchema
+    identity_id: str
+
+    user_info: UserInfoSchema | None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -83,15 +89,11 @@ class UserSchema(BaseModel):
 
         return v
 
+
 class IdentifyTokenSchema(BaseModel):
 
     token_id: str
-
-    user_info: Any = Field(exclude=True)
-
-    @computed_field
-    @property
-    def owner_id(self) -> str:
-        return str(self.user_info.user_info_id)
+    identity_id: str
+    expired: bool
 
     model_config = ConfigDict(from_attributes=True)

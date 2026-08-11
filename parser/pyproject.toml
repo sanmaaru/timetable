@@ -1,0 +1,10 @@
+[project]
+name = "timetable-parser"
+version = "1.1.0"
+requires-python = ">=3.13"
+dependencies = [
+    "openpyxl>=3.1.5",
+    "pandas>=3.0.5",
+    "pandas-stubs~=3.0.5",
+    "pydantic>=2.13.4",
+]
