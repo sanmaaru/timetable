@@ -1,12 +1,10 @@
-from inspect import iscoroutine, isawaitable
-
 import structlog
 from fastapi.params import Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.exceptions import AuthorizationError
-from app.auth.model import User
+from app.exceptions.auth import AuthorizationError
+from app.model.auth import User
 from app.core.database import conn
 from app.core.dependencies import get_current_user
 from app.sync.model import SyncStatus

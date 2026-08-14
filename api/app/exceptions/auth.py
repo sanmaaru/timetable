@@ -25,9 +25,3 @@ class UnknownUserInfoError(ClientError):
 
     code = 'UNKNOWN_USER_INFO'
     status_code = status.HTTP_404_NOT_FOUND
-
-
-class RefreshTokenError(AuthorizationError):
-
-    code = 'REFRESH_TOKEN_ERROR'
-    status_code = status.HTTP_401_UNAUTHORIZED

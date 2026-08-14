@@ -28,4 +28,3 @@ web/.idea
 # parser
 parser/__pycache__
 parser/output
-parser/resources

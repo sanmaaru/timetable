@@ -7,6 +7,7 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 
+# Client error handles client side exceptions
 class ClientError(Exception):
 
     code: str = 'BAD_REQUEST'
@@ -18,12 +19,8 @@ class ClientError(Exception):
         self.status_code = status_code or self.status_code
         self.payload = payload or {}
 
-class ConflictError(ClientError):
 
-    code = 'ALREADY_EXISTS'
-    status_code = status.HTTP_409_CONFLICT
-
-
+# Basic error handles server and admin-side exceptions
 class BasicError(Exception):
 
     def __init__(self, message: str, **payloads):

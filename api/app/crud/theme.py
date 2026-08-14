@@ -3,13 +3,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
 from ulid import ULID
 
-from app.auth.model import User, UserInfo
+from app.model.auth import User, UserInfo
 from app.core.config import configs
-from app.timetable.model import Subject, Lecture, Enrollment
-from app.theme.exceptions import ThemeNotOwnedByError, ThemeNotFoundError, ThemeInUseError, LastThemeDeleteError, \
+from app.model.timetable import Subject, Lecture, Enrollment
+from app.exceptions.theme import ThemeNotOwnedByError, ThemeNotFoundError, ThemeInUseError, LastThemeDeleteError, \
     ColorSchemeNotFoundError
-from app.theme.model import Theme, ColorScheme
-from app.theme.schemas import ColorSchemeSchema
+from app.model.theme import Theme, ColorScheme
+from app.schema.theme import ColorSchemeSchema
 
 
 async def service_create_default_theme(user: User, session: AsyncSession, title: str | None = None):

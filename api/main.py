@@ -7,17 +7,17 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.sync.hooks
-from app.account.router import router as account_router
-from app.auth.router import router as auth_router
+from app.router.account import router as account_router
+from app.router.auth import router as auth_router
 from app.core.config import configs
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.dependencies import get_current_semester
 from app.core.exceptions import handle_client_exception, ClientError, global_error_handler, validation_exception_handler
 from app.core.middleware import RequestLogMiddleware
-from app.theme.router import router as theme_router
-from app.timetable.router import router as timetable_router
-from app.upload.router import router as upload_router
-from app.upload.crud import upload_sample_timetable, upload_default_semester, upload_admin_user
+from app.router.theme import router as theme_router
+from app.router.timetable import router as timetable_router
+from app.router.upload import router as upload_router
+from app.crud.upload import upload_sample_timetable, upload_default_semester, upload_admin_user
 from app.util.logger import configure_logger
 
 

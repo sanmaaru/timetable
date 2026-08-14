@@ -3,7 +3,7 @@ from sqlalchemy.orm import Mapper
 
 from app.core.database import generate_ulid
 from app.sync.model import SyncStatus
-from app.theme.model import Theme, ColorScheme
+from app.model.theme import Theme, ColorScheme
 
 
 def update_theme_version(mapper: Mapper, connection: Connection, target: Theme):

@@ -3,14 +3,16 @@ from typing import List
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.admin.crud import query_user_infos, query_subjects
-from app.auth.model import User
-from app.auth.schemas import UserSchema
 from app.core.database import conn
-from app.core.dependencies import get_current_admin_user
+from app.core.dependencies import get_current_admin_user, get_current_semester
 from app.core.response import BaseResponse, create_response
 from app.core.types import get_role
-from app.timetable.schemas import SubjectSchema, PeriodSchema
+from app.crud.auth import crud_user_info
+from app.crud.timetable import crud_subject
+from app.model.auth import User
+from app.model.timetable import Semester
+from app.schema.auth import UserSchema
+from app.schema.timetable import SubjectSchema
 
 router = APIRouter(prefix='/admin', tags=['Admin'])
 
@@ -19,13 +21,16 @@ async def get_user_infos(
         role: str | None = None,
         search: str | None = None,
         user: User = Depends(get_current_admin_user),
+        semester: Semester = Depends(get_current_semester),
         session: AsyncSession = Depends(conn),
 ):
-    user_infos = await query_user_infos(
+    user_infos = crud_user_info.search_by_semester(
+        semester.semester_id,
         session,
         role=get_role(role),
         search=search
     )
+
     user_profiles = []
     for user_info in user_infos:
         u = user_info.user
@@ -34,7 +39,8 @@ async def get_user_infos(
                 user_id=None,
                 email=None,
                 username=None,
-                user_info=user_info
+                user_info=user_info,
+                identity_id = user_info.identity_id,
             )
             user_profiles.append(mock_user)
             continue
@@ -48,14 +54,13 @@ async def get_user_infos(
 async def get_subjects(
         search: str | None = None,
         user: User = Depends(get_current_admin_user),
+        semester: Semester = Depends(get_current_semester),
         session: AsyncSession = Depends(conn),
 ):
-    subjects = [SubjectSchema.model_validate(subject) for subject in await query_subjects(session, search)]
+    subject_data = crud_subject.search_by_semester(
+        semester.semester_id, session, search
+    )
+
+    subjects = [SubjectSchema.model_validate(subject) for subject in subject_data]
     return create_response(subjects, user.user_id)
 
-
-@router.get('/period', response_model=BaseResponse[List[PeriodSchema]])
-async def get_periods(
-        lecture_id: str
-):
-    pass

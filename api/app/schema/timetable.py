@@ -4,8 +4,8 @@ import ulid.ulid
 from pydantic import BaseModel, ConfigDict, Field, computed_field
 from pydantic import field_validator
 
-from app.auth.schemas import UserInfoSchema
-from app.timetable.model import Period
+from app.schema.auth import UserInfoSchema
+from app.model.timetable import Period
 
 
 class SubjectSchema(BaseModel):
@@ -47,7 +47,6 @@ class LectureSchema(BaseModel):
     division: int
     periods: List[PeriodSchema]
     room: Optional[str]
-    classmates: List[UserInfoSchema]
 
     subject: Any = Field(exclude=True)
     teacher_info: Any = Field(exclude=True)

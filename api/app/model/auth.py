@@ -5,7 +5,7 @@ from sqlalchemy import String, ForeignKey, SmallInteger, Integer, DateTime, Uniq
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.core.database import Base, ULID, generate_ulid, IdentityId
-from app.timetable.model import SemesterMixin
+from app.model.timetable import SemesterMixin
 from app.util.common import get_grade, generate_token
 
 

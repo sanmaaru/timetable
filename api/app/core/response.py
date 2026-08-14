@@ -1,13 +1,9 @@
 from datetime import datetime, timezone
 from typing import Generic, TypeVar
 
-import ulid
 from fastapi import status
-from fastapi.encoders import jsonable_encoder
 from pydantic import BaseModel, Field
 from ulid.ulid import ULID
-
-from app.auth.model import User
 
 T = TypeVar("T")
 

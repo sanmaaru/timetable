@@ -1,3 +1,4 @@
+import datetime
 import json
 from typing import List
 
@@ -9,10 +10,11 @@ from starlette.responses import JSONResponse
 from app.core.database import conn
 from app.core.dependencies import get_current_admin_user, get_current_semester
 from app.core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
-from app.timetable.model import Semester
-from app.upload.crud import *
-from app.upload.exceptions import InvalidFormatError
-from app.upload.schema import UploadConfirmInput, SubjectFileSchema, UploadResponse, LectureInfoSchema, \
+from app.crud.timetable import crud_lecture, crud_period, crud_enrollment
+from app.crud.upload import *
+from app.exceptions.upload import InvalidFormatError
+from app.schema.auth import UserInfoData
+from app.schema.upload import UploadConfirmInput, SubjectFileSchema, UploadResponse, LectureInfoSchema, \
     LectureListSchema, PeriodListSchema, EnrollmentListSchema, StudentInfoListSchema, StudentInfoSchema, \
     TeacherInfoListSchema, TeacherInfoSchema
 
@@ -21,7 +23,7 @@ router = APIRouter(prefix="/upload", tags=["Upload"])
 
 @router.get("/", response_model=List[UserInfoData])
 async def healthy():
-    return JSONResponse('healthy: ' + datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    return JSONResponse('healthy: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
 
 @router.post("/subject", response_model=BaseResponse[UploadResponse])
@@ -47,7 +49,7 @@ async def upload_subject(
         },
         session=session
     )
-    is_exist = len(await list_subjects(semester.semester_id, session)) != 0
+    is_exist = await crud_subject.count_by_semester(semester.semester_id, session)!= 0
     await session.commit()
 
     return create_response(
@@ -78,7 +80,7 @@ async def upload_lecture(
         },
         session=session
     )
-    is_exist = len(await list_lectures(semester.semester_id, session)) != 0
+    is_exist = await crud_lecture.count_by_semester(semester.semester_id, session) != 0
     await session.commit()
 
     return create_response(
@@ -109,7 +111,7 @@ async def upload_period(
         },
         session=session
     )
-    is_exist = len(await list_periods(semester.semester_id, session)) != 0
+    is_exist = await crud_period.count_by_semester(semester.semester_id, session) != 0
     await session.commit()
 
     return create_response(
@@ -140,7 +142,7 @@ async def upload_period(
         },
         session=session
     )
-    is_exist = len(await list_enrollments(semester.semester_id, session)) != 0
+    is_exist = crud_enrollment.count_by_semester(semester.semester_id, session) != 0
     await session.commit()
 
     return create_response(
@@ -171,7 +173,10 @@ async def upload_student(
         },
         session=session
     )
-    is_exist = len(await list_students(semester.semester_id, session)) != 0
+
+    is_exist = crud_user_info.count_by_semester(
+        semester.semester_id, session, condition=[UserInfo.role == Role.TEACHER]
+    ) != 0
     await session.commit()
 
     return create_response(
@@ -202,7 +207,9 @@ async def upload_teacher(
         },
         session=session
     )
-    is_exist = len(await list_teachers(semester.semester_id, session)) != 0
+    is_exist = crud_user_info.count_by_semester(
+        semester.semester_id, session, condition=[UserInfo.role == Role.TEACHER]
+    ) != 0
     await session.commit()
 
     return create_response(

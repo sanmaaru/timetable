@@ -104,8 +104,6 @@ class Base(DeclarativeBase):
     pass
 
 # ===== Basic =====
-
-
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,
     class_=AsyncSession,
@@ -119,3 +117,6 @@ async def conn():
             yield session
         finally:
             await session.close()
+
+
+# ===== Default Data Creation ======

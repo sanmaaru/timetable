@@ -1,16 +1,20 @@
 import structlog
 from fastapi import Header, Depends, status
+from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.account.crud import query_user_info
-from app.auth.crud import decode_access
-from app.auth.exceptions import AuthorizationError, NoPermissionError
-from app.auth.model import User
+from app.crud.account import query_user_info
+
+from app.core.config import configs
+from app.crud.auth import decode_access
+from app.exceptions.auth import AuthorizationError, NoPermissionError
+from app.model.auth import User
 from app.core.database import conn
 from app.core.types import Role
-from app.timetable.exceptions import SemesterNotSelectedError
-from app.timetable.model import Semester
+from app.exceptions.timetable import SemesterNotSelectedError
+from app.model.timetable import Semester
+from app.schema.auth import TokenPayload
 
 logger = structlog.get_logger()
 
@@ -40,8 +44,18 @@ async def get_current_user(
     if scheme.lower() != 'bearer':
         raise AuthorizationError(message="Infelicitous token type")
 
-    jwt = decode_access(token)
-    user_id = jwt.sub
+    # Decode jwt
+    try:
+        payload = jwt.decode(token, configs.JWT_SECRET, algorithms=[configs.JWT_ALGORITHM])
+        decoded = TokenPayload(**payload)
+
+    except JWTError:
+        raise AuthorizationError('Could not validate credentials')
+
+    if decoded.sub is None:
+        raise AuthorizationError('Token missing subject (user_id)')
+
+    user_id = decoded.sub
     stmt = select(User).filter(User.user_id == user_id)
 
     user = (await session.execute(stmt)).scalars().one_or_none()
