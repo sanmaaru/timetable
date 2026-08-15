@@ -58,9 +58,10 @@ def organize_optional_lecture(
     for subject, division in subject_division_map.items():
         for div in range(1, division + 1):
             for lec in subject_lecture_map[subject]:
+                teacher = lec.teacher.split(',')[0].strip()
                 lecture_data.append(_create_lecture_object(
                     subject,
-                    lec.teacher,
+                    teacher,
                     lec.room,
                     div
                 ))
@@ -83,10 +84,11 @@ def organize_periods(
 
     period_data = []
     for period in periods:
+        teacher = period.teacher.split(",")[0].strip()
         period_data.append(_create_period_object(
             period.subject,
             period.division,
-            period.teacher,
+            teacher,
             period.day,
             period.period
         ))
@@ -137,10 +139,10 @@ def organize_subjects(
         output_path: str
 ):
     subjects = parse_subjects(subject_path)
-    subject_data = [s.subject for s in subjects]
+    subject_data = set([s.subject for s in subjects])
 
     with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(subject_data, f, ensure_ascii=False, indent=4)
+        json.dump(list(subject_data), f, ensure_ascii=False, indent=4)
 
 
 def organize_common_timetable(
@@ -157,18 +159,20 @@ def organize_common_timetable(
     period_data = []
     for key, timetable in common_timetable.items():
         for lecture in timetable.lectures:
+            teacher = lecture.teacher.split(',')[0].strip()
             lecture_data.append(_create_lecture_object(
                 lecture.subject,
-                lecture.teacher,
+                teacher,
                 lecture.room,
                 key[1],
             ))
 
         for period in timetable.periods:
+            teacher = period.teacher.split(',')[0].strip()
             period_data.append(_create_period_object(
               period.subject,
               period.division,
-              period.teacher,
+              teacher,
               period.day,
               period.period
             ))

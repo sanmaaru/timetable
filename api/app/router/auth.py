@@ -1,9 +1,10 @@
 from typing import List, Optional
 
+import structlog
 from fastapi import APIRouter, Depends, status, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.auth import crud_identify_token
+from app.crud.auth import crud_identify_token, crud_user
 from app.model.auth import IdentifyToken
 from app.schema.auth import TokenPair, LoginInput, SignUpInput, UserSchema, RefreshTokenInput, IdentifyTokenSchema
 from app.core.database import conn
@@ -13,6 +14,8 @@ from app.schema.upload import IdentityIdStr
 from app.servcie.auth import AuthService
 
 router = APIRouter(prefix='/auth', tags=['auth'])
+
+logger = structlog.get_logger()
 
 # ===== Login =====
 @router.post('/login', response_model=BaseResponse[TokenPair])
@@ -38,6 +41,7 @@ async def refresh(input: RefreshTokenInput, session: AsyncSession = Depends(conn
 @router.post('/signup', response_model=BaseResponse[UserSchema], status_code=status.HTTP_201_CREATED)
 async def signup(input: SignUpInput, session: AsyncSession = Depends(conn)):
     user = await AuthService.signup(input.email, input.username, input.password, input.identify_token, session)
+
     await session.commit()
 
     return create_response(user, user.user_id, status_code=status.HTTP_201_CREATED)

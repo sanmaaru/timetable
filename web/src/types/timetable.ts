@@ -1,8 +1,8 @@
 import {Schedule} from "./schedule";
-import {Class} from "./class";
+import {Lecture} from "./class";
 
 export interface TimetableData {
     name: string;
     schedules: Schedule[];
-    classes: Class[];
+    lectures: Lecture[];
 }

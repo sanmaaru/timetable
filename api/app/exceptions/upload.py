@@ -9,15 +9,9 @@ class InvalidFormatError(ClientError):
     status_code = status.HTTP_400_BAD_REQUEST
 
 
-class DraftNotFoundError(ClientError):
+class UploadError(ClientError):
 
-    code = 'DRAFT_NOT_FOUND'
-    status_code = status.HTTP_404_NOT_FOUND
+    code = 'UPLOAD_ERROR'
+    status_code = status.HTTP_400_BAD_REQUEST
 
-
-class UploadError(BasicError):
-    pass
-
-
-class ParseError(BasicError):
     pass

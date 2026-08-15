@@ -53,10 +53,10 @@ const useTimetable = () => {
         }
     }, []);
 
-    const getSchedule = useCallback((classId: string) => {
+    const getSchedule = useCallback((lectureId: string) => {
         if (!timetableData?.schedules) return null
         for (const schedule of timetableData?.schedules) {
-            if(schedule.clazz.classId == classId)
+            if(schedule.lecture)
                 return schedule
         }
 

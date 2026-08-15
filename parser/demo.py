@@ -50,15 +50,15 @@ organize_common_timetable(
 )
 
 
-create_identity_id_map(
-    str(student_path),
-    [
-        str(output_dir / 'lecture.json'),
-        str(output_dir / 'lecture_1.json'),
-        str(output_dir / 'lecture_3.json')
-    ],
-    str(output_dir / 'identity_id.json'),
-)
+# create_identity_id_map(
+#     str(student_path),
+#     [
+#         str(output_dir / 'lecture.json'),
+#         str(output_dir / 'lecture_1.json'),
+#         str(output_dir / 'lecture_3.json')
+#     ],
+#     str(output_dir / 'identity_id.json'),
+# )
 
 organize_teachers(
     [

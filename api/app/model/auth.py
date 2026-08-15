@@ -1,9 +1,11 @@
 from datetime import datetime
 
 import ulid
-from sqlalchemy import String, ForeignKey, SmallInteger, Integer, DateTime, UniqueConstraint, Boolean
+from sqlalchemy import String, ForeignKey, SmallInteger, Integer, DateTime, UniqueConstraint, Boolean, CHAR, \
+    CheckConstraint, func
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
+from app.core.config import Configs, configs
 from app.core.database import Base, ULID, generate_ulid, IdentityId
 from app.model.timetable import SemesterMixin
 from app.util.common import get_grade, generate_token
@@ -11,6 +13,7 @@ from app.util.common import get_grade, generate_token
 
 class User(Base):
     __tablename__ = 'users'
+    __allow_unmapped__ = True
 
     user_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
     username: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
@@ -73,6 +76,10 @@ class RefreshToken(Base):
 class IdentifyToken(Base):
     __tablename__ = 'identify_tokens'
 
-    token_id: Mapped[str] = mapped_column(String(12), primary_key=True, default=generate_token)
+    token_id: Mapped[str] = mapped_column(CHAR(configs.ID_TOKEN_LENGTH), primary_key=True, default=generate_token)
     identity_id: Mapped[str] = mapped_column(IdentityId(), nullable=False, unique=True)
     expired: Mapped[bool] = mapped_column(Boolean(), default=False)
+
+    __table_args__ = (
+        CheckConstraint(func.length(token_id) == configs.ID_TOKEN_LENGTH, name='check_token_length'),
+    )

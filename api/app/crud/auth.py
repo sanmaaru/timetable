@@ -53,6 +53,21 @@ class CRUDUserInfo(CRUDSemesterMixin[UserInfo]):
         return await session.scalars(stmt)
 
 
+    async def query_by_identity_id(
+            self,
+            identity_id: str,
+            semester_id: ULID,
+            session : AsyncSession,
+    ):
+        return await self.query_by_semester(
+            semester_id=semester_id,
+            session=session,
+            condition=[
+                UserInfo.identity_id == identity_id
+            ]
+        )
+
+
 class CRUDIdentifyToken(CRUDBase[IdentifyToken]):
 
     def __init__(self):

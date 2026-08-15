@@ -42,10 +42,10 @@ async def upload_subject(
         raise InvalidFormatError(message="Invalid file format")
 
     draft = await create_upload_draft(
-        action_name='UPLOAD_SUBJECTS',
+        action_name='UPLOAD_SUBJECT',
         payload={
             'subjects': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -76,7 +76,7 @@ async def upload_lecture(
         action_name='UPLOAD_LECTURE',
         payload={
             'lectures': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -107,7 +107,7 @@ async def upload_period(
         action_name='UPLOAD_PERIOD',
         payload={
             'periods': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -121,7 +121,7 @@ async def upload_period(
 
 
 @router.post("/enrollment", response_model=BaseResponse[UploadResponse])
-async def upload_period(
+async def upload_enrollment(
         file: UploadFile,
         semester: Semester = Depends(get_current_semester),
         user: User = Depends(get_current_admin_user),
@@ -131,14 +131,14 @@ async def upload_period(
         contents = await file.read()
         json_data = json.loads(contents)
         data: list[EnrollmentInfoSchema] = EnrollmentListSchema.model_validate(json_data).root
-    except (json.JSONDecodeError, ValidationError):
-        raise InvalidFormatError(message="Invalid file format")
+    except (json.JSONDecodeError, ValidationError) as e:
+        raise InvalidFormatError(message=f"Invalid file format")
 
     draft = await create_upload_draft(
         action_name='UPLOAD_ENROLLMENT',
         payload={
             'enrollments': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -169,7 +169,7 @@ async def upload_student(
         action_name='UPLOAD_STUDENT',
         payload={
             'students': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -200,10 +200,10 @@ async def upload_teacher(
         raise InvalidFormatError(message="Invalid file format")
 
     draft = await create_upload_draft(
-        action_name='UPLOAD_TEACHERS',
+        action_name='UPLOAD_TEACHER',
         payload={
             'teachers': data,
-            'semester_id': semester.semester_id
+            'semester_id': str(semester.semester_id)
         },
         session=session
     )
@@ -224,9 +224,8 @@ async def confirm(
         user: User = Depends(get_current_admin_user),
         session: AsyncSession = Depends(conn)
 ):
-    if confirm.confirm:
-        await apply_draft(confirm.draft_id, confirm.mode, session)
-        await session.commit()
+    await apply_draft(confirm.draft_id, confirm.mode, confirm.confirm, session)
+    await session.commit()
 
     return SuccessResponse(
         meta=MetaSchema(

@@ -44,25 +44,30 @@ class LectureSchema(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     lecture_id: str
+    subject: str
     division: int
     periods: List[PeriodSchema]
     room: Optional[str]
 
-    subject: Any = Field(exclude=True)
     teacher_info: Any = Field(exclude=True)
 
-    # 중첩된 관계에서 데이터 추출 (Flattening)
-    @computed_field
-    @property
-    def subject(self) -> str:
-        return self.subject.name
+    @field_validator("subject")
+    @classmethod
+    def extract_subject_name(cls, v: Any) -> str:
+        if hasattr(v, 'name'):
+            return v.name
+
+        if isinstance(v, dict) and 'name' in v:
+            return v['name']
+
+        return str(v)
 
     @computed_field
     @property
     def teacher(self) -> str:
         return self.teacher_info.name
 
-    @field_validator("class_id", mode="before")
+    @field_validator("lecture_id", mode="before")
     @classmethod
     def serialize_ulid(cls, v: Any):
         if isinstance(v, ulid.ULID):

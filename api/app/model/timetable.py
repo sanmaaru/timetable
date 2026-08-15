@@ -27,9 +27,9 @@ class Lecture(Base, SemesterMixin):
 
     subject: Mapped['Subject'] = relationship('Subject', back_populates='lectures')
     teacher_info = relationship('UserInfo', back_populates='taught_lectures')
-    periods: Mapped['Period'] = relationship('Period', back_populates='clazz', cascade='all, delete-orphan')
-    enrollments: Mapped['Enrollment'] = relationship('Enrollment', back_populates='clazz', cascade='all, delete-orphan')
-    classmates = relationship('UserInfo', secondary='enrollments', back_populates='classes',
+    periods: Mapped['Period'] = relationship('Period', back_populates='lecture', cascade='all, delete-orphan')
+    enrollments: Mapped['Enrollment'] = relationship('Enrollment', back_populates='lecture', cascade='all, delete-orphan')
+    classmates = relationship('UserInfo', secondary='enrollments', back_populates='lectures',
                               overlaps='enrollments, clazz')
 
     __table_args__ = (
@@ -61,6 +61,7 @@ class Subject(Base, SemesterMixin):
 class Enrollment(Base, SemesterMixin):
     __tablename__ = 'enrollments'
 
+    enrollment_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
     lecture_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('lectures.lecture_id'), nullable=False)
     user_info_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('user_infos.user_info_id'), nullable=False)
 
@@ -73,7 +74,7 @@ class Enrollment(Base, SemesterMixin):
             'user_info_id',
             'semester_id',
             name='unique_enrollment_semester'
-        )
+        ),
     )
 
 

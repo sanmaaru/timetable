@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from data_collector import create_enroll_id_map
+from data_collector import organize_common_timetable, organize_optional_lecture, organize_periods
 
 resource_dir = Path(__file__).parent / 'resources'
 output_dir = Path(__file__).parent / 'output'
@@ -15,9 +15,9 @@ timetable_3_path = resource_dir / 'common_timetable_3.xlsx'
 alias_3_path = resource_dir / 'alias_3.json'
 student_path = resource_dir / 'student.xlsx'
 
-
-create_enroll_id_map(
+organize_periods(
+    str(period_path),
+    str(lecture_path),
     str(enrollment_path),
-    str(student_path),
-    str(resource_dir / 'enroll_ids.json'),
+    str(output_dir / 'period.json')
 )

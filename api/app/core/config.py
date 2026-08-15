@@ -30,7 +30,7 @@ class Configs(BaseSettings):
     ID_TOKEN_LENGTH: int
 
     # Administrator configs
-    ADMINISTRATOR_NAME = '관리자'
+    ADMINISTRATOR_NAME: str = '관리자'
     ADMINISTRATOR_TOKEN: str
     ADMINISTRATOR_IDENTITY_ID: str
 

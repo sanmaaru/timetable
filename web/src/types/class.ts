@@ -1,5 +1,5 @@
-export interface Class {
-    classId: string;
+export interface Lecture {
+    lectureId: string;
     subject: string;
     teacher: string;
     division: number;

@@ -38,7 +38,7 @@ class SubjectFileSchema(RootModel[List[str]]):
 
 class LectureInfoSchema(BaseModel):
     subject: str = Field(..., description='과목명', examples=['동물생리학'])
-    teacher: Optional[str] = Field(..., description='선생님 이름', examples=['신성현'])
+    teacher: Optional[str] = Field(None, description='선생님 이름', examples=['신성현'])
     room: Optional[str] = Field(None, description='강의실', examples=['3-6 교실'])
     division: int = Field(..., description='분반', examples=[2])
 

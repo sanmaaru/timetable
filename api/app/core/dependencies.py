@@ -4,10 +4,9 @@ from jose import JWTError, jwt
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.crud.account import query_user_info
-
 from app.core.config import configs
-from app.crud.auth import decode_access
+from app.crud.auth import crud_user_info
+from app.crud.timetable import crud_semester
 from app.exceptions.auth import AuthorizationError, NoPermissionError
 from app.model.auth import User
 from app.core.database import conn
@@ -21,8 +20,7 @@ logger = structlog.get_logger()
 async def get_current_semester(
         session: AsyncSession = Depends(conn)
 ) -> Semester:
-    stmt = select(Semester).where(Semester.is_current == True)
-    current_semester = (await session.execute(stmt)).scalars().one_or_none()
+    current_semester = await crud_semester.query(session, condition=[Semester.is_current == True])
 
     if current_semester is None:
         raise SemesterNotSelectedError(message="Semester not selected")
@@ -72,7 +70,7 @@ async def get_current_user_with_info(
         session: AsyncSession = Depends(conn)
 ) -> User:
     # Query and inject user info to user
-    user_info = await query_user_info(user.identity_id, semester.semester_id, session)
+    user_info = await crud_user_info.query_by_identity_id(user.identity_id, semester.semester_id, session)
     setattr(user, 'user_info', user_info)
 
     return user

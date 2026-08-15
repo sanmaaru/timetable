@@ -3,17 +3,6 @@ from starlette import status
 from app.core.exceptions import ClientError
 
 
-class ThemeNotFoundError(ClientError):
-
-    code = 'THEME_NOT_FOUND'
-    status_code = status.HTTP_404_NOT_FOUND
-
-class ColorSchemeNotFoundError(ClientError):
-
-    code = 'COLORS_NOT_FOUND'
-    status_code = status.HTTP_404_NOT_FOUND
-
-
 class ThemeNotOwnedByError(ClientError):
 
     code = 'THEME_NOT_OWNED'

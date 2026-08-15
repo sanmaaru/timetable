@@ -33,10 +33,12 @@ async def lifespan(app: FastAPI):
             current_semester = await get_current_semester(session)
 
             admin_user = await upload_admin_user(current_semester, session)
+            await session.commit()
             await upload_sample_timetable(current_semester, admin_user, session)
             logger.info('[Init] System initialization completed')
         except Exception as e:
             logger.error(f'[Init] An error occurred while initializing the system: {e}')
+            raise e
     yield
 
 app = FastAPI(

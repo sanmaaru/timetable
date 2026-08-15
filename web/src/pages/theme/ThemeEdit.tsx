@@ -35,8 +35,8 @@ const ThemeEdit = () => {
     const targetClassId = useMemo(() => {
         if(!focus || !timetableData) return null;
 
-        const targetSchedule = timetableData.schedules.find(s => s.clazz.subject == focus)
-        return targetSchedule ? targetSchedule.clazz.classId : null;
+        const targetSchedule = timetableData.schedules.find(s => s.lecture.subject == focus)
+        return targetSchedule ? targetSchedule.lecture.lectureId : null;
     }, [focus, timetableData])
     const { itemsRef, wrapperRef, transformStyle } = useZoom(targetClassId, {})
 
@@ -103,7 +103,9 @@ const ThemeEdit = () => {
             }
         }
 
-        const colorScheme = themeData.colorSchemes.find((value) => value.subject == schedule.clazz.subject)
+        const colorScheme = themeData.colorSchemes.find(
+            (value) => value.subject == schedule.lecture.subject
+        )
         if (!colorScheme) {
             return;
         }

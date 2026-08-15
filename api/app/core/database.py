@@ -1,13 +1,16 @@
 import binascii
+import pickle
 import re
-from typing import Any
+from typing import Any, Optional
 
 import ulid
 from sqlalchemy import (
-    TypeDecorator, BINARY, LargeBinary, String
+    TypeDecorator, BINARY, LargeBinary, String, Dialect
 )
+from sqlalchemy.dialects.mysql import LONGBLOB
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.sql.type_api import _T
 
 from app.core.config import configs
 
@@ -65,6 +68,21 @@ class IdentityId(TypeDecorator):
 
     def process_result_value(self, value, dialect):
         return value
+
+
+class LargePickleType(TypeDecorator):
+    impl = LONGBLOB
+    cache_ok = True
+
+    def process_bind_param(self, value: Optional[_T], dialect: Dialect) :
+        if value is not None:
+            return pickle.dumps(value)
+        return None
+
+    def process_result_value(self, value: Optional[_T], dialect: Dialect) :
+        if value is not None:
+            return pickle.loads(value)
+        return None
 
 
 def generate_ulid():

@@ -1,4 +1,5 @@
-from sqlalchemy import tuple_
+import structlog
+from sqlalchemy import tuple_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from ulid.ulid import ULID
 
@@ -12,6 +13,7 @@ from app.schema.upload import LectureInfoSchema, PeriodInfoSchema, EnrollmentInf
     TeacherInfoSchema
 
 
+logger = structlog.get_logger()
 class UploadPayloadService:
 
     @staticmethod
@@ -37,9 +39,9 @@ class UploadPayloadService:
             teacher_names.add(teacher.strip())
 
         teachers_map = {} # { teacher name: teacher info id }
-        teacher_data = crud_user_info.list_by_semester(
+        teacher_data = await crud_user_info.list_by_semester(
             semester_id, session,
-            option = [
+            condition = [
                 UserInfo.name.in_(teacher_names),
                 UserInfo.role == Role.TEACHER,
             ]
@@ -50,7 +52,7 @@ class UploadPayloadService:
         # Query subjects of the lectures
         subject_map = {
             s.name: s.subject_id
-            for s in await crud_subject.query_by_semester(semester_id, session)
+            for s in await crud_subject.list_by_semester(semester_id, session)
         } # { subject : subject id }
 
         # Building payloads of uploading data
@@ -81,7 +83,7 @@ class UploadPayloadService:
     async def prepare_period_payloads(periods: list[PeriodInfoSchema], semester_id: ULID, session: AsyncSession):
         # Query lectures of the periods
         lectures = [(p.lecture.subject, p.lecture.teacher,  p.lecture.division) for p in periods]
-        lecture_data = crud_lecture.list_with_relation(
+        lecture_data = await crud_lecture.list_with_relation(
             semester_id, session, condition=[
                 tuple_(
                     Subject.name,
@@ -134,17 +136,20 @@ class UploadPayloadService:
 
         # Query students in the enrollment list
         students = [(e.student.name, e.student.identity_id) for e in enrollments]
-        student_data = crud_user_info.query_by_semester(
+        student_data = await crud_user_info.list_by_semester(
             semester_id, session, condition=[
                 tuple_(
                     UserInfo.name,
                     UserInfo.identity_id
                 ).in_(students),
-                UserInfo.role == Role.STUDENT,
+                or_(
+                    UserInfo.role == Role.STUDENT,
+                    UserInfo.role == Role.ADMINISTRATOR
+                )
             ]
         )
         student_map = {
-            (s.name, s.enrollment_id): s.user_info_id
+            (s.name, s.identity_id): s.user_info_id
             for s in student_data
         }
 
@@ -195,7 +200,7 @@ class UploadPayloadService:
             session: AsyncSession,
     ):
         # Prepare Identify Token data for new user
-        id_token_data =crud_identify_token.list(session, condition=[IdentifyToken.identity_id.in_(identity_ids)])
+        id_token_data = await crud_identify_token.list(session, condition=[IdentifyToken.identity_id.in_(identity_ids)])
         existing_identify_tokens = set([tkn.identity_id for tkn in id_token_data])
 
         # Does not create identify token for already registered user exists

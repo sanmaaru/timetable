@@ -1,8 +1,8 @@
 import {privateAxiosClient} from "./axiosClient";
-import {Class, Student} from "../types/class";
+import {Lecture, Student} from "../types/class";
 import {Day, Period, Schedule} from "../types/schedule";
 import {BaseResponseDto} from "./dto/response.dto";
-import {ClassDto, TimetableDto} from "./dto/timetable.dto";
+import {LectureDto, TimetableDto} from "./dto/timetable.dto";
 import {UserInfoDto} from "./dto/user.dto";
 import {withApi} from "./api";
 
@@ -20,23 +20,23 @@ const parseStudents = (students: UserInfoDto[]): Student[] => {
     })
 }
 
-const parseClass = (clazz: ClassDto): Class => {
+const parseClass = (lecture: LectureDto): Lecture => {
     return {
-        classId: clazz.class_id,
-        subject: clazz.subject,
-        teacher: clazz.teacher,
-        division: clazz.division,
-        room: clazz.room,
-        classmates: parseStudents(clazz.classmates)
+        lectureId: lecture.lecture_id,
+        subject: lecture.subject,
+        teacher: lecture.teacher,
+        division: lecture.division,
+        room: lecture.room,
+        classmates: parseStudents(lecture.classmates)
     }
 }
 
 const parseTimetableData = (timetable: TimetableDto) => {
-    const classes: Class[] = [];
+    const lectures: Lecture[] = [];
     const schedules: Schedule[] = [];
     timetable.timetable.forEach((entry: any) => {
-        const newClass = parseClass(entry);
-        classes.push(newClass);
+        const newLecture = parseClass(entry);
+        lectures.push(newLecture);
 
         const periodsByDay: { [key: string]: number[] } = {};
 
@@ -65,7 +65,7 @@ const parseTimetableData = (timetable: TimetableDto) => {
                     day: day as Day,
                     period_from: start as Period,
                     period_to: prev as Period,
-                    clazz: newClass
+                    lecture: newLecture
                 });
                 start = current;
                 prev = current;
@@ -75,21 +75,21 @@ const parseTimetableData = (timetable: TimetableDto) => {
                 day: day as Day,
                 period_from: start as Period,
                 period_to: prev as Period,
-                clazz: newClass
+                lecture: newLecture
             })
         })
     })
 
     const name = timetable.name;
-    return { name, classes, schedules};
+    return { name, lectures, schedules };
 }
 
 export const fetchTimetable = () => {
     return withApi(async () => {
         const response = await privateAxiosClient.get<BaseResponseDto<TimetableDto>>('/timetable', {});
 
-        const { name, classes, schedules} = parseTimetableData(response.data.data);
-        return { name, classes, schedules }
+        const { name, lectures, schedules } = parseTimetableData(response.data.data);
+        return { name, lectures, schedules }
     })
 
 }

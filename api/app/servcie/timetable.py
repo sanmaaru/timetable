@@ -17,9 +17,8 @@ class TimetableService:
             semester: Semester,
             session: AsyncSession,
     ):
-        user_info = await crud_user_info.query_by_semester(
-            semester.semester_id, session,
-            condition=[UserInfo.identity_id == identity_id],
+        user_info = await crud_user_info.query_by_identity_id(
+            identity_id, semester.semester_id, session,
             option=[
                 selectinload(UserInfo.lectures).options(
                     joinedload(Lecture.subject),

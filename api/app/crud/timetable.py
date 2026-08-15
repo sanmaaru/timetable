@@ -1,10 +1,12 @@
+from typing import Type
+
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import contains_eager, joinedload, selectinload
 
 from app.core.database import ULID
-from app.crud.base import CRUDSemesterMixin
-from app.model.timetable import Lecture, Subject, Period, Enrollment
+from app.crud.base import CRUDSemesterMixin, CRUDBase, ModelType
+from app.model.timetable import Lecture, Subject, Period, Enrollment, Semester
 
 
 class CRUDSubject(CRUDSemesterMixin[Subject]):
@@ -89,11 +91,19 @@ class CRUDPeriod(CRUDSemesterMixin[Period]):
 
 
 class CRUDEnrollment(CRUDSemesterMixin[Enrollment]):
+
     def __init__(self):
         super().__init__(Enrollment)
+
+
+class CRUDSemester(CRUDBase[Semester]):
+
+    def __init__(self):
+        super().__init__(Semester)
 
 
 crud_subject = CRUDSubject()
 crud_lecture = CRUDLecture()
 crud_period = CRUDPeriod()
 crud_enrollment = CRUDEnrollment()
+crud_semester = CRUDSemester()

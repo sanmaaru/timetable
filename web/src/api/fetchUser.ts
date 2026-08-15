@@ -8,7 +8,7 @@ import {withApi} from "./api";
 const parseUser = (data: UserDto): UserInfo => {
     return {
         userId: data.user_id,
-        userInfoId: data.user_info.user_info_id,
+        identityId: data.identity_id,
         username: data.username,
         email: data.email,
         name: data.user_info.name,
@@ -45,10 +45,10 @@ export const deleteUser= () => {
     })
 }
 
-export const fetchIdToken = (userInfoId: string) => {
+export const fetchIdToken = (identityId: string) => {
     return withApi(async () => {
         const response = await privateAxiosClient.get<BaseResponseDto<IdTokenDto>>(
-            `/auth/identifier/${userInfoId}`
+            `/auth/identifier/${identityId}`
         )
 
         return response.data.data.token_id
@@ -65,7 +65,7 @@ export const fetchIdTokens = () => {
         const tokenMap: Record<string, string | null> = {};
         if(tokenArray) {
             for (const token of tokenArray) {
-                tokenMap[token.owner_id] = token.token_id
+                tokenMap[token.identity_id] = token.token_id
             }
         }
         return tokenMap

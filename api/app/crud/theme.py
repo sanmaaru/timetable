@@ -3,11 +3,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
 from ulid import ULID
 
+from app.exceptions.base import NotFoundError
 from app.model.auth import User, UserInfo
 from app.core.config import configs
 from app.model.timetable import Subject, Lecture, Enrollment
-from app.exceptions.theme import ThemeNotOwnedByError, ThemeNotFoundError, ThemeInUseError, LastThemeDeleteError, \
-    ColorSchemeNotFoundError
+from app.exceptions.theme import ThemeNotOwnedByError, ThemeInUseError, LastThemeDeleteError
 from app.model.theme import Theme, ColorScheme
 from app.schema.theme import ColorSchemeSchema
 
@@ -86,7 +86,7 @@ async def query_theme(theme_id: ULID, user: User, session: AsyncSession):
     theme = result.scalars().one_or_none()
 
     if theme is None:
-        raise ThemeNotFoundError('Theme does not exist')
+        raise NotFoundError('Theme does not exist')
 
     # published 되지 않은 theme의 user가 owner와 다르다면 소유하지 않았다는 뜻
     if (not theme.published) and (theme.owner_id != user.user_id):
@@ -125,4 +125,4 @@ async def service_change_theme(
                 target_scheme.color = new_scheme.color
                 target_scheme.text_color = new_scheme.text_color
             else:
-                raise ColorSchemeNotFoundError('Cannot find color scheme for ' + str(new_scheme.subject))
+                raise NotFoundError('Cannot find color scheme for ' + str(new_scheme.subject))

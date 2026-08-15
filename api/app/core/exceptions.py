@@ -10,7 +10,7 @@ from starlette.responses import JSONResponse
 # Client error handles client side exceptions
 class ClientError(Exception):
 
-    code: str = 'BAD_REQUEST'
+    code: str = 'CLIENT_ERROR'
     status_code: int = status.HTTP_400_BAD_REQUEST
 
     def __init__(self, message: str, code: str = None, status_code: int = None, payload: dict = None):

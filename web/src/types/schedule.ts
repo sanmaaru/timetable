@@ -1,4 +1,4 @@
-import {Class} from "./class";
+import {Lecture} from "./class";
 
 export const DAY_LIST = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'] as const;
 export type Day = typeof DAY_LIST[number];
@@ -10,5 +10,5 @@ export interface Schedule {
     day: Day;
     period_from: Period;
     period_to: Period;
-    clazz: Class;
+    lecture: Lecture;
 }

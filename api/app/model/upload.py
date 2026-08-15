@@ -1,11 +1,11 @@
 from typing import Any, Callable, Dict, Literal
 
 import ulid
-from sqlalchemy import ForeignKey, String, JSON
+from sqlalchemy import ForeignKey, String, JSON, PickleType
 from sqlalchemy.orm import Mapped
 from sqlalchemy.testing.schema import mapped_column
 
-from app.core.database import Base, ULID, generate_ulid
+from app.core.database import Base, ULID, generate_ulid, LargePickleType
 
 OVERWRITE_TRANSITIONS: Dict[str, Callable[..., Any]] = {}
 REWRITE_TRANSITIONS: Dict[str, Callable[..., Any]] = {}
@@ -25,4 +25,4 @@ class UploadDraft(Base):
 
     draft_id: Mapped[ulid.ULID] = mapped_column(ULID(), primary_key=True, default=generate_ulid)
     action_name: Mapped[str] = mapped_column(String(128), nullable=False)
-    payload: Mapped[dict] = mapped_column(JSON, nullable=False)
+    payload: Mapped[dict] = mapped_column(LargePickleType, nullable=False)

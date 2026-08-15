@@ -6,7 +6,7 @@ import useUser from "../hooks/useUser";
 import {useToast} from "../components/alert/toast/ToastContext";
 
 interface ProtectedRouteProps {
-    allowedRoles: Role[]
+    allowedRoles?: Role[]
 }
 
 const ProtectedRoute = ({ allowedRoles = [...ROLE_LIST] }: ProtectedRouteProps) => {

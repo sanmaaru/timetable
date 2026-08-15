@@ -60,14 +60,6 @@ class UserInfoSchema(BaseModel):
     role: int
     identity_id: str
 
-    @field_validator('user_info_id', mode='before')
-    @classmethod
-    def serialize_ulid(cls, v: Any):
-        if isinstance(v, ULID):
-            return str(v)
-
-        return v
-
     model_config = ConfigDict(from_attributes=True)
 
 

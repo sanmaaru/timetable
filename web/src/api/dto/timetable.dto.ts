@@ -5,8 +5,8 @@ export interface PeriodDto {
     day: string;
 }
 
-export interface ClassDto {
-    class_id: string;
+export interface LectureDto {
+    lecture_id: string;
     division: number;
     periods: PeriodDto[];
     classmates: UserInfoDto[];
@@ -16,7 +16,7 @@ export interface ClassDto {
 }
 
 export interface TimetableDto {
-    name: string
-    username: string
-    timetable: ClassDto[]
+    name: string;
+    username: string;
+    timetable: LectureDto[];
 }

@@ -12,7 +12,7 @@ from app.crud.timetable import crud_subject
 from app.model.auth import User
 from app.model.timetable import Semester
 from app.schema.auth import UserSchema
-from app.schema.timetable import SubjectSchema
+from app.schema.timetable import SubjectSchema, LectureSchema
 
 router = APIRouter(prefix='/admin', tags=['Admin'])
 
@@ -64,3 +64,11 @@ async def get_subjects(
     subjects = [SubjectSchema.model_validate(subject) for subject in subject_data]
     return create_response(subjects, user.user_id)
 
+@router.get('/lectures', response_model=BaseResponse[List[LectureSchema]])
+async def get_subjects(
+        search: str | None = None,
+        user: User = Depends(get_current_admin_user),
+        semester: Semester = Depends(get_current_semester),
+        session: AsyncSession = Depends(conn),
+):
+    pass

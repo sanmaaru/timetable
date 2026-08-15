@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic, Type, Any
+from typing import TypeVar, Generic, Type, Any, List
 
 from sqlalchemy import select, func, inspect, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -17,7 +17,7 @@ def get_state_dict(item: dict[str, Any] | DeclarativeBase):
         state = inspect(item)
         item_dict = {}
         for attr in state.mapper.column_attrs:
-            for attr.key in state.dict:
+            if attr.key in state.dict:
                 item_dict[attr.key] = state.dict[attr.key]
     else:
         raise TypeError(f"Unsupported data type in insert list: {type(item)}")
@@ -35,12 +35,12 @@ class CRUDBase(Generic[ModelType]):
 
     async def insert(
             self,
-            data: DeclarativeBase | dict[str, Any] | list[dict[str, Any] | DeclarativeBase],
+            data: DeclarativeBase | dict[str, Any] | List[dict[str, Any] | DeclarativeBase],
             session: AsyncSession,
             ignore_duplicates: bool = False,
-            update_duplicates_keys: list[str] | None = None
+            update_duplicates_keys: List[str] | None = None
     ):
-        items = data if isinstance(data, list) else [data]
+        items = data if isinstance(data, List) else [data]
         if not items:
             return
 
@@ -61,11 +61,23 @@ class CRUDBase(Generic[ModelType]):
         await session.flush()
 
 
+    async def create(
+            self,
+            data: ModelType | dict[str, Any],
+            session: AsyncSession
+    ) -> ModelType:
+        instance = self.model(**data) if isinstance(data, dict) else data
+        session.add(instance)
+        await session.flush()
+
+        return instance
+
+
     async def query(
             self,
             session: AsyncSession,
-            condition: list | None = None,
-            option: list | None = None,
+            condition: List | None = None,
+            option: List | None = None,
     ):
         stmt = select(self.model)
         if condition:
@@ -80,8 +92,8 @@ class CRUDBase(Generic[ModelType]):
     async def count(
             self,
             session: AsyncSession,
-            condition: list | None = None,
-            option: list | None = None,
+            condition: List | None = None,
+            option: List | None = None,
 
     ) -> int:
         stmt = select(func.count()).select_from(self.model)
@@ -97,8 +109,8 @@ class CRUDBase(Generic[ModelType]):
     async def list(
             self,
             session: AsyncSession,
-            condition: list | None = None,
-            option: list | None = None,
+            condition: List | None = None,
+            option: List | None = None,
     ):
         stmt = select(self.model)
         if condition:
@@ -113,7 +125,7 @@ class CRUDBase(Generic[ModelType]):
     async def delete(
             self,
             session: AsyncSession,
-            condition: list | None = None,
+            condition: List | None = None,
     ):
         stmt = delete(self.model)
         if condition:
@@ -127,7 +139,7 @@ class CRUDBase(Generic[ModelType]):
             self,
             data: dict[str, Any] | DeclarativeBase,
             session: AsyncSession,
-            condition: list | None = None
+            condition: List | None = None
     ):
         stmt = update(self.model).values(**get_state_dict(data))
         if condition:
@@ -139,7 +151,7 @@ class CRUDBase(Generic[ModelType]):
 
     async def bulk_update(
             self,
-            data: list[dict[str, Any] | DeclarativeBase],
+            data: List[dict[str, Any] | DeclarativeBase],
             session: AsyncSession
     ):
         if not data:
@@ -161,11 +173,11 @@ class CRUDSemesterMixin(CRUDBase[SemesterMixinModelType]):
 
     async def insert_by_semester(
             self,
+            data: SemesterMixinModelType | dict[str, Any] | list[dict[str, Any] | SemesterMixinModelType],
             semester_id: ULID,
-            data: DeclarativeBase | dict[str, Any] | list[dict[str, Any] | DeclarativeBase],
             session: AsyncSession,
             ignore_duplicates: bool = False,
-            update_duplicate_keys: list[str] | None = None
+            update_duplicates_keys: list[str] | None = None
     ):
         items = data if isinstance(data, list) else [data]
         if not items:
@@ -183,8 +195,21 @@ class CRUDSemesterMixin(CRUDBase[SemesterMixinModelType]):
             data=items,
             session=session,
             ignore_duplicates=ignore_duplicates,
-            update_duplicates_keys=update_duplicate_keys
+            update_duplicates_keys=update_duplicates_keys
         )
+
+    async def create_by_semster(
+            self,
+            data: SemesterMixinModelType | dict[str, Any],
+            semester_id: ULID,
+            session: AsyncSession
+    ) -> SemesterMixinModelType:
+        instance = self.model(**data) if isinstance(data, dict) else data
+        setattr(instance, 'semester_id', semester_id)
+        session.add(instance)
+        await session.flush()
+
+        return instance
 
     async def query_by_semester(
             self, semester_id: ULID,
