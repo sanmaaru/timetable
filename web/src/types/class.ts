@@ -4,7 +4,6 @@ export interface Lecture {
     teacher: string;
     division: number;
     room: string;
-    classmates: Student[];
 }
 
 export interface Student {

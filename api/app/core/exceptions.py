@@ -6,6 +6,8 @@ from starlette import status
 from starlette.requests import Request
 from starlette.responses import JSONResponse
 
+from app.core.config import configs
+
 
 # Client error handles client side exceptions
 class ClientError(Exception):
@@ -68,6 +70,8 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     error_details = exc.errors()
 
     request.state.error = error_details
+    if configs.DEBUG:
+        logger.warning(exc.errors())
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content=jsonable_encoder({
@@ -85,3 +89,4 @@ async def global_error_handler(request: Request, exc: Exception):
             'request_id': request.headers.get('X-Request-Id')
         }
     )
+

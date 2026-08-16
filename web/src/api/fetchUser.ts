@@ -1,4 +1,4 @@
-import {UserInfo} from "../types/account";
+import {IdToken, UserInfo} from "../types/account";
 import {privateAxiosClient} from "./axiosClient";
 import {getRole} from "../util/common";
 import {BaseResponseDto} from "./dto/response.dto";
@@ -51,7 +51,7 @@ export const fetchIdToken = (identityId: string) => {
             `/auth/identifier/${identityId}`
         )
 
-        return response.data.data.token_id
+        return response.data.data
     })
 }
 
@@ -62,10 +62,10 @@ export const fetchIdTokens = () => {
         )
         const tokenArray = response.data.data;
 
-        const tokenMap: Record<string, string | null> = {};
+        const tokenMap: Record<string, IdToken> = {};
         if(tokenArray) {
             for (const token of tokenArray) {
-                tokenMap[token.identity_id] = token.token_id
+                tokenMap[token.identity_id] = token
             }
         }
         return tokenMap
@@ -75,7 +75,7 @@ export const fetchIdTokens = () => {
 export const fetchUserInfos = (role: string) => {
     return withApi(async () => {
         const response = await privateAxiosClient.get<BaseResponseDto<UserDto[]>> (
-            `/account/userInfo`,
+            `/admin/userInfo`,
             {
                 params: { role },
             }

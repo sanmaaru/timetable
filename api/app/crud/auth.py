@@ -50,7 +50,7 @@ class CRUDUserInfo(CRUDSemesterMixin[UserInfo]):
         else:
             stmt = stmt.order_by(UserInfo.name.asc())
 
-        return await session.scalars(stmt)
+        return (await session.scalars(stmt)).all()
 
 
     async def query_by_identity_id(
@@ -58,13 +58,15 @@ class CRUDUserInfo(CRUDSemesterMixin[UserInfo]):
             identity_id: str,
             semester_id: ULID,
             session : AsyncSession,
+            option: list | None = None
     ):
         return await self.query_by_semester(
             semester_id=semester_id,
             session=session,
             condition=[
                 UserInfo.identity_id == identity_id
-            ]
+            ],
+            option=option
         )
 
 

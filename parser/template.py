@@ -69,29 +69,62 @@ class CreditCell(Cell[int]):
         return CreditCell.__type__
 
 
-class ClassCell(Cell[tuple[str, int]]):
+# class ClassCell(Cell[tuple[str, int]]):
+#
+#     __type__ = 'class'
+#
+#     def match(self, content: str) -> bool:
+#         sep = content.split(" ")
+#         if len(sep) < 3:
+#             return False
+#
+#         div = content.split(" ")[-2]
+#         div, suffix = div[:-1], div[-1]
+#         div = div.strip()
+#         if suffix != '반' or not div.isdigit():
+#             return False
+#
+#         return True
+#
+#     def interpret(self, content: str) -> tuple[str, int]:
+#         div = content.split(" ")[-2]
+#         div, _ = div[:-1], div[-1]
+#         lec = " ".join(content.split(" ")[:-2])
+#         return lec, int(div)
+#
+#     def name(self) -> str:
+#         return ClassCell.__type__
+
+class ClassCell(Cell[tuple[str, int, str]]):
 
     __type__ = 'class'
 
+    PATTERN = r"^(?P<subject>.+?)\s+(?P<class>\d+)반\s*\((?P<teacher>[^,]+)"
+
     def match(self, content: str) -> bool:
-        sep = content.split(" ")
-        if len(sep) < 3:
+        match = re.search(self.PATTERN, content)
+        if not match:
             return False
 
-        div = content.split(" ")[-2]
-        div, suffix = div[:-1], div[-1]
-        div = div.strip()
-        if suffix != '반' or not div.isdigit():
+        data = match.groupdict()
+        if not data['class'].isdigit():
             return False
-        
+
         return True
-    
-    def interpret(self, content: str) -> tuple[str, int]:
-        div = content.split(" ")[-2]
-        div, _ = div[:-1], div[-1]
-        lec = " ".join(content.split(" ")[:-2])
-        return lec, int(div)
-    
+
+
+    def interpret(self, content: str) -> tuple[str, int, str]:
+        match = re.search(self.PATTERN, content)
+        if not match:
+            raise ValueError('Somethinig went wrong parsing class')
+
+        data = match.groupdict()
+        subject = data['subject']
+        division = int(data['class'])
+        teacher  = data['teacher']
+        return subject, division, teacher
+
+
     def name(self) -> str:
         return ClassCell.__type__
     
@@ -131,7 +164,7 @@ class SubjectCell(Cell[str]):
 
         content = re.sub(r'[A-Za-z1-9]$', '', content)
 
-        return content
+        return content.strip()
     
     def name(self) -> str:
         return SubjectCell.__type__
@@ -144,7 +177,7 @@ class TeacherCell(Cell[str]):
         return not is_empty(content)
     
     def interpret(self, content: str) -> str:
-        content = content.replace('\n', ', ')
+        content = content.replace('\n', ', ').split('(')[0].strip()
 
         return content
     
@@ -387,6 +420,15 @@ DAY = RegexCell(r'([월화수목금])', 'day')
 STUDENT_NAME = RegexCell(r'^([\s\S]*)$', 'name')
 STUDENT_NUMBER = StudentNumberCell()
 
+# template = Template([[NAME, CREDIT, EMPTY, EMPTY, EMPTY],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS],
+#                      [CLASS, CLASS, CLASS, CLASS, CLASS]])
+
 template = Template([[NAME, CREDIT, EMPTY, EMPTY, EMPTY],
                      [CLASS, CLASS, CLASS, CLASS, CLASS],
                      [CLASS, CLASS, CLASS, CLASS, CLASS],
@@ -490,7 +532,7 @@ def parse_lectures(path: str) -> list[LectureInfo]:
     board = get_board(path)
     data = template_room.convolute(board)
     lecture_info_list = []
-    for _, contents in data.items():
+    for pos, contents in data.items():
         contents = list(chain.from_iterable(contents))
         subject = str(find('subject', contents)).strip().replace("\n", "")
         for idx, (type, content) in enumerate(contents):
@@ -508,67 +550,47 @@ def parse_lectures(path: str) -> list[LectureInfo]:
 
     return lecture_info_list
 
-def parse_division(path: str) -> dict[str, int]:
-    board = get_board(path)
-    data = template.convolute(board)
-    subject_division_map = {}
-    for _, contents in data.items():
-        for row_content in contents:
-            for type_content in row_content:
-                type = type_content[0]
-                content = type_content[1]
-
-                if type != 'class' or content is None:
-                    continue
-
-                subject = content[0]
-                division = content[1]
-
-                subject_division_map[subject] = max(subject_division_map.get(subject, 0), division)
-
-    return subject_division_map
-
-
-PERIOD_START_COL = 2
-def parse_multi_tch_periods(path: str) -> list[PeriodInfo]:
-    board = get_board(path)
-    data = template_period.convolute(board)
-    period_info_list = []
-    subject_cache = "None" # if subject is none, use latest subject
-    for _, contents in data.items():
-        contents = list(chain.from_iterable(contents))
-        subject, teacher, periods = "", "", []
-        for idx, type_content in enumerate(contents):
-            type = type_content[0]
-            content = type_content[1]
-            if type == 'subject':
-                if content is None:
-                    subject = subject_cache
-                    continue
-
-                subject = content
-                subject_cache = subject
-
-            if type == 'teacher':
-                if content is None:
-                    continue
-
-                teacher = content
-
-            if type == 'period':
-                if content is None:
-                    continue
-
-                day = idx - (PERIOD_START_COL - 1)
-                for division, p in content:
-                    periods.append((division, day, p))
-
-
-        for period in periods:
-            period_info = PeriodInfo(subject=subject, teacher=teacher, division=period[0], day=period[1], period=period[2])
-            period_info_list.append(period_info)
-
-    return period_info_list
+# PERIOD_START_COL = 2
+# def parse_multi_tch_periods(path: str) -> list[PeriodInfo]:
+#     board = get_board(path)
+#     data = template_period.convolute(board)
+#     period_info_list = []
+#     subject_cache = "None" # if subject is none, use latest subject
+#     for _, contents in data.items():
+#         contents = list(chain.from_iterable(contents))
+#         subject, teacher, periods = "", "", []
+#         for idx, type_content in enumerate(contents):
+#             type = type_content[0]
+#             content = type_content[1]
+#             if type == 'subject':
+#                 if content is None:
+#                     subject = subject_cache
+#                     continue
+#
+#                 subject = content
+#                 subject_cache = subject
+#
+#             if type == 'teacher':
+#                 if content is None:
+#                     continue
+#
+#                 teacher = content
+#
+#             if type == 'period':
+#                 if content is None:
+#                     continue
+#
+#                 day = idx - (PERIOD_START_COL - 1)
+#                 for division, p in content:
+#                     periods.append((division, day, p))
+#
+#
+#         for period in periods:
+#             period_info = PeriodInfo(subject=subject, teacher=teacher, division=period[0], day=period[1], period=period[2])
+#             period_info_list.append(period_info)
+#
+#     return period_info_list
+#
 
 def parse_periods(path: str) -> list[PeriodInfo]:
     board = get_board(path)
@@ -583,34 +605,35 @@ def parse_periods(path: str) -> list[PeriodInfo]:
                     continue
 
                 if type == 'class':
-                    period_info = PeriodInfo(subject=content[0], teacher="Unknown", division=content[1], day=i + 1,
+                    period_info = PeriodInfo(subject=content[0], teacher=content[2], division=content[1], day=i + 1,
                                              period=j)
                     if period_info not in period_info_list:
                         period_info_list.append(period_info)
 
     return period_info_list
+#
+# def unify_periods(periods: list[PeriodInfo], muti_tch_period: list[PeriodInfo], lectures: list[LectureInfo]) -> list[PeriodInfo]:
+#     period_info_list = copy.deepcopy(muti_tch_period)
+#     multi_tch_subject = []
+#     for period in muti_tch_period:
+#         multi_tch_subject.append(period.subject)
+#
+#     subject_teacher_map = {}
+#     for lecture in lectures:
+#         if lecture.subject in multi_tch_subject:
+#             continue
+#
+#         subject_teacher_map[lecture.subject] = lecture.teacher
+#
+#     for period in periods:
+#         if period.subject in multi_tch_subject:
+#             continue
+#
+#         period.teacher = subject_teacher_map[period.subject]
+#         period_info_list.append(period)
+#
+#     return period_info_list
 
-def unify_periods(periods: list[PeriodInfo], muti_tch_period: list[PeriodInfo], lectures: list[LectureInfo]) -> list[PeriodInfo]:
-    period_info_list = copy.deepcopy(muti_tch_period)
-    multi_tch_subject = []
-    for period in muti_tch_period:
-        multi_tch_subject.append(period.subject)
-
-    subject_teacher_map = {}
-    for lecture in lectures:
-        if lecture.subject in multi_tch_subject:
-            continue
-
-        subject_teacher_map[lecture.subject] = lecture.teacher
-
-    for period in periods:
-        if period.subject in multi_tch_subject:
-            continue
-
-        period.teacher = subject_teacher_map[period.subject]
-        period_info_list.append(period)
-
-    return period_info_list
 
 MARKING_START_COL = 7
 def parse_subjects(path: str) -> list[SubjectInfo]:

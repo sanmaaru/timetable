@@ -1,11 +1,11 @@
 import style from './UserElement.module.css';
 import React from "react";
-import {UserInfo} from "../../types/account";
+import {IdToken, UserInfo} from "../../types/account";
 import {useIdToken} from "../../hooks/useUser";
 
 export interface UserElementProps {
     userInfo: UserInfo;
-    idToken: string | null;
+    idToken: IdToken;
 }
 
 export const UserElement = ({ userInfo, idToken }: UserElementProps) => {
@@ -20,7 +20,9 @@ export const UserElement = ({ userInfo, idToken }: UserElementProps) => {
                 </div>
             </div>
             <span className={style.email}>{userInfo.email}</span>
-            <span className={`${style.idToken} ${idToken ?? style.expired}`}>{idToken ?? 'Expired'}</span>
+            <span className={`${style.idToken} ${idToken.expired ? style.expired : ''}`}>
+                {idToken.expired ? 'Expired' : idToken.token_id}
+            </span>
         </div>
     )
 }

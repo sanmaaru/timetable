@@ -20,24 +20,26 @@ const parseStudents = (students: UserInfoDto[]): Student[] => {
     })
 }
 
-const parseClass = (lecture: LectureDto): Lecture => {
+const parseLecture = (lecture: LectureDto): Lecture => {
     return {
         lectureId: lecture.lecture_id,
         subject: lecture.subject,
         teacher: lecture.teacher,
         division: lecture.division,
         room: lecture.room,
-        classmates: parseStudents(lecture.classmates)
     }
 }
 
 const parseTimetableData = (timetable: TimetableDto) => {
     const lectures: Lecture[] = [];
     const schedules: Schedule[] = [];
+    console.log(timetable)
     timetable.timetable.forEach((entry: any) => {
-        const newLecture = parseClass(entry);
-        lectures.push(newLecture);
+        console.log('test', entry)
 
+        const newLecture = parseLecture(entry);
+
+        console.log('test2', newLecture)
         const periodsByDay: { [key: string]: number[] } = {};
 
         entry.periods.forEach((period: any) => {
@@ -80,16 +82,25 @@ const parseTimetableData = (timetable: TimetableDto) => {
         })
     })
 
+
     const name = timetable.name;
     return { name, lectures, schedules };
 }
 
 export const fetchTimetable = () => {
     return withApi(async () => {
-        const response = await privateAxiosClient.get<BaseResponseDto<TimetableDto>>('/timetable', {});
+        const response = await privateAxiosClient.get<BaseResponseDto<TimetableDto>>('/timetable/', {});
 
         const { name, lectures, schedules } = parseTimetableData(response.data.data);
         return { name, lectures, schedules }
     })
+}
 
+export const fetchClassmates = (lectureId: string) => {
+    return withApi(async () => {
+        const response
+            = await privateAxiosClient.get<BaseResponseDto<UserInfoDto[]>>(`/timetable/classmates/${lectureId}`, {});
+
+        return parseStudents(response.data.data);
+    })
 }

@@ -135,6 +135,15 @@ class CRUDBase(Generic[ModelType]):
         await session.flush()
 
 
+    async def delete_model(
+            self,
+            session: AsyncSession,
+            model: ModelType
+    ):
+        await session.delete(model)
+        await session.flush()
+
+
     async def update(
             self,
             data: dict[str, Any] | DeclarativeBase,
@@ -147,6 +156,7 @@ class CRUDBase(Generic[ModelType]):
 
         await session.execute(stmt)
         await session.flush()
+
 
 
     async def bulk_update(

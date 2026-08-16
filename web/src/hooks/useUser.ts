@@ -1,5 +1,5 @@
 import {useCallback, useEffect, useRef, useState} from "react";
-import {UserInfo} from "../types/account";
+import {IdToken, UserInfo} from "../types/account";
 import {deleteUser, fetchCurrentUser, fetchIdToken, fetchIdTokens, fetchUser, fetchUserInfos} from "../api/fetchUser";
 import {useToast} from "../components/alert/toast/ToastContext";
 import {removeTokens} from "../auth/auth";
@@ -69,7 +69,7 @@ export const useUserAction = () => {
 export const useIdToken = (userInfoId: string) => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [idToken, setIdToken] = useState<string | null>(null);
+    const [idToken, setIdToken] = useState<IdToken | null>(null);
     const isMounted = useRef<boolean>(true);
 
     const loadData = useCallback(async () => {
@@ -102,7 +102,7 @@ export const useIdToken = (userInfoId: string) => {
 export const useIdTokens = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [idTokenMap, setIdTokenMap] = useState<Record<string, string | null>>({});
+    const [idTokenMap, setIdTokenMap] = useState<Record<string, IdToken>>({});
     const isMounted = useRef<boolean>(true);
 
     const loadData = useCallback(async () => {

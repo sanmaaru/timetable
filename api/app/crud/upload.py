@@ -288,4 +288,4 @@ async def upload_sample_timetable(semester: Semester, user: UserInfo, session: A
     ]
     await overwrite_enrollment_transition(SAMPLE_ENROLLMENTS, semester.semester_id, session)
 
-    await session.flush()
+    await session.commit()

@@ -1,9 +1,10 @@
 import binascii
 import pickle
 import re
-from typing import Any, Optional
+from typing import Any, Optional, Annotated
 
 import ulid
+from fastapi.params import Depends
 from sqlalchemy import (
     TypeDecorator, BINARY, LargeBinary, String, Dialect
 )
@@ -137,4 +138,5 @@ async def conn():
             await session.close()
 
 
+Session = Annotated[AsyncSession, Depends(conn)]
 # ===== Default Data Creation ======

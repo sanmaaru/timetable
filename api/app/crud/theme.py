@@ -1,3 +1,4 @@
+import structlog
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload, with_expression
@@ -11,6 +12,7 @@ from app.exceptions.theme import ThemeNotOwnedByError, ThemeInUseError, LastThem
 from app.model.theme import Theme, ColorScheme
 from app.schema.theme import ColorSchemeSchema
 
+logger = structlog.get_logger()
 
 async def service_create_default_theme(user: User, session: AsyncSession, title: str | None = None):
     if title is None:
@@ -28,6 +30,8 @@ async def service_create_default_theme(user: User, session: AsyncSession, title:
             .where(UserInfo.identity_id == user.identity_id)
             .distinct())
     result = await session.execute(stmt)
+    logger.info(result)
+
     subjects = set(result.scalars().all())
     new_objects = []
     for subject in subjects:

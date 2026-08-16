@@ -3,6 +3,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    min-height: 0;
     gap: 16px;
 }
 
@@ -11,6 +12,7 @@
     font-family: Pretendard, serif;
     font-size: clamp(24px, 3.64vw, 28px);
     font-weight: 900;
+    flex-shrink: 0;
 }
 
 .container {
@@ -22,8 +24,12 @@
     box-shadow: 4px 2px 3px #ededed;
     width: 100%;
     height: 100%;
+    flex: 1;
+    min-height: 0;
     gap: 12px;
 }
+
+
 
 .sectionBtnArea {
     width: 100%;

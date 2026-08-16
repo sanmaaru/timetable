@@ -12,7 +12,7 @@ interface TimetableGridProps {
     detail: boolean;
     scheduleRefMap?: MutableRefObject<Map<string, HTMLElement>>
     className?: string
-    scheduleClassName?: (classId: string) => string;
+    scheduleClassName?: (lectureId: string) => string;
 }
 
 const drawSchedule = (
@@ -20,7 +20,7 @@ const drawSchedule = (
     colorSchemes: ColorScheme[],
     detail: boolean,
     scheduleRefMap?: MutableRefObject<Map<string, HTMLElement>>,
-    scheduleClassName?: (classId: string) => string,
+    scheduleClassName?: (lectureId: string) => string,
 ) => {
     const subjectColorMap = colorSchemes.reduce((acc, { subject, color, textColor}) => {
         acc[subject] = { color, textColor };
@@ -29,19 +29,19 @@ const drawSchedule = (
 
     return schedules.map(schedule => {
         const columnIdx = days.indexOf(schedule.day) + 2
-        const color = subjectColorMap[schedule.clazz.subject] ?? { color: '#ff0000', textColor: '#eeeeee' }
-        const classId = schedule.clazz.classId
+        const color = subjectColorMap[schedule.lecture.subject] ?? { color: '#ff0000', textColor: '#eeeeee' }
+        const lectureId = schedule.lecture.lectureId
         const setRef = (el: any) => {
             if (scheduleRefMap && el) {
-                scheduleRefMap.current.set(classId, el);
+                scheduleRefMap.current.set(lectureId, el);
             }
         }
 
         return [<div
             ref = {setRef}
-            key={`${classId}-${columnIdx}`}
-            data-id={classId}
-            className={`${style.wrapper} ${scheduleClassName ? scheduleClassName(classId) : ''}`}
+            key={`${lectureId}-${columnIdx}`}
+            data-id={lectureId}
+            className={`${style.wrapper} ${scheduleClassName ? scheduleClassName(lectureId) : ''}`}
             style={{
                 backgroundColor: color.color,
                 gridRowStart: schedule.period_from,
@@ -55,9 +55,9 @@ const drawSchedule = (
                 key={`=${columnIdx}-${schedule.period_from}`}
                 className={style.content}
             >
-                <span className={style.subject}>{schedule.clazz.subject}</span>
-                <span className={style.division}>{schedule.clazz.division}반</span>
-                {detail && <span className={style.teacher}>{schedule.clazz.teacher}T</span>}
+                <span className={style.subject}>{schedule.lecture.subject}</span>
+                <span className={style.division}>{schedule.lecture.division}반</span>
+                {detail && <span className={style.teacher}>{schedule.lecture.teacher}T</span>}
             </div>
         </div>]
     });

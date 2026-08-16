@@ -13,3 +13,8 @@ export interface UserInfo {
     credit: number | null;
     role: Role;
 }
+
+export interface IdToken {
+    token_id: string;
+    expired: boolean;
+}

@@ -3,11 +3,11 @@ from fastapi.params import Depends, Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from starlette import status
 
-from app.crud.auth import crud_user, crud_user_info
-from app.model.auth import User
+from app.crud.auth import crud_user, crud_user_info, crud_identify_token
+from app.model.auth import User, IdentifyToken
 from app.schema.auth import UserSchema
-from app.core.database import conn
-from app.core.dependencies import get_current_user, get_current_semester, get_current_user_with_info
+from app.core.database import conn, Session
+from app.core.dependencies import get_current_user, get_current_semester, get_current_user_with_info, CurrentUser
 from app.core.response import BaseResponse, create_response, SuccessResponse, MetaSchema
 from app.core.types import ULIDModel
 from app.model.timetable import Semester
@@ -23,10 +23,13 @@ async def get_current_account(
 
 @router.delete('/', status_code=status.HTTP_202_ACCEPTED)
 async def delete_account(
-    user: User = Depends(get_current_user),
-    session: AsyncSession = Depends(conn),
+    user: CurrentUser,
+    session: Session,
 ):
-    await crud_user.delete(session, condition=[User.user_id == user.user_id])
+    await crud_identify_token.update({
+        'expired': False
+    }, session, condition=[IdentifyToken.identity_id == user.identity_id])
+    await crud_user.delete_model(session, user)
     await session.commit()
     return SuccessResponse(
         meta = MetaSchema(

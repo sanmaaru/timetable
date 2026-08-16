@@ -35,8 +35,8 @@ export const UserList = ({ className, section, sortConfig, filterConfig, userInf
             <div className={style.border}/>
             <ul className={style.container}>
                 {sortedUserInfo.map((userInfo) => {
-                    return (<li key={userInfo.userInfoId}>
-                        <UserElement userInfo={userInfo} idToken={idTokenMap[userInfo.userInfoId]}/>
+                    return (<li key={userInfo.identityId}>
+                        <UserElement userInfo={userInfo} idToken={idTokenMap[userInfo.identityId]}/>
                     </li>)
                 })}
             </ul>

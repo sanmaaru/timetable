@@ -11,6 +11,11 @@ class Semester(Base):
     code: Mapped[str] = mapped_column(String(32), unique=True, nullable=False)
     is_current: Mapped[bool] = mapped_column(default=False)
 
+    def __repr__(self) -> str:
+        return (
+            f'<Semester(semester_id={self.semester_id}, code={self.code}, is_current={self.is_current})>'
+        )
+
 
 class SemesterMixin:
     semester_id: Mapped[ulid.ULID] = mapped_column(ULID(), ForeignKey('semesters.semester_id'), nullable=False)
@@ -27,9 +32,9 @@ class Lecture(Base, SemesterMixin):
 
     subject: Mapped['Subject'] = relationship('Subject', back_populates='lectures')
     teacher_info = relationship('UserInfo', back_populates='taught_lectures')
-    periods: Mapped['Period'] = relationship('Period', back_populates='lecture', cascade='all, delete-orphan')
-    enrollments: Mapped['Enrollment'] = relationship('Enrollment', back_populates='lecture', cascade='all, delete-orphan')
-    classmates = relationship('UserInfo', secondary='enrollments', back_populates='lectures',
+    periods: Mapped[list['Period']] = relationship('Period', uselist=True, back_populates='lecture', cascade='all, delete-orphan')
+    enrollments: Mapped[list['Enrollment']] = relationship('Enrollment', uselist=True, back_populates='lecture', cascade='all, delete-orphan')
+    classmates = relationship('UserInfo', uselist=True, secondary='enrollments', back_populates='lectures',
                               overlaps='enrollments, clazz')
 
     __table_args__ = (
@@ -42,6 +47,11 @@ class Lecture(Base, SemesterMixin):
         ),
     )
 
+    def __repr__(self) -> str:
+        return (
+            f'<Lecture(lecture_id={self.lecture_id}, semester_id={self.semester_id}, ' +
+            f'subject_id={self.subject_id}, teacher_info_id={self.teacher_info_id}, room={self.room}, division={self.division})>'
+        )
 
 class Subject(Base, SemesterMixin):
     __tablename__ = 'subjects'
@@ -50,7 +60,7 @@ class Subject(Base, SemesterMixin):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
 
     lectures = relationship(
-        'Lecture', back_populates='subject', cascade='all, delete-orphan'
+        'Lecture', back_populates='subject', uselist=True, cascade='all, delete-orphan'
     )
 
     __table_args__ = (

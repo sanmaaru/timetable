@@ -51,7 +51,7 @@ class LectureSchema(BaseModel):
 
     teacher_info: Any = Field(exclude=True)
 
-    @field_validator("subject")
+    @field_validator("subject", mode="before")
     @classmethod
     def extract_subject_name(cls, v: Any) -> str:
         if hasattr(v, 'name'):

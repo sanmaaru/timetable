@@ -32,7 +32,7 @@ class User(Base):
     user_info: 'UserInfo | None' = None
 
     def __repr__(self):
-        return (f'<User(user_id={self.user_id}, username={self.username}, '
+        return (f'<User(user_id={self.user_id}, identity_id={self.identity_id}, username={self.username}, ' +
                 f'email={self.email}, selected_theme_id={self.selected_theme_id})>')
 
 
@@ -51,11 +51,17 @@ class UserInfo(Base, SemesterMixin):
 
     taught_lectures = relationship('Lecture', back_populates='teacher_info')
     enrollments = relationship('Enrollment', back_populates='user_info', cascade='all, delete-orphan')
-    lectures = relationship('Lecture', secondary='enrollments', back_populates='classmates')
+    lectures = relationship('Lecture', uselist=True, secondary='enrollments', back_populates='classmates')
 
     @property
     def grade(self) -> int:
         return get_grade(self.generation)
+
+    def __repr__(self):
+        return (
+            f'<UserInfo(user_info_id={self.user_info_id}, identity_id={self.identity_id}, role={self.role}, ' +
+            f'name={self.name}, generation={self.generation}, clazz={self.clazz}, number={self.number}, credit={self.credit})>'
+        )
 
     __table_args__ = (
         UniqueConstraint('identity_id', 'semester_id', name='unique_user_info_semester'),
@@ -72,6 +78,12 @@ class RefreshToken(Base):
 
     owner = relationship('User', back_populates='refresh_tokens')
 
+    def __repr__(self) -> str:
+        return (
+            f'<RefreshToken(token_id={self.token_id}, issued_at={self.issued_at}, expired_at{self.expired_at}' +
+            f'owner_id={self.owner_id})>'
+        )
+
 
 class IdentifyToken(Base):
     __tablename__ = 'identify_tokens'
@@ -83,3 +95,8 @@ class IdentifyToken(Base):
     __table_args__ = (
         CheckConstraint(func.length(token_id) == configs.ID_TOKEN_LENGTH, name='check_token_length'),
     )
+
+    def __repr__(self) -> str:
+        return (
+            f'<IdentityId(token_id={self.token_id}, identity_id={self.identity_id}, expired={self.expired})>'
+        )

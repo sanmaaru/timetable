@@ -35,7 +35,7 @@ class EnrollmentInfo:
     enroll_id: str
     name: str
     credit: int
-    lectures: list[tuple[str, int]]  # (subject, division)
+    lectures: list[tuple[str, int, str]]  # (subject, division, teacher)
 
     def __repr__(self) -> str:
         return f'[enroll_id: {self.enroll_id}, name: {self.name}, subjects: {self.lectures}, credit: {self.credit}]'
@@ -47,7 +47,7 @@ class EnrollmentInfo:
 class SubjectInfo:
     subject: str
     semester: int # 1: 1-1, 2: 1-2, 3: 2-1, ... 6: 3-2
-    type: Literal['common', 'optional', 'custom']
+    type: Literal['공통', '선택', '자율설계']
 
 
 @dataclass

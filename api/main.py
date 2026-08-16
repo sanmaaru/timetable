@@ -7,17 +7,13 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 import app.sync.hooks
-from app.router.account import router as account_router
-from app.router.auth import router as auth_router
 from app.core.config import configs
 from app.core.database import engine, Base, AsyncSessionLocal
 from app.core.dependencies import get_current_semester
 from app.core.exceptions import handle_client_exception, ClientError, global_error_handler, validation_exception_handler
 from app.core.middleware import RequestLogMiddleware
-from app.router.theme import router as theme_router
-from app.router.timetable import router as timetable_router
-from app.router.upload import router as upload_router
 from app.crud.upload import upload_sample_timetable, upload_default_semester, upload_admin_user
+from app.router import register_routers
 from app.util.logger import configure_logger
 
 
@@ -33,7 +29,6 @@ async def lifespan(app: FastAPI):
             current_semester = await get_current_semester(session)
 
             admin_user = await upload_admin_user(current_semester, session)
-            await session.commit()
             await upload_sample_timetable(current_semester, admin_user, session)
             logger.info('[Init] System initialization completed')
         except Exception as e:
@@ -45,11 +40,8 @@ app = FastAPI(
     debug=configs.DEBUG,
     lifespan=lifespan,
 )
-app.include_router(auth_router)
-app.include_router(theme_router)
-app.include_router(timetable_router)
-app.include_router(upload_router)
-app.include_router(account_router)
+
+register_routers(app)
 
 app.add_middleware(
     CORSMiddleware,

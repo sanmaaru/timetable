@@ -1,6 +1,6 @@
 import json
 
-from template import parse_periods, unify_periods, parse_lectures, parse_division, parse_enrollments, parse_subjects, \
+from template import parse_periods, parse_lectures, parse_enrollments, parse_subjects, \
     parse_common_timetable, parse_student_list
 from util import generate_identity_id
 
@@ -43,48 +43,66 @@ def _create_period_object(
 def organize_optional_lecture(
         lecture_path: str,
         enrollment_path: str,
-        output_path: str
+        subject_data_path: str,
+        output_path: str,
 ):
+    with open(subject_data_path, 'r', encoding='utf-8') as f:
+        subjects = json.load(f)
+
     lectures = parse_lectures(lecture_path)
-    subject_division_map = parse_division(enrollment_path)
-    subject_lecture_map = {}
+    subject_teacher_room_map = {}
     for lecture in lectures:
-        if lecture.subject not in subject_lecture_map:
-            subject_lecture_map[lecture.subject] = []
+        for t1 in lecture.teacher.split(','):
+            for t2 in t1.split('·'):
+                subject_teacher_room_map[(lecture.subject, t2)] = lecture.room
 
-        subject_lecture_map[lecture.subject].append(lecture)
-
+    enrollments = parse_enrollments(enrollment_path)
     lecture_data = []
-    for subject, division in subject_division_map.items():
-        for div in range(1, division + 1):
-            for lec in subject_lecture_map[subject]:
-                teacher = lec.teacher.split(',')[0].strip()
-                lecture_data.append(_create_lecture_object(
-                    subject,
-                    teacher,
-                    lec.room,
-                    div
-                ))
+    for enrollment in enrollments:
+        for subject, division, teacher in enrollment.lectures:
+            if subject not in subjects:
+                subjects.append(subject)
+
+            teacher = teacher.split(',')[0].split('·')[0]
+            key = (subject, teacher)
+            if key not in subject_teacher_room_map:
+                print(f'{key} is not in lecture-room map')
+                continue
+
+            room = subject_teacher_room_map[key]
+            lecture_data.append(_create_lecture_object(
+                subject, teacher, room, division
+            ))
 
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(lecture_data, f, ensure_ascii=False, indent=4)
 
+    with open(subject_data_path, 'w', encoding='utf-8') as f:
+        json.dump(subjects, f, ensure_ascii=False, indent=4)
+
 
 def organize_periods(
-        period_path: str,
-        lecture_path: str,
         enrollment_path: str,
+        lecture_data_path: str,
         output_path: str
 ):
-    multi_tch_period = parse_periods(period_path)
-    periods = parse_periods(enrollment_path)
-    lectures = parse_lectures(lecture_path)
+    with open(lecture_data_path, 'r', encoding='utf-8') as f:
+        lectures = json.load(f)
 
-    periods = unify_periods(periods, multi_tch_period, lectures)
+    lecture_visit_map = { (l['subject'], l['teacher'], l['division']) : False for l in lectures }
+
+    periods = parse_periods(enrollment_path)
 
     period_data = []
     for period in periods:
-        teacher = period.teacher.split(",")[0].strip()
+        teacher = period.teacher.split("·")[0].strip()
+        key = (period.subject, teacher, period.division)
+        if key not in lecture_visit_map:
+            print(f'{key} is not in lecture data')
+            continue
+
+        lecture_visit_map[key] = True
+
         period_data.append(_create_period_object(
             period.subject,
             period.division,
@@ -93,14 +111,20 @@ def organize_periods(
             period.period
         ))
 
+    for key, visited in lecture_visit_map.items():
+        if visited:
+            continue
+
+        print(f'{key} is not visited')
+
     with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(period_data, f, ensure_ascii=False, indent=4)
+        json.dump(period_data, f, ensure_ascii=False, indent=5)
 
 
 def organize_enrollments(
         enrollment_path: str,
         identity_id_path: str,
-        target_generation: int,
+        target_generations: list[int],
         output_path: str
 ):
     with open(identity_id_path, 'r', encoding='utf-8') as f:
@@ -117,8 +141,17 @@ def organize_enrollments(
             })
 
         name = enrollment.name
-        identity_id = identity_ids[str(target_generation)][name]
-        if isinstance(identity_id, list):
+        identity_id = []
+        for target_generation in target_generations:
+            id_ = identity_ids[str(target_generation)].get(name)
+            if id_ is None:
+                continue
+
+            identity_id.append(id_)
+
+        if len(identity_id) == 1:
+            identity_id = identity_id[0]
+        else:
             print(f'Multiple student found for(Enrollment): {name}, {identity_id}')
 
         enrollment_data.append({
@@ -139,7 +172,10 @@ def organize_subjects(
         output_path: str
 ):
     subjects = parse_subjects(subject_path)
-    subject_data = set([s.subject for s in subjects])
+    subject_data = set([])
+    for subject in subjects:
+        if subject.type == '공통':
+            subject_data.add(subject.subject)
 
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(list(subject_data), f, ensure_ascii=False, indent=4)
@@ -173,8 +209,8 @@ def organize_common_timetable(
               period.subject,
               period.division,
               teacher,
-              period.day,
-              period.period
+              period.day + 1,
+              period.period + 1
             ))
 
     with open(period_output_path, 'w', encoding='utf-8') as f:

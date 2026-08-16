@@ -1,3 +1,5 @@
+from typing import Annotated
+
 import structlog
 from fastapi import Header, Depends, status
 from jose import JWTError, jwt
@@ -9,7 +11,7 @@ from app.crud.auth import crud_user_info
 from app.crud.timetable import crud_semester
 from app.exceptions.auth import AuthorizationError, NoPermissionError
 from app.model.auth import User
-from app.core.database import conn
+from app.core.database import conn, Session
 from app.core.types import Role
 from app.exceptions.timetable import SemesterNotSelectedError
 from app.model.timetable import Semester
@@ -17,8 +19,9 @@ from app.schema.auth import TokenPayload
 
 logger = structlog.get_logger()
 
+
 async def get_current_semester(
-        session: AsyncSession = Depends(conn)
+        session: Session
 ) -> Semester:
     current_semester = await crud_semester.query(session, condition=[Semester.is_current == True])
 
@@ -27,10 +30,11 @@ async def get_current_semester(
 
     return current_semester
 
+CurrentSemester = Annotated[Semester, Depends(get_current_semester)]
 
 async def get_current_user(
-        auth: str = Header(default=None, alias="Authorization"),
-        session: AsyncSession = Depends(conn)
+        session: Session,
+        auth: Annotated[str | None, Header(alias="Authorization")] = None,
 ) -> User:
     if auth is None:
         raise AuthorizationError(
@@ -63,11 +67,13 @@ async def get_current_user(
 
     return user
 
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
 
 async def get_current_user_with_info(
-        user: User = Depends(get_current_user),
-        semester: Semester = Depends(get_current_semester),
-        session: AsyncSession = Depends(conn)
+        user: CurrentUser,
+        semester: CurrentSemester,
+        session: Session,
 ) -> User:
     # Query and inject user info to user
     user_info = await crud_user_info.query_by_identity_id(user.identity_id, semester.semester_id, session)
@@ -77,9 +83,11 @@ async def get_current_user_with_info(
 
 
 async def get_current_admin_user(
-        current_user = Depends(get_current_user_with_info),
+        current_user: Annotated[User, Depends(get_current_user_with_info)]
 ) -> User:
     if Role.ADMINISTRATOR != current_user.user_info.role:
         raise NoPermissionError(message="User is not administrator")
 
     return current_user
+
+CurrentAdminUser = Annotated[User, Depends(get_current_admin_user)]

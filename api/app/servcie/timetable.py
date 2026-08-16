@@ -31,7 +31,7 @@ class TimetableService:
         if not user_info:
             raise NotFoundError(f'Cannot find user {identity_id} in {semester.code}')
 
-        return user_info.lectures
+        return user_info.lectures, user_info.name
 
 
     @staticmethod
