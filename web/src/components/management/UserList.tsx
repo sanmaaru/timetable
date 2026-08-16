@@ -5,6 +5,7 @@ import {UserInfo} from "../../types/account";
 import {UserElement} from "./UserElement";
 import {FilterConfig, filterUserInfos, SortConfig, sortUserInfos} from "../../util/userlist";
 import {useIdTokens} from "../../hooks/useUser";
+import {StudentUserElement} from "./StudentUserElement";
 
 interface UserListProps {
     className?: string;
@@ -35,6 +36,11 @@ export const UserList = ({ className, section, sortConfig, filterConfig, userInf
             <div className={style.border}/>
             <ul className={style.container}>
                 {sortedUserInfo.map((userInfo) => {
+                    if(userInfo.role === 'Student')
+                        return (<li key={userInfo.identityId}>
+                            <StudentUserElement userInfo={userInfo} idToken={idTokenMap[userInfo.identityId]}/>
+                        </li>)
+
                     return (<li key={userInfo.identityId}>
                         <UserElement userInfo={userInfo} idToken={idTokenMap[userInfo.identityId]}/>
                     </li>)

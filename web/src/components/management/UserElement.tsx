@@ -1,7 +1,6 @@
 import style from './UserElement.module.css';
 import React from "react";
 import {IdToken, UserInfo} from "../../types/account";
-import {useIdToken} from "../../hooks/useUser";
 
 export interface UserElementProps {
     userInfo: UserInfo;
@@ -19,8 +18,8 @@ export const UserElement = ({ userInfo, idToken }: UserElementProps) => {
                     <span>{userInfo.username}</span>
                 </div>
             </div>
-            <span className={style.email}>{userInfo.email}</span>
-            <span className={`${style.idToken} ${idToken.expired ? style.expired : ''}`}>
+            <span className={style.info}>{userInfo.email}</span>
+            <span className={`${style.info} ${idToken.expired ? style.expired : ''}`}>
                 {idToken.expired ? 'Expired' : idToken.token_id}
             </span>
         </div>

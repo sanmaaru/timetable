@@ -41,12 +41,7 @@
     color: gray;
 }
 
-.email {
-    font-size: 13px;
-    font-family: NixgonFont, serif;
-}
-
-.idToken {
+.info {
     font-size: 13px;
     font-family: NixgonFont, serif;
 }
