@@ -5,12 +5,7 @@ RUN apt-get update && apt-get install -y ca-certificates tar \
     && rm -rf /var/lib/apt/lists/*
 
 # ===== 2. UV 설치 (사내망 우회) =====
-COPY uv-x86_64-unknown-linux-gnu.tar.gz /tmp/
-RUN tar -xzf /tmp/uv-x86_64-unknown-linux-gnu.tar.gz -C /tmp \
-    && mv /tmp/uv-x86_64-unknown-linux-gnu/uv /usr/local/bin/uv \
-    && chmod +x /usr/local/bin/uv \
-    && rm -rf /tmp/*
-RUN rm -f uv-x86_64-unknown-linux-gnu.tar.gz
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # ===== 3. 프로젝트 설정 및 패키지 설치 =====
 WORKDIR /app
