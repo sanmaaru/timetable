@@ -7,17 +7,16 @@ class Configs(BaseSettings):
     DEBUG: bool
 
     # Database configs
-    SQL_ROOT_PASSWORD: str
-    SQL_DATABASE: str
-    SQL_USER: str
-    SQL_PASSWORD: str
-    SQL_HOST: str = 'db'
-    SQL_PORT: int = 3306
+    DB_DATABASE: str
+    DB_USER: str
+    DB_PASSWORD: str
+    DB_HOST: str
+    DB_PORT: int
 
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
-        return f'mariadb+aiomysql://{self.SQL_USER}:{self.SQL_PASSWORD}@{self.SQL_HOST}:{self.SQL_PORT}/{self.SQL_DATABASE}'
+        return f'mysql+asyncmy://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DATABASE}'
 
 
     # Auth configs
