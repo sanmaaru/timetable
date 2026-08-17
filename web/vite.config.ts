@@ -17,10 +17,10 @@ export default defineConfig({
     host: true,
     proxy: {
       '/api': {
-        target: 'http://api:5000',
+        target: 'http://api.gsa-timetable.com',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
-        secure: false
+        secure: true
       }
     }
   }
