@@ -74,18 +74,6 @@ export const timetable = {
             return null;
         }
     },
-
-    getClass: (classId: string) => {
-        const classes = timetable.get()?.classes
-        if (!classes) return null;
-
-        for (const clazz of classes) {
-            if (clazz.classId === classId)
-                return clazz;
-        }
-
-        return null;
-    }
 }
 
 export const theme = {
