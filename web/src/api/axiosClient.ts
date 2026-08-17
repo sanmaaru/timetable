@@ -3,7 +3,7 @@ import {getRefresh, getToken, removeTokens, setTokens} from "../auth/auth";
 import {BaseResponseDto} from "./dto/response.dto";
 import {TokenPairDto} from "./dto/dto";
 
-const baseUrl = import.meta.env.API_BASE_URL || '/api'
+const baseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 
 export const publicAxiosClient = axios.create({
     baseURL: baseUrl,
