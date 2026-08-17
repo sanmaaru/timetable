@@ -16,7 +16,7 @@ class Configs(BaseSettings):
     @computed_field
     @property
     def DATABASE_URL(self) -> str:
-        return f'mysql+asyncmy://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DATABASE}'
+        return f'mysql+asyncmy://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_DATABASE}?ssl=true'
 
 
     # Auth configs

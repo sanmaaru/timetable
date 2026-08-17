@@ -9,6 +9,7 @@ dependencies = [
     "argon2-cffi[binaries]>=25.1.0",
     "asgi-correlation-id>=4.3.4",
     "asyncmy>=0.2.14",
+    "cryptography>=46.0.3",
     "fastapi[standard]>=0.121.2",
     "gdown>=5.2.0",
     "numpy>=2.3.5",
