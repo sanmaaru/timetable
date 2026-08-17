@@ -1,3 +1,4 @@
+import ssl
 import binascii
 import pickle
 import re
@@ -15,8 +16,11 @@ from sqlalchemy.sql.type_api import _T
 
 from app.core.config import configs
 
+ssl_context = ssl.create_default_context()
+
 engine = create_async_engine(
     configs.DATABASE_URL,
+    connect_args={"ssl": ssl_context},
     echo=False, # 디버그 모드일 때 SQL 로그 출력
     pool_pre_ping=True,
     pool_size=20,
