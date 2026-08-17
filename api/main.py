@@ -49,7 +49,8 @@ app.add_middleware(
         "http://localhost:8000",
         "http://127.0.0.1:8000",
         "http://10.122.2.122:8000",
-        "http://timetable-six-amber.vercel.app"
+        "http://timetable-six-amber.vercel.app",
+        "https://timetable-six-amber.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
